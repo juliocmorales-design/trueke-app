@@ -1,0 +1,27 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #e9e3d9;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* 🔥 contenedor principal */
+body {
+  display: flex;
+  justify-content: center;
+}
+
+/* 🔥 evita overflow raro */
+#__next {
+  width: 100%;
+}
+
+/* 🔥 imágenes nunca se rompen */
+img {
+  max-width: 100%;
+  display: block;
+}
