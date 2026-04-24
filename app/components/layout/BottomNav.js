@@ -1,42 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import supabase from '@/app/lib/supabase'
 import Icon from '../icons/Icon'
+import useUnreadMessages from '@/app/hooks/useUnreadMessages'
 
 export default function BottomNav() {
-  const [unread, setUnread] = useState(0)
+  const unread = useUnreadMessages()
 
   const pathname = usePathname()
   const router = useRouter()
-
-  useEffect(() => {
-    init()
-  }, [])
-
-  const init = async () => {
-    const { data } = await supabase.auth.getSession()
-    const user = data.session?.user
-
-    if (!user) return
-
-    cargar(user.id)
-  }
-
-  async function cargar(userId) {
-    const { data } = await supabase
-      .from('messages')
-      .select('*')
-
-    if (!data) return
-
-    const count = data.filter(
-      (m) => m.sender !== userId && !m.is_read
-    ).length
-
-    setUnread(count)
-  }
 
   const isActive = (path) => pathname === path
 
@@ -45,6 +17,7 @@ export default function BottomNav() {
       
       <div style={styles.nav}>
 
+        {/* INICIO */}
         <div style={styles.item} onClick={() => router.push('/')}>
           <Icon name="home" active={isActive('/')} />
           <span style={isActive('/') ? styles.labelActive : styles.label}>
@@ -52,6 +25,7 @@ export default function BottomNav() {
           </span>
         </div>
 
+        {/* INTERCAMBIOS */}
         <div style={styles.item} onClick={() => router.push('/intercambios')}>
           <Icon name="swap" active={isActive('/intercambios')} />
           <span style={isActive('/intercambios') ? styles.labelActive : styles.label}>
@@ -59,8 +33,10 @@ export default function BottomNav() {
           </span>
         </div>
 
-        <div style={{ width: 50 }} />
+        {/* ESPACIO FAB */}
+        <div style={{ width: 60 }} />
 
+        {/* MENSAJES */}
         <div style={styles.item} onClick={() => router.push('/mensajes')}>
           <div style={{ position: 'relative' }}>
             <Icon name="chat" active={isActive('/mensajes')} />
@@ -77,6 +53,7 @@ export default function BottomNav() {
           </span>
         </div>
 
+        {/* PERFIL */}
         <div style={styles.item} onClick={() => router.push('/perfil')}>
           <Icon name="user" active={isActive('/perfil')} />
           <span style={isActive('/perfil') ? styles.labelActive : styles.label}>
@@ -86,6 +63,7 @@ export default function BottomNav() {
 
       </div>
 
+      {/* FAB */}
       <div
         style={styles.fab}
         onClick={() => router.push('/crear')}
@@ -100,22 +78,23 @@ export default function BottomNav() {
 const styles = {
   wrapper: {
     position: 'fixed',
-    bottom: 0,
+    bottom: 20,
     left: '50%',
     transform: 'translateX(-50%)',
     width: '100%',
-    maxWidth: 500,
+    maxWidth: 420,
     zIndex: 100,
   },
 
   nav: {
-    height: 70,
+    height: 72,
     background: '#fff',
     display: 'flex',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    borderTop: '1px solid #eee',
-    boxShadow: '0 -4px 12px rgba(0,0,0,0.05)',
+    padding: '0 18px',
+    borderRadius: 28,
+    boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
   },
 
   item: {
@@ -124,16 +103,17 @@ const styles = {
     alignItems: 'center',
     fontSize: 11,
     cursor: 'pointer',
+    gap: 2,
   },
 
   label: {
-    color: '#777',
-    marginTop: 4,
+    color: '#6F7A82',
+    marginTop: 2,
   },
 
   labelActive: {
-    color: '#F5A623',
-    marginTop: 4,
+    color: '#F97316',
+    marginTop: 2,
     fontWeight: 600,
   },
 
@@ -151,17 +131,17 @@ const styles = {
 
   fab: {
     position: 'absolute',
-    top: -26,
+    top: -30,
     left: '50%',
     transform: 'translateX(-50%)',
-    width: 58,
-    height: 58,
+    width: 60,
+    height: 60,
     borderRadius: '50%',
-    background: '#F5A623',
+    background: '#F97316',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
+    boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
     cursor: 'pointer',
   },
 }

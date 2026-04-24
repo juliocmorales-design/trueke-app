@@ -9,8 +9,13 @@ export default function MessagesPage() {
 
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [conversations, setConversations] = useState<any[]>([])
+  const [mounted, setMounted] = useState(false)
 
-  const channelRef = useRef<any>(null) // 🔥 CLAVE
+  const channelRef = useRef<any>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const init = async () => {
@@ -23,8 +28,11 @@ export default function MessagesPage() {
 
       await loadConversations(user.id)
 
-      // 🔥 EVITA DOBLE SUBSCRIPCIÓN
-      if (channelRef.current) return
+      // 🔥 limpiar canal previo (evita duplicados)
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
 
       const channel = supabase.channel(`messages-list-${user.id}`)
 
@@ -35,14 +43,23 @@ export default function MessagesPage() {
           schema: 'public',
           table: 'messages',
         },
-        () => {
-          loadConversations(user.id)
-        }
+        () => loadConversations(user.id)
+      )
+
+      // 🔥 también refrescar cuando se marcan como leídos
+      channel.on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+        },
+        () => loadConversations(user.id)
       )
 
       channel.subscribe()
 
-      channelRef.current = channel // 🔥 guardar referencia
+      channelRef.current = channel
     }
 
     init()
@@ -56,11 +73,13 @@ export default function MessagesPage() {
   }, [])
 
   const loadConversations = async (myId: string) => {
+    // 🔥 solo columnas necesarias (performance)
     const { data, error } = await supabase
       .from('messages')
-      .select('*')
-      .or(`sender.eq.${myId},receiver.eq.${myId}`)
+      .select('sender_id, receiver, text, created_at, is_read')
+      .or(`sender_id.eq.${myId},receiver.eq.${myId}`)
       .order('created_at', { ascending: false })
+      .limit(200) // 🔥 evita full scan infinito
 
     if (error) {
       console.log('❌ error loading', error)
@@ -69,9 +88,9 @@ export default function MessagesPage() {
 
     const map: any = {}
 
-    data.forEach((m: any) => {
+    for (const m of data || []) {
       const otherUser =
-        m.sender === myId ? m.receiver : m.sender
+        m.sender_id === myId ? m.receiver : m.sender_id
 
       if (!map[otherUser]) {
         map[otherUser] = {
@@ -85,15 +104,21 @@ export default function MessagesPage() {
       if (m.receiver === myId && !m.is_read) {
         map[otherUser].unread++
       }
-    })
+    }
 
-    const conversationsArray = Object.values(map)
+    let conversationsArray = Object.values(map)
 
-    const userIds = conversationsArray.map((c: any) => c.userId)
+    conversationsArray.sort(
+      (a: any, b: any) =>
+        new Date(b.created_at).getTime() -
+        new Date(a.created_at).getTime()
+    )
+
+    const userIds = [...new Set(conversationsArray.map((c: any) => c.userId))]
 
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, name, avatar_url')
       .in('id', userIds)
 
     const profilesMap: any = {}
@@ -110,6 +135,45 @@ export default function MessagesPage() {
     setConversations(final)
   }
 
+  const openChat = async (otherUserId: string) => {
+    if (!currentUser) return
+
+    await supabase
+      .from('messages')
+      .update({ is_read: true })
+      .eq('receiver', currentUser.id)
+      .eq('sender_id', otherUserId)
+
+    await loadConversations(currentUser.id)
+
+    router.push(`/mensajes/${otherUserId}`)
+  }
+
+  const formatTime = (dateString: string) => {
+    const now = new Date()
+    const date = new Date(dateString)
+
+    const diff = (now.getTime() - date.getTime()) / 1000
+
+    if (diff < 60) return 'Ahora'
+
+    if (diff < 3600) {
+      const mins = Math.floor(diff / 60)
+      return `Hace ${mins} min`
+    }
+
+    if (diff < 86400) {
+      return date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    }
+
+    if (diff < 172800) return 'Ayer'
+
+    return date.toLocaleDateString()
+  }
+
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>Mensajes</h2>
@@ -118,7 +182,7 @@ export default function MessagesPage() {
         <div
           key={c.userId}
           style={styles.item}
-          onClick={() => router.push(`/mensajes/${c.userId}`)}
+          onClick={() => openChat(c.userId)}
         >
           <div style={styles.avatarWrapper}>
             {c.avatar ? (
@@ -131,7 +195,14 @@ export default function MessagesPage() {
           </div>
 
           <div style={styles.textContainer}>
-            <strong>{c.name}</strong>
+            <div style={styles.topRow}>
+              <strong>{c.name}</strong>
+
+              <span style={styles.time}>
+                {mounted ? formatTime(c.created_at) : ''}
+              </span>
+            </div>
+
             <div style={styles.preview}>{c.lastMessage}</div>
           </div>
 
@@ -195,6 +266,17 @@ const styles: any = {
     flex: 1,
   },
 
+  topRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  time: {
+    fontSize: 12,
+    color: '#999',
+  },
+
   preview: {
     fontSize: 13,
     color: '#666',
@@ -208,4 +290,4 @@ const styles: any = {
     padding: '4px 8px',
     fontSize: 12,
   },
-}git init
+}

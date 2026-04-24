@@ -1,161 +1,176 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 
 export default function ChatPage() {
   const { userId } = useParams()
+  const router = useRouter()
 
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [messages, setMessages] = useState<any[]>([])
-  const [profiles, setProfiles] = useState<any>({})
   const [text, setText] = useState('')
+  const [otherUser, setOtherUser] = useState<any>(null)
 
-  const bottomRef = useRef<HTMLDivElement | null>(null)
-  const channelRef = useRef<any>(null) // 🔥 evita duplicación
+  const bottomRef = useRef<any>(null)
 
   useEffect(() => {
-    const init = async () => {
-      const { data } = await supabase.auth.getSession()
-      const user = data.session?.user
+    init()
+  }, [])
 
-      if (!user) return
+  useEffect(() => {
+    if (!currentUser) return
 
-      setCurrentUser(user)
+    const channel = supabase.channel(`chat-${currentUser.id}-${userId}`)
 
-      await loadAll(user.id)
-
-      // 🔥 SI YA EXISTE, NO CREAR OTRO
-      if (channelRef.current) return
-
-      const channel = supabase.channel('chat-room')
-
-      channel.on(
+    channel
+      .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
         },
-        () => loadAll(user.id)
+        (payload) => {
+          setMessages((prev) => [...prev, payload.new])
+        }
       )
-
-      channel.subscribe()
-
-      channelRef.current = channel
-    }
-
-    init()
+      .subscribe()
 
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current)
-        channelRef.current = null
-      }
+      supabase.removeChannel(channel)
     }
-  }, [])
+  }, [currentUser])
 
   useEffect(() => {
+    scrollToBottom()
+    markAsRead()
+  }, [messages])
+
+  const scrollToBottom = () => {
     setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, 100)
-  }, [messages])
+  }
 
-  const loadAll = async (myId: string) => {
-    const { data: msgs } = await supabase
+  const init = async () => {
+    const { data } = await supabase.auth.getSession()
+    const user = data.session?.user
+    if (!user) return
+
+    setCurrentUser(user)
+
+    await loadMessages(user.id)
+    await loadProfile()
+  }
+
+  const loadProfile = async () => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    setOtherUser(data)
+  }
+
+  const loadMessages = async (myId: string) => {
+    const { data } = await supabase
       .from('messages')
       .select('*')
       .or(
-        `and(sender.eq.${myId},receiver.eq.${userId}),and(sender.eq.${userId},receiver.eq.${myId})`
+        `and(sender_id.eq.${myId},receiver.eq.${userId}),and(sender_id.eq.${userId},receiver.eq.${myId})`
       )
       .order('created_at', { ascending: true })
 
-    setMessages(msgs || [])
+    setMessages(data || [])
+  }
 
-    const ids = [
-      ...new Set(
-        (msgs || []).flatMap((m) => [m.sender, m.receiver])
-      ),
-    ]
-
-    if (ids.length > 0) {
-      const { data: profs } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('id', ids)
-
-      const map: any = {}
-      profs?.forEach((p) => {
-        map[p.id] = p
-      })
-
-      setProfiles(map)
-    }
+  const markAsRead = async () => {
+    if (!currentUser) return
 
     await supabase
       .from('messages')
       .update({ is_read: true })
-      .eq('receiver', myId)
-      .eq('sender', userId)
+      .eq('receiver', currentUser.id)
+      .eq('sender_id', userId)
+      .eq('is_read', false)
   }
 
   const sendMessage = async () => {
-    if (!text.trim() || !currentUser) return
+    if (!text.trim()) return
 
-    const { error } = await supabase.from('messages').insert({
-      sender: currentUser.id,
+    await supabase.from('messages').insert({
+      sender_id: currentUser.id,
       receiver: userId,
       text,
       is_read: false,
     })
 
-    if (error) {
-      console.log('❌ error enviando', error)
-      alert('Error al enviar')
-      return
-    }
-
     setText('')
   }
+
+  const handleKey = (e: any) => {
+    if (e.key === 'Enter') sendMessage()
+  }
+
+  const isMine = (m: any) => {
+    if (!currentUser) return false
+    return m.sender_id === currentUser.id
+  }
+
+  if (!currentUser) return null
 
   return (
     <div style={styles.container}>
       
-      <div style={styles.messages}>
-        {messages.map((m) => {
-          const isMe = m.sender === currentUser?.id
-          const otherId = isMe ? m.receiver : m.sender
-          const profile = profiles[otherId]
+      {/* HEADER */}
+      <div style={styles.header}>
+        <button onClick={() => router.back()} style={styles.back}>
+          ←
+        </button>
+
+        <div style={styles.user}>
+          <img
+            src={otherUser?.avatar_url || '/avatar.png'}
+            style={styles.avatar}
+          />
+          <div>
+            <strong>{otherUser?.name || 'Usuario'}</strong>
+            <div style={styles.status}>● Viendo ahora</div>
+          </div>
+        </div>
+
+        <div>⋯</div>
+      </div>
+
+      {/* CHAT */}
+      <div style={styles.chat}>
+        {messages.map((m, i) => {
+          const mine = isMine(m)
 
           return (
             <div
-              key={m.id}
+              key={i}
               style={{
-                ...styles.row,
-                justifyContent: isMe ? 'flex-end' : 'flex-start',
+                ...styles.msg,
+                ...(mine ? styles.right : styles.left),
               }}
             >
-              {!isMe && (
-                <img
-                  src={profile?.avatar_url || '/avatar.png'}
-                  style={styles.avatar}
-                />
-              )}
+              <div>{m.text}</div>
 
-              <div
-                style={{
-                  ...styles.bubble,
-                  background: isMe ? '#F97316' : '#eee',
-                  color: isMe ? '#fff' : '#000',
-                }}
-              >
-                {!isMe && (
-                  <div style={styles.name}>
-                    {profile?.name || 'Usuario'}
-                  </div>
+              <div style={styles.meta}>
+                {new Date(m.created_at).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+
+                {mine && (
+                  <span style={styles.check}>
+                    {m.is_read ? '✓✓' : '✓'}
+                  </span>
                 )}
-                {m.text}
               </div>
             </div>
           )
@@ -164,23 +179,21 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
-      <div style={styles.inputRow}>
+      {/* INPUT */}
+      <div style={styles.input}>
+        <div style={styles.circle}>＋</div>
+
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          style={styles.input}
-          placeholder="Escribe mensaje..."
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              sendMessage()
-            }
-          }}
+          onKeyDown={handleKey}
+          placeholder="Escribe un mensaje..."
+          style={styles.inputBox}
         />
 
-        <button onClick={sendMessage} style={styles.send}>
-          Enviar
-        </button>
+        <div style={styles.send} onClick={sendMessage}>
+          ➤
+        </div>
       </div>
     </div>
   )
@@ -188,73 +201,132 @@ export default function ChatPage() {
 
 const styles: any = {
   container: {
-    height: '100vh',
+    background: '#F6F3F0',
+    minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
-    background: '#fff',
-    paddingBottom: 90,
   },
 
-  messages: {
+  header: {
+    height: 60,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0 12px',
+    background: '#fff',
+    borderBottom: '1px solid #eee',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+  },
+
+  chat: {
     flex: 1,
-    padding: 16,
+    padding: 12,
+    paddingBottom: 140, // 🔥 espacio para input + FAB
     display: 'flex',
     flexDirection: 'column',
-    gap: 10,
+    gap: 12,
     overflowY: 'auto',
   },
 
-  row: {
-    display: 'flex',
-    alignItems: 'flex-end',
-    gap: 8,
-  },
-
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: '50%',
-    objectFit: 'cover',
-  },
-
-  name: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-
-  bubble: {
-    padding: 10,
-    borderRadius: 12,
-    maxWidth: '70%',
-  },
-
-  inputRow: {
+  input: {
     position: 'fixed',
-    bottom: 70,
+    bottom: 80, // 🔥 debajo del FAB
     left: '50%',
     transform: 'translateX(-50%)',
     width: '100%',
     maxWidth: 500,
     display: 'flex',
+    gap: 10,
     padding: 10,
     background: '#fff',
     borderTop: '1px solid #eee',
+    alignItems: 'center',
   },
 
-  input: {
+  back: {
+    border: 'none',
+    background: 'none',
+    fontSize: 18,
+  },
+
+  user: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: '50%',
+  },
+
+  status: {
+    fontSize: 12,
+    color: 'green',
+  },
+
+  msg: {
+    maxWidth: '75%',
+    padding: 12,
+    borderRadius: 16,
+    fontSize: 14,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+
+  left: {
+    background: '#EDE5DD',
+    alignSelf: 'flex-start',
+  },
+
+  right: {
+    background: '#F97316',
+    color: '#fff',
+    alignSelf: 'flex-end',
+  },
+
+  meta: {
+    marginTop: 6,
+    fontSize: 11,
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 4,
+    opacity: 0.8,
+  },
+
+  check: {
+    fontSize: 12,
+  },
+
+  inputBox: {
     flex: 1,
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 25,
     border: '1px solid #ddd',
   },
 
+  circle: {
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
+    background: '#eee',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   send: {
-    marginLeft: 10,
-    padding: '10px 16px',
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
     background: '#F97316',
     color: '#fff',
-    border: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }

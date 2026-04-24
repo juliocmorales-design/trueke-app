@@ -44,13 +44,7 @@ export default function ItemDetail() {
   }
 
   const goToChat = () => {
-    console.log('OWNER:', owner)
-
-    if (!owner?.id) {
-      alert('No hay usuario')
-      return
-    }
-
+    if (!owner?.id) return
     router.push(`/mensajes/${owner.id}`)
   }
 
@@ -169,14 +163,14 @@ function Icon({ children }: any) {
 const styles: any = {
   screen: {
     background: '#EDE7E1',
-    padding: 24,
+    padding: 20,
     minHeight: '100vh',
   },
 
   card: {
     background: '#F6F3F0',
-    borderRadius: 42,
-    padding: 20,
+    borderRadius: 36,
+    padding: 16,
     maxWidth: 420,
     margin: '0 auto',
     minHeight: '85vh',
@@ -187,16 +181,17 @@ const styles: any = {
   header: {
     display: 'flex',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
 
   rightIcons: {
     display: 'flex',
-    gap: 16,
+    gap: 14,
   },
 
   image: {
-    marginTop: 10,
-    borderRadius: 28,
+    marginTop: 12,
+    borderRadius: 24,
     overflow: 'hidden',
   },
 
@@ -214,7 +209,7 @@ const styles: any = {
   },
 
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 700,
     marginTop: 18,
   },
@@ -244,7 +239,7 @@ const styles: any = {
   cta: {
     display: 'flex',
     gap: 12,
-    marginTop: 30,
+    marginTop: 26,
   },
 
   button: {
@@ -253,7 +248,7 @@ const styles: any = {
     color: '#fff',
     textAlign: 'center',
     padding: 18,
-    borderRadius: 32,
+    borderRadius: 30,
     fontWeight: 600,
     fontSize: 16,
     boxShadow: '0 10px 25px rgba(249,115,22,0.3)',
@@ -271,7 +266,7 @@ const styles: any = {
   },
 
   user: {
-    marginTop: 20,
+    marginTop: 22,
     paddingTop: 16,
     borderTop: '1px solid #ddd',
     display: 'flex',
