@@ -1,77 +1,241 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import supabase from '../lib/supabase'
+
+const cities = [
+  'New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami',
+  'London', 'Madrid', 'Barcelona', 'Mexico City',
+  'Buenos Aires', 'Bogotá', 'Lima', 'Santiago', 'São Paulo', 'Rio de Janeiro'
+]
+
+const interestsList = [
+  'Electrónica', 'Ropa', 'Libros', 'Muebles',
+  'Deportes', 'Arte', 'Música', 'Herramientas',
+  'Juguetes', 'Vehículos', 'Servicios', 'Comida',
+  'Plantas', 'Mascotas', 'Otro'
+]
 
 export default function Onboarding() {
   const router = useRouter()
 
-  const handleStart = () => {
+  const [step, setStep] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  const [userId, setUserId] = useState<string | null>(null)
+
+  const [username, setUsername] = useState('')
+  const [city, setCity] = useState('')
+  const [interests, setInterests] = useState<string[]>([])
+
+  useEffect(() => {
+    const init = async () => {
+      const { data } = await supabase.auth.getSession()
+
+      if (!data.session?.user) {
+        setLoading(false)
+        return
+      }
+
+      const user = data.session.user
+      setUserId(user.id)
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (profile) {
+        setUsername(profile.username || '')
+        setCity(profile.city || '')
+        setInterests(profile.interests || [])
+      }
+
+      setLoading(false)
+    }
+
+    init()
+  }, [])
+
+  const toggleInterest = (i: string) => {
+    if (interests.includes(i)) {
+      setInterests(interests.filter(x => x !== i))
+    } else {
+      setInterests([...interests, i])
+    }
+  }
+
+  const saveAll = async () => {
+    if (!username || !city) {
+      alert('Completa los campos')
+      return
+    }
+
+    setSaving(true)
+
+    await supabase
+      .from('profiles')
+      .update({
+        username,
+        city,
+        interests,
+      })
+      .eq('id', userId)
+
+    setSaving(false)
+
     localStorage.setItem('onboarding_seen', 'true')
     router.push('/')
   }
 
-  const handleLogin = () => {
-    localStorage.setItem('onboarding_seen', 'true')
-    router.push('/login')
+  if (loading) {
+    return <div style={{ padding: 20 }}>Cargando...</div>
   }
 
   return (
     <div style={styles.container}>
-      {/* HEADER */}
-      <div style={styles.header}>
-        <div>9:41</div>
-        <div style={{ cursor: 'pointer' }} onClick={handleStart}>
-          Omitir
-        </div>
-      </div>
 
-      {/* CONTENIDO */}
-      <div style={styles.content}>
-        <div>
-          <h1 style={styles.title}>
-            Bienvenido a <br />
-            <span style={styles.accent}>Trueke</span>
-          </h1>
+      {/* STEP 0 → TU PANTALLA ORIGINAL */}
+      {step === 0 && (
+        <>
+          <div style={styles.header}>
+            <div>9:41</div>
+            <div style={{ cursor: 'pointer' }} onClick={() => setStep(1)}>
+              Omitir
+            </div>
+          </div>
 
-          <p style={styles.subtitle}>
-            Intercambia, conecta <br />
-            y crea comunidad.
-          </p>
-        </div>
+          <div style={styles.content}>
+            <h1 style={styles.title}>
+              Bienvenido a <br />
+              <span style={styles.accent}>Trueke</span>
+            </h1>
 
-        {/* 🔥 ILUSTRACIÓN CORRECTA */}
-        <div style={styles.illustrationWrapper}>
-          {/* fondo suave tipo blob */}
-          <div style={styles.blob} />
+            <p style={styles.subtitle}>
+              Intercambia, conecta <br />
+              y crea comunidad.
+            </p>
 
-          {/* imagen */}
-          <img
-            src="/images/portada.png"
-            style={styles.image}
+            <div style={styles.illustrationWrapper}>
+              <div style={styles.blob} />
+              <img src="/images/portada.png" style={styles.image} />
+            </div>
+
+            <div style={styles.dots}>
+              <div style={{ ...styles.dot, ...styles.activeDot }} />
+              <div style={styles.dot} />
+              <div style={styles.dot} />
+            </div>
+          </div>
+
+          <div>
+            <div style={styles.button} onClick={() => setStep(1)}>
+              Comenzar
+            </div>
+
+            <div style={styles.login}>
+              ¿Ya tienes cuenta?{' '}
+              <span onClick={() => router.push('/login')}>
+                Iniciar sesión
+              </span>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* STEP 1 → USERNAME */}
+      {step === 1 && (
+        <div style={styles.stepContainer}>
+          <div style={styles.progress}><div style={{ ...styles.bar, width: '33%' }} /></div>
+
+          <h1 style={styles.title}>¡Bienvenido!</h1>
+          <p style={styles.subtitle}>Elige un username</p>
+
+          <input
+            style={styles.input}
+            placeholder="@username"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
           />
-        </div>
 
-        {/* DOTS */}
-        <div style={styles.dots}>
-          <div style={{ ...styles.dot, ...styles.activeDot }} />
-          <div style={styles.dot} />
-          <div style={styles.dot} />
+          <div style={styles.button} onClick={() => setStep(2)}>
+            Siguiente →
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* CTA */}
-      <div>
-        <div style={styles.button} onClick={handleStart}>
-          Comenzar
-        </div>
+      {/* STEP 2 → CIUDAD */}
+      {step === 2 && (
+        <div style={styles.stepContainer}>
+          <div style={styles.progress}><div style={{ ...styles.bar, width: '66%' }} /></div>
 
-        <div style={styles.login}>
-          ¿Ya tienes cuenta?{' '}
-          <span onClick={handleLogin}>
-            Iniciar sesión
-          </span>
+          <h1 style={styles.title}>Elige tu ciudad</h1>
+
+          <div style={styles.chips}>
+            {cities.map(c => (
+              <div
+                key={c}
+                style={{
+                  ...styles.chip,
+                  background: city === c ? '#F97316' : '#fff',
+                  color: city === c ? '#fff' : '#333',
+                }}
+                onClick={() => setCity(c)}
+              >
+                {c}
+              </div>
+            ))}
+          </div>
+
+          <input
+            style={styles.input}
+            placeholder="O escribe tu ciudad"
+            value={city}
+            onChange={e => setCity(e.target.value)}
+          />
+
+          <div style={styles.button} onClick={() => setStep(3)}>
+            Siguiente →
+          </div>
+
+          <div style={styles.back} onClick={() => setStep(1)}>Atrás</div>
         </div>
-      </div>
+      )}
+
+      {/* STEP 3 → INTERESES */}
+      {step === 3 && (
+        <div style={styles.stepContainer}>
+          <div style={styles.progress}><div style={{ ...styles.bar, width: '100%' }} /></div>
+
+          <h1 style={styles.title}>Elige tus intereses</h1>
+
+          <div style={styles.chips}>
+            {interestsList.map(i => (
+              <div
+                key={i}
+                style={{
+                  ...styles.chip,
+                  background: interests.includes(i) ? '#F97316' : '#fff',
+                  color: interests.includes(i) ? '#fff' : '#333',
+                }}
+                onClick={() => toggleInterest(i)}
+              >
+                {i}
+              </div>
+            ))}
+          </div>
+
+          <div style={styles.button} onClick={saveAll}>
+            {saving ? 'Guardando...' : '¡Todo listo! ✓'}
+          </div>
+
+          <div style={styles.back} onClick={() => setStep(2)}>Atrás</div>
+        </div>
+      )}
+
     </div>
   )
 }
@@ -79,11 +243,15 @@ export default function Onboarding() {
 const styles: any = {
   container: {
     padding: 20,
-    paddingBottom: 40,
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
+    background: '#F6F3F0',
+  },
+
+  stepContainer: {
+    marginTop: 20,
   },
 
   header: {
@@ -93,61 +261,48 @@ const styles: any = {
     fontSize: 14,
   },
 
-  content: {
-    marginTop: 10,
-  },
+  content: {},
 
   title: {
-    fontSize: 34,
-    margin: 0,
-    color: '#1E2A32',
-    lineHeight: 1.2,
+    fontSize: 32,
+    marginBottom: 10,
   },
 
   accent: {
     color: '#F97316',
-    fontWeight: 'bold',
   },
 
   subtitle: {
     color: '#6B7680',
-    fontSize: 16,
-    marginTop: 10,
-    lineHeight: 1.4,
+    marginBottom: 20,
   },
 
-  /* 🔥 CONTENEDOR SIN FONDO */
   illustrationWrapper: {
     position: 'relative',
-    marginTop: 20,
     height: 280,
     display: 'flex',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 
-  /* 🔥 BLOB SUAVE COMO MOCKUP */
   blob: {
     position: 'absolute',
     width: 260,
     height: 180,
     background: '#E9E2DB',
     borderRadius: '50%',
-    filter: 'blur(0px)',
   },
 
-  /* 🔥 IMAGEN LIMPIA */
   image: {
-    position: 'relative',
     width: '90%',
-    objectFit: 'contain',
+    position: 'relative',
   },
 
   dots: {
     display: 'flex',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 15,
+    marginTop: 10,
   },
 
   dot: {
@@ -161,21 +316,47 @@ const styles: any = {
     background: '#F97316',
   },
 
+  input: {
+    width: '100%',
+    padding: 14,
+    borderRadius: 10,
+    border: '1px solid #ddd',
+    marginBottom: 20,
+  },
+
+  chips: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 20,
+  },
+
+  chip: {
+    padding: '10px 14px',
+    borderRadius: 999,
+    border: '1px solid #ddd',
+    cursor: 'pointer',
+  },
+
   button: {
     background: '#F97316',
     color: '#fff',
     textAlign: 'center',
     padding: 16,
     borderRadius: 30,
-    fontSize: 18,
     fontWeight: 600,
     cursor: 'pointer',
-    boxShadow: '0 8px 20px rgba(249,115,22,0.4)',
+  },
+
+  back: {
+    marginTop: 10,
+    textAlign: 'center',
+    color: '#6B7680',
+    cursor: 'pointer',
   },
 
   login: {
     textAlign: 'center',
-    marginTop: 12,
-    color: '#6B7680',
+    marginTop: 10,
   },
 }

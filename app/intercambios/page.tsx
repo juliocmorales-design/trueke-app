@@ -3,12 +3,8 @@
 import { useEffect, useState } from 'react'
 import supabase from '../lib/supabase'
 
-const myUser = 'user_1'
-
 export default function IntercambiosPage() {
-  const [received, setReceived] = useState<any[]>([])
-  const [sent, setSent] = useState<any[]>([])
-  const [itemsMap, setItemsMap] = useState<any>({})
+  const [offers, setOffers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -16,177 +12,200 @@ export default function IntercambiosPage() {
   }, [])
 
   const load = async () => {
-    const { data: offers } = await supabase.from('offers').select('*')
-    const { data: items } = await supabase.from('items').select('*')
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-    const map: any = {}
-    items?.forEach(i => (map[i.id] = i))
+    if (!user) return
 
-    const r: any[] = []
-    const s: any[] = []
+    // 1. OFFERS
+    const { data: offersData } = await supabase
+      .from('offers')
+      .select('*')
+      .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
+      .order('created_at', { ascending: false })
 
-    offers?.forEach(o => {
-      const from = map[o.from_item_id]
-      const to = map[o.to_item_id]
+    if (!offersData) return
 
-      if (!from || !to) return
+    // 2. OFFER ITEMS
+    const { data: itemsData } = await supabase
+      .from('offer_items')
+      .select('*, items(*)')
+      .in('offer_id', offersData.map(o => o.id))
 
-      if (to.user_id === myUser) r.push(o)
-      if (from.user_id === myUser) s.push(o)
+    const itemsMap: any = {}
+
+    itemsData?.forEach(i => {
+      if (!itemsMap[i.offer_id]) itemsMap[i.offer_id] = []
+      itemsMap[i.offer_id].push(i)
     })
 
-    setItemsMap(map)
-    setReceived(r)
-    setSent(s)
+    // 🔥 3. USER IDS LIMPIOS
+    const userIds = [
+      ...new Set(
+        offersData
+          .flatMap(o => [o.from_user_id, o.to_user_id])
+          .filter(Boolean)
+      ),
+    ]
+
+    // 4. PROFILES
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', userIds)
+
+    const profileMap: any = {}
+    profiles?.forEach(p => (profileMap[p.id] = p))
+
+    // 5. FINAL
+    const final = offersData.map(o => {
+      const items = itemsMap[o.id] || []
+
+      const requested = items.find((i: any) => i.type === 'requested')?.items
+      const offered = items.find((i: any) => i.type === 'offered')?.items
+
+      const isMeSender = o.from_user_id === user.id
+      const otherUserId = isMeSender ? o.to_user_id : o.from_user_id
+      const otherUser = profileMap[otherUserId]
+
+      return {
+        ...o,
+        requested,
+        offered,
+        user: otherUser,
+      }
+    })
+
+    setOffers(final)
     setLoading(false)
   }
 
-  const updateStatus = async (id: number, status: string) => {
-    await supabase.from('offers').update({ status }).eq('id', id)
-    load()
-  }
-
-  if (loading) return <div style={{ padding: 20 }}>Cargando...</div>
+  if (loading) return <div style={styles.loading}>Cargando...</div>
 
   return (
-    <div style={{ padding: 16, paddingBottom: 120 }}>
-      <h2>📥 Recibidos</h2>
+    <div style={styles.screen}>
+      <div style={styles.wrapper}>
+        <h2 style={styles.title}>Intercambios</h2>
 
-      {received.map(o => (
-        <div key={o.id} style={styles.card}>
-          <Row o={o} itemsMap={itemsMap} />
+        {offers.map(o => {
+          const img =
+            o.requested?.images?.[0] ||
+            o.offered?.images?.[0] ||
+            '/images/placeholder.jpg'
 
-          <div>Estado: {o.status}</div>
-
-          {o.status === 'accepted' && (
-            <button
-              style={styles.chat}
+          return (
+            <div
+              key={o.id}
+              style={styles.row}
               onClick={() => (window.location.href = `/chat/${o.id}`)}
             >
-              💬 Abrir chat
-            </button>
-          )}
+              <img
+                src={o.user?.avatar_url || '/images/avatar.png'}
+                style={styles.avatar}
+              />
 
-          {o.status === 'pending' && (
-            <div style={styles.actions}>
-              <button
-                style={styles.accept}
-                onClick={() => updateStatus(o.id, 'accepted')}
-              >
-                Aceptar
-              </button>
-              <button
-                style={styles.reject}
-                onClick={() => updateStatus(o.id, 'rejected')}
-              >
-                Rechazar
-              </button>
+              <div style={styles.info}>
+                <div style={styles.name}>
+                  {o.user?.name || 'Usuario'}
+                </div>
+
+                <div style={styles.subtitle}>
+                  {o.requested?.title || 'Item'} 🔁{' '}
+                  {o.offered?.title || 'Item'}
+                </div>
+
+                <div style={styles.status}>
+                  {o.status === 'pending' && 'Pendiente'}
+                  {o.status === 'accepted' && 'Aceptado'}
+                  {o.status === 'rejected' && 'Rechazado'}
+                </div>
+              </div>
+
+              <img src={img} style={styles.thumb} />
+
+              <div style={styles.arrow}>›</div>
             </div>
-          )}
-        </div>
-      ))}
-
-      <h2 style={{ marginTop: 20 }}>📤 Enviados</h2>
-
-      {sent.map(o => (
-        <div key={o.id} style={styles.card}>
-          <Row o={o} itemsMap={itemsMap} />
-          <div>Estado: {o.status}</div>
-
-          {o.status === 'accepted' && (
-            <button
-              style={styles.chat}
-              onClick={() => (window.location.href = `/chat/${o.id}`)}
-            >
-              💬 Abrir chat
-            </button>
-          )}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function Row({ o, itemsMap }: any) {
-  const from = itemsMap[o.from_item_id]
-  const to = itemsMap[o.to_item_id]
-
-  return (
-    <div style={styles.row}>
-      <Item item={from} />
-      <span>🔁</span>
-      <Item item={to} />
-    </div>
-  )
-}
-
-function Item({ item }: any) {
-  if (!item) return null
-
-  const img =
-    Array.isArray(item.images) && item.images.length > 0
-      ? item.images[0]
-      : '/images/placeholder.jpg'
-
-  return (
-    <div style={styles.item}>
-      <img src={img} style={styles.img} />
-      <div style={{ fontSize: 12 }}>{item.title}</div>
+          )
+        })}
+      </div>
     </div>
   )
 }
 
 const styles: any = {
-  card: {
-    background: '#fff',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 12,
-    boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+  screen: {
+    background: '#F6F3F0',
+    minHeight: '100vh',
+    display: 'flex',
+    justifyContent: 'center',
   },
+
+  wrapper: {
+    width: '100%',
+    maxWidth: 500,
+    padding: 16,
+  },
+
+  title: {
+    marginBottom: 16,
+  },
+
   row: {
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: 14,
+    background: '#fff',
+    marginBottom: 10,
+    cursor: 'pointer',
   },
-  item: {
-    width: '40%',
-    textAlign: 'center'
-  },
-  img: {
-    width: '100%',
-    height: 80,
+
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: '50%',
     objectFit: 'cover',
-    borderRadius: 8
   },
-  actions: {
+
+  info: {
+    flex: 1,
+  },
+
+  name: {
+    fontWeight: 600,
+    fontSize: 14,
+  },
+
+  subtitle: {
+    fontSize: 13,
+    color: '#6F7A82',
+    marginTop: 2,
+  },
+
+  status: {
+    fontSize: 12,
+    marginTop: 4,
+    color: '#999',
+  },
+
+  thumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    objectFit: 'cover',
+  },
+
+  arrow: {
+    fontSize: 18,
+    opacity: 0.3,
+  },
+
+  loading: {
+    height: '100vh',
     display: 'flex',
-    gap: 10,
-    marginTop: 10
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  accept: {
-    flex: 1,
-    background: 'green',
-    color: '#fff',
-    border: 'none',
-    padding: 10,
-    borderRadius: 8
-  },
-  reject: {
-    flex: 1,
-    background: 'red',
-    color: '#fff',
-    border: 'none',
-    padding: 10,
-    borderRadius: 8
-  },
-  chat: {
-    marginTop: 10,
-    width: '100%',
-    padding: 10,
-    background: '#2563eb',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 8
-  }
 }

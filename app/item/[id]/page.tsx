@@ -43,9 +43,76 @@ export default function ItemDetail() {
     setLoading(false)
   }
 
-  const goToChat = () => {
-    if (!owner?.id) return
-    router.push(`/mensajes/${owner.id}`)
+  // 🔥 FUNCIÓN CORREGIDA
+  const createOffer = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      alert('Debes iniciar sesión')
+      return
+    }
+
+    if (!item || !owner) return
+
+    // 🔥 1. Obtener un item del usuario (lo que ofrece)
+    const { data: myItems } = await supabase
+      .from('items')
+      .select('*')
+      .eq('user_id', user.id)
+      .limit(1)
+
+    if (!myItems || myItems.length === 0) {
+      alert('Primero debes publicar un objeto para intercambiar')
+      return
+    }
+
+    const myItem = myItems[0]
+
+    // 🔥 2. Crear offer
+    const { data: offer, error } = await supabase
+      .from('offers')
+      .insert({
+        from_user_id: user.id,
+        to_user_id: owner.id,
+        status: 'pending',
+      })
+      .select()
+      .single()
+
+    if (error || !offer) {
+      console.error(error)
+      alert('Error creando intercambio')
+      return
+    }
+
+    // 🔥 3. Insertar items (REQUESTED + OFFERED)
+    const { error: itemsError } = await supabase
+      .from('offer_items')
+      .insert([
+        {
+          offer_id: offer.id,
+          item_id: item.id,
+          owner_id: owner.id,
+          type: 'requested',
+        },
+        {
+          offer_id: offer.id,
+          item_id: myItem.id,
+          owner_id: user.id,
+          type: 'offered',
+        },
+      ])
+
+    if (itemsError) {
+      console.error(itemsError)
+      alert('Error guardando items del intercambio')
+      return
+    }
+
+    // 🔥 4. Redirigir
+    router.push('/intercambios')
   }
 
   if (loading) return <div style={styles.loading}>Cargando...</div>
@@ -53,100 +120,94 @@ export default function ItemDetail() {
   const image =
     Array.isArray(item.images) && item.images.length > 0
       ? item.images[0]
-      : '/images/placeholder.jpg'
+      : '/images/placeholder.png'
 
   return (
     <div style={styles.screen}>
-      <div style={styles.card}>
 
-        {/* HEADER */}
-        <div style={styles.header}>
-          <div onClick={() => router.back()}>
-            <Icon>
-              <polyline points="15 18 9 12 15 6"/>
-            </Icon>
-          </div>
-
-          <div style={styles.rightIcons}>
-            <Icon>
-              <path d="M12 3v12"/>
-              <polyline points="8 7 12 3 16 7"/>
-              <rect x="4" y="13" width="16" height="8" rx="2"/>
-            </Icon>
-
-            <Icon>
-              <circle cx="5" cy="12" r="1"/>
-              <circle cx="12" cy="12" r="1"/>
-              <circle cx="19" cy="12" r="1"/>
-            </Icon>
-          </div>
+      <div style={styles.header}>
+        <div onClick={() => router.back()} style={styles.iconBtn}>
+          <Icon>
+            <polyline points="15 18 9 12 15 6"/>
+          </Icon>
         </div>
 
-        {/* IMAGE */}
-        <div style={styles.image}>
-          <img src={image} style={styles.imageTag} />
-        </div>
+        <div style={styles.rightIcons}>
+          <Icon>
+            <path d="M12 3v12"/>
+            <polyline points="8 7 12 3 16 7"/>
+            <rect x="4" y="13" width="16" height="8" rx="2"/>
+          </Icon>
 
-        {/* BODY */}
+          <Icon>
+            <circle cx="5" cy="12" r="1"/>
+            <circle cx="12" cy="12" r="1"/>
+            <circle cx="19" cy="12" r="1"/>
+          </Icon>
+        </div>
+      </div>
+
+      <div style={styles.wrapper}>
         <div style={styles.body}>
 
-          <div>
-            <h1 style={styles.title}>{item.title}</h1>
+          <div style={styles.imageWrapper}>
+            <img src={image} style={styles.image} />
+          </div>
 
-            <div style={styles.meta}>
-              Por {item.looking_for || 'algo'} • A 1.2 km
+          <h1 style={styles.title}>{item.title}</h1>
+
+          <div style={styles.meta}>
+            Por {item.looking_for || 'algo'} • A 1.2 km
+          </div>
+
+          <div style={styles.badge}>
+            92 • Muy confiable
+          </div>
+
+          <div style={styles.desc}>
+            {item.description || 'Sin descripción'}
+          </div>
+
+          <div style={styles.sectionTitle}>
+            ¿Te interesa?
+          </div>
+
+          <div style={styles.cta}>
+            <div style={styles.button} onClick={createOffer}>
+              Enviar mensaje
             </div>
 
-            <div style={styles.badge}>
-              92 • Muy confiable
-            </div>
-
-            <div style={styles.desc}>
-              {item.description || 'Sin descripción'}
+            <div style={styles.circle}>
+              <Icon>
+                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+              </Icon>
             </div>
           </div>
 
-          {/* CTA */}
-          <div>
-            <div style={styles.cta}>
-              <div style={styles.button} onClick={goToChat}>
-                Enviar mensaje
-              </div>
+          {owner && (
+            <div style={styles.userCard}>
+              <div style={styles.userLeft}>
+                <img
+                  src={owner.avatar_url || '/images/avatar.png'}
+                  style={styles.avatar}
+                />
 
-              <div style={styles.circle}>
-                <Icon>
-                  <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
-                </Icon>
-              </div>
-            </div>
+                <div>
+                  <strong style={styles.userName}>{owner.name}</strong>
 
-            {/* USER */}
-            {owner && (
-              <div style={styles.user}>
-                <div style={styles.userLeft}>
-                  <img
-                    src={owner.avatar_url || '/images/avatar.png'}
-                    style={styles.avatar}
-                  />
-
-                  <div>
-                    <strong>{owner.name}</strong>
-
-                    <div style={styles.sub}>
-                      34 intercambios • 4.9 ⭐
-                    </div>
+                  <div style={styles.sub}>
+                    34 intercambios • 4.9 ⭐
                   </div>
                 </div>
-
-                <Icon>
-                  <polyline points="9 6 15 12 9 18"/>
-                </Icon>
               </div>
-            )}
-          </div>
+
+              <Icon>
+                <polyline points="9 6 15 12 9 18"/>
+              </Icon>
+            </div>
+          )}
 
         </div>
-
       </div>
     </div>
   )
@@ -162,26 +223,25 @@ function Icon({ children }: any) {
 
 const styles: any = {
   screen: {
-    background: '#EDE7E1',
-    padding: 20,
-    minHeight: '100vh',
-  },
-
-  card: {
     background: '#F6F3F0',
-    borderRadius: 36,
-    padding: 16,
-    maxWidth: 420,
-    margin: '0 auto',
-    minHeight: '85vh',
-    display: 'flex',
-    flexDirection: 'column',
+    minHeight: '100vh',
+    width: '100%',
   },
 
   header: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    right: 20,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    zIndex: 10,
+  },
+
+  iconBtn: {
+    padding: 6,
+    cursor: 'pointer',
   },
 
   rightIcons: {
@@ -189,35 +249,46 @@ const styles: any = {
     gap: 14,
   },
 
-  image: {
-    marginTop: 12,
-    borderRadius: 24,
-    overflow: 'hidden',
-  },
-
-  imageTag: {
-    width: '100%',
-    height: 260,
-    objectFit: 'cover',
+  wrapper: {
+    display: 'flex',
+    justifyContent: 'center',
   },
 
   body: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
+    width: '100%',
+    maxWidth: 500,
+    padding: 20,
+    paddingTop: 80,
+  },
+
+  imageWrapper: {
+    width: '100%',
+    height: 260,
+    borderRadius: 24,
+    overflow: 'hidden',
+    background: '#eee',
+  },
+
+  image: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    objectPosition: 'center',
   },
 
   title: {
-    fontSize: 26,
-    fontWeight: 700,
-    marginTop: 18,
+    fontSize: 28,
+    fontWeight: 800,
+    marginTop: 20,
+    color: '#1F2A33',
+    textAlign: 'center',
   },
 
   meta: {
     color: '#6F7A82',
-    fontSize: 15,
+    fontSize: 14,
     marginTop: 6,
+    textAlign: 'center',
   },
 
   badge: {
@@ -231,15 +302,24 @@ const styles: any = {
   },
 
   desc: {
-    marginTop: 16,
+    marginTop: 18,
     lineHeight: 1.6,
     fontSize: 15,
+    color: '#1F2A33',
+    textAlign: 'center',
+  },
+
+  sectionTitle: {
+    marginTop: 28,
+    fontSize: 18,
+    fontWeight: 700,
+    textAlign: 'center',
   },
 
   cta: {
     display: 'flex',
     gap: 12,
-    marginTop: 26,
+    marginTop: 14,
   },
 
   button: {
@@ -247,11 +327,11 @@ const styles: any = {
     background: '#F97316',
     color: '#fff',
     textAlign: 'center',
-    padding: 18,
+    padding: 16,
     borderRadius: 30,
     fontWeight: 600,
-    fontSize: 16,
-    boxShadow: '0 10px 25px rgba(249,115,22,0.3)',
+    fontSize: 15,
+    boxShadow: '0 12px 30px rgba(249,115,22,0.35)',
     cursor: 'pointer',
   },
 
@@ -265,10 +345,11 @@ const styles: any = {
     justifyContent: 'center',
   },
 
-  user: {
-    marginTop: 22,
-    paddingTop: 16,
-    borderTop: '1px solid #ddd',
+  userCard: {
+    marginTop: 24,
+    background: '#fff',
+    borderRadius: 20,
+    padding: 14,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -285,6 +366,10 @@ const styles: any = {
     height: 46,
     borderRadius: '50%',
     objectFit: 'cover',
+  },
+
+  userName: {
+    fontSize: 15,
   },
 
   sub: {

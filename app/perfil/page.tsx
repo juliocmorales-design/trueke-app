@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation'
 export default function PerfilPage() {
   const router = useRouter()
 
-  const [tab, setTab] = useState<'objetos' | 'cadenas'>('objetos')
   const [profile, setProfile] = useState<any>(null)
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,15 +30,13 @@ export default function PerfilPage() {
       .eq('id', user.id)
       .single()
 
-    setProfile(profileData)
-
     const { data: itemsData } = await supabase
       .from('items')
       .select('*')
       .eq('user_id', user.id)
 
+    setProfile(profileData)
     setItems(itemsData || [])
-
     setLoading(false)
   }
 
@@ -47,10 +44,26 @@ export default function PerfilPage() {
     return <div style={{ padding: 20 }}>Cargando...</div>
   }
 
+  const score = Math.min(100, items.length * 4)
+
   return (
     <div style={styles.container}>
+      
       {/* HEADER */}
       <div style={styles.header}>
+        <h1 style={styles.title}>Perfil</h1>
+
+        <div
+          style={styles.icon}
+          onClick={() => router.push('/perfil/editar')}
+        >
+          ⚙️
+        </div>
+      </div>
+
+      {/* TOP INFO */}
+      <div style={styles.topSection}>
+        
         <img
           src={
             profile?.avatar_url ||
@@ -59,7 +72,7 @@ export default function PerfilPage() {
           style={styles.avatar}
         />
 
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={styles.name}>
             {profile?.name || 'Usuario'}
           </div>
@@ -67,64 +80,55 @@ export default function PerfilPage() {
           <div style={styles.username}>
             @{profile?.username || 'user'}
           </div>
+        </div>
 
-          <div style={styles.trust}>
-            {items.length * 5} · Confiable
-          </div>
-
-          <button
-            onClick={() => router.push('/perfil/edit')}
-            style={styles.editBtn}
-          >
-            ✏️ Editar perfil
-          </button>
+        {/* SCORE */}
+        <div style={styles.scoreBox}>
+          <div style={styles.score}>{score}</div>
+          <div style={styles.scoreLabel}>Confiable</div>
         </div>
       </div>
 
       {/* STATS */}
       <div style={styles.stats}>
         <Stat label="Intercambios" value={items.length} />
+        <Divider />
         <Stat label="Calificación" value="4.9" />
+        <Divider />
         <Stat label="Reseñas" value="0" />
       </div>
 
-      {/* TABS */}
-      <div style={styles.tabs}>
-        <button
-          style={tab === 'objetos' ? styles.tabActive : styles.tab}
-          onClick={() => setTab('objetos')}
-        >
-          Objetos
-        </button>
-
-        <button
-          style={tab === 'cadenas' ? styles.tabActive : styles.tab}
-          onClick={() => setTab('cadenas')}
-        >
-          Cadenas
-        </button>
+      {/* LOGROS */}
+      <div style={styles.sectionHeader}>
+        <div style={styles.sectionTitle}>Logros</div>
+        <div style={styles.link}>Ver todos</div>
       </div>
 
-      {/* OBJETOS */}
-      {tab === 'objetos' && (
-        <div style={styles.grid}>
-          {items.map((item) => {
-            const image =
-              Array.isArray(item.images) && item.images.length > 0
-                ? item.images[0]
-                : '/images/placeholder.jpg'
+      <div style={styles.achievements}>
+        <Achievement title="Primer intercambio" />
+        <Achievement title="Comunidad activa" />
+        <Achievement title="Confiable" />
+      </div>
 
-            return (
-              <div key={item.id} style={styles.card}>
-                <img src={image} style={styles.image} />
-                <div style={styles.itemTitle}>
-                  {item.title}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+      {/* MENU */}
+      <div style={styles.menu}>
+        <MenuItem
+          label="Mis publicaciones"
+          onClick={() => router.push('/perfil/publicaciones')}
+        />
+        <MenuItem
+          label="Mis reseñas"
+          onClick={() => router.push('/perfil/resenas')}
+        />
+        <MenuItem
+          label="Ayuda y soporte"
+          onClick={() => alert('Soporte próximamente')}
+        />
+        <MenuItem
+          label="Configuración"
+          onClick={() => router.push('/perfil/editar')}
+        />
+      </div>
     </div>
   )
 }
@@ -138,6 +142,28 @@ function Stat({ label, value }: any) {
   )
 }
 
+function Divider() {
+  return <div style={styles.divider} />
+}
+
+function Achievement({ title }: any) {
+  return (
+    <div style={styles.achievement}>
+      <div style={styles.achievementIcon}>🏆</div>
+      <div style={styles.achievementText}>{title}</div>
+    </div>
+  )
+}
+
+function MenuItem({ label, onClick }: any) {
+  return (
+    <div style={styles.menuItem} onClick={onClick}>
+      <div>{label}</div>
+      <div style={{ color: '#aaa' }}>›</div>
+    </div>
+  )
+}
+
 const styles: any = {
   container: {
     padding: 16,
@@ -146,9 +172,24 @@ const styles: any = {
 
   header: {
     display: 'flex',
+    justifyContent: 'space-between',
     alignItems: 'center',
+  },
+
+  title: {
+    fontSize: 26,
+    margin: 0,
+  },
+
+  icon: {
+    cursor: 'pointer',
+  },
+
+  topSection: {
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: 16,
     gap: 12,
-    marginBottom: 16,
   },
 
   avatar: {
@@ -156,7 +197,6 @@ const styles: any = {
     height: 70,
     borderRadius: '50%',
     objectFit: 'cover',
-    background: '#ddd',
   },
 
   name: {
@@ -169,26 +209,34 @@ const styles: any = {
     color: '#777',
   },
 
-  trust: {
-    fontSize: 13,
-    color: '#22C55E',
+  scoreBox: {
+    background: '#d1e7d6',
+    padding: 12,
+    borderRadius: 16,
+    textAlign: 'center',
+    minWidth: 70,
   },
 
-  editBtn: {
-    marginTop: 8,
-    fontSize: 13,
-    color: '#F97316',
-    background: '#fff7ed',
-    border: '1px solid #fed7aa',
-    padding: '6px 10px',
-    borderRadius: 8,
-    cursor: 'pointer',
+  score: {
+    fontSize: 20,
+    fontWeight: 700,
+  },
+
+  scoreLabel: {
+    fontSize: 12,
   },
 
   stats: {
     display: 'flex',
     justifyContent: 'space-around',
-    marginBottom: 16,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+
+  divider: {
+    width: 1,
+    height: 30,
+    background: '#eee',
   },
 
   stat: {
@@ -196,7 +244,8 @@ const styles: any = {
   },
 
   statValue: {
-    fontWeight: 600,
+    fontSize: 18,
+    fontWeight: 700,
   },
 
   statLabel: {
@@ -204,48 +253,56 @@ const styles: any = {
     color: '#777',
   },
 
-  tabs: {
+  sectionHeader: {
     display: 'flex',
-    gap: 10,
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    marginTop: 24,
+    alignItems: 'center',
   },
 
-  tab: {
-    padding: '8px 12px',
-    borderRadius: 10,
-    border: '1px solid #ddd',
-    background: '#fff',
+  sectionTitle: {
+    fontWeight: 700,
   },
 
-  tabActive: {
-    padding: '8px 12px',
-    borderRadius: 10,
-    border: 'none',
-    background: '#F97316',
-    color: '#fff',
-  },
-
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: 10,
-  },
-
-  card: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    background: '#fff',
-  },
-
-  image: {
-    width: '100%',
-    height: 100,
-    objectFit: 'cover',
-  },
-
-  itemTitle: {
-    padding: 8,
+  link: {
+    color: '#F97316',
     fontSize: 13,
-    fontWeight: 600,
+    cursor: 'pointer',
+  },
+
+  achievements: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginTop: 14,
+  },
+
+  achievement: {
+    alignItems: 'center',
+    textAlign: 'center',
+    width: '30%',
+  },
+
+  achievementIcon: {
+    fontSize: 24,
+  },
+
+  achievementText: {
+    fontSize: 12,
+    marginTop: 6,
+  },
+
+  menu: {
+    marginTop: 20,
+    background: '#fff',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+
+  menuItem: {
+    padding: 14,
+    borderBottom: '1px solid #eee',
+    display: 'flex',
+    justifyContent: 'space-between',
+    cursor: 'pointer',
   },
 }

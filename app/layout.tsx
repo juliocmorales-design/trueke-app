@@ -13,12 +13,13 @@ export default function RootLayout({
 }) {
   const pathname = usePathname()
 
-  // 🔥 OCULTAR NAV EN FLUJOS BLOQUEADOS
+  const isItemPage = pathname.startsWith('/item')
+
   const hideNav =
     pathname.startsWith('/onboarding') ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/perfil/setup') ||
-    pathname.startsWith('/item') // 👈 🔥 ESTE ES EL FIX
+    isItemPage
 
   useEffect(() => {
     const init = async () => {
@@ -27,7 +28,6 @@ export default function RootLayout({
       if (data.session?.user) {
         const user = data.session.user
 
-        // 🔥 CREAR PERFIL SI NO EXISTE
         const { data: existing } = await supabase
           .from('profiles')
           .select('id')
@@ -35,8 +35,6 @@ export default function RootLayout({
           .single()
 
         if (!existing) {
-          console.log('⚡ creando perfil...')
-
           await supabase
             .from('profiles')
             .insert({
@@ -45,8 +43,6 @@ export default function RootLayout({
               username: `user_${Math.floor(Math.random() * 10000)}`,
             })
             .select()
-
-          console.log('✅ perfil creado')
         }
       }
     }
@@ -55,11 +51,7 @@ export default function RootLayout({
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        console.log('AUTH CHANGE:', session.user.id)
-      }
-    })
+    } = supabase.auth.onAuthStateChange(() => {})
 
     return () => {
       subscription.unsubscribe()
@@ -69,12 +61,24 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body style={styles.body}>
-        <div style={styles.app}>
-          <div style={styles.content}>{children}</div>
 
-          {/* 🔥 SOLO SI NO ESTÁ BLOQUEADO */}
-          {!hideNav && <BottomNav />}
+        {/* 🔥 CONTENEDOR GLOBAL CENTRADO */}
+        <div style={styles.app}>
+
+          {/* 🔥 CONTENIDO */}
+          <div style={isItemPage ? styles.full : styles.centered}>
+            {children}
+          </div>
+
+          {/* 🔥 NAVBAR DENTRO DEL MISMO CONTENEDOR */}
+          {!hideNav && (
+            <div style={styles.navWrapper}>
+              <BottomNav />
+            </div>
+          )}
+
         </div>
+
       </body>
     </html>
   )
@@ -88,17 +92,34 @@ const styles: any = {
     justifyContent: 'center',
   },
 
+  // 🔥 CONTENEDOR PRINCIPAL (ESTILO APP)
   app: {
     width: '100%',
     maxWidth: 500,
-    background: '#fff',
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
+    background: '#F6F3F0', // 🔥 fondo correcto tipo app moderna
   },
 
-  content: {
+  // 🔥 CONTENIDO NORMAL
+  centered: {
     flex: 1,
-    paddingBottom: 80,
+    padding: 16,
+    paddingBottom: 100, // espacio para navbar
+  },
+
+  // 🔥 PANTALLA ITEM FULL
+  full: {
+    flex: 1,
+    background: '#F6F3F0',
+  },
+
+  // 🔥 NAVBAR FIJO ABAJO PERO DENTRO DEL WIDTH
+  navWrapper: {
+    position: 'sticky',
+    bottom: 0,
+    padding: '10px 16px',
+    background: 'transparent',
   },
 }

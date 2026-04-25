@@ -12,65 +12,75 @@ export default function BottomNav() {
 
   const isActive = (path) => pathname === path
 
+  const isCreate = isActive('/crear')
+
   return (
     <div style={styles.wrapper}>
-      
       <div style={styles.nav}>
 
-        {/* INICIO */}
-        <div style={styles.item} onClick={() => router.push('/')}>
-          <Icon name="home" active={isActive('/')} />
-          <span style={isActive('/') ? styles.labelActive : styles.label}>
-            Inicio
-          </span>
-        </div>
+        <NavItem
+          label="Inicio"
+          active={isActive('/')}
+          onClick={() => router.push('/')}
+          icon={<Icon name="home" active={isActive('/')} />}
+        />
 
-        {/* INTERCAMBIOS */}
-        <div style={styles.item} onClick={() => router.push('/intercambios')}>
-          <Icon name="swap" active={isActive('/intercambios')} />
-          <span style={isActive('/intercambios') ? styles.labelActive : styles.label}>
-            Intercambios
-          </span>
-        </div>
+        <NavItem
+          label="Intercambios"
+          active={isActive('/intercambios')}
+          onClick={() => router.push('/intercambios')}
+          icon={<Icon name="swap" active={isActive('/intercambios')} />}
+        />
 
-        {/* ESPACIO FAB */}
-        <div style={{ width: 60 }} />
-
-        {/* MENSAJES */}
-        <div style={styles.item} onClick={() => router.push('/mensajes')}>
-          <div style={{ position: 'relative' }}>
-            <Icon name="chat" active={isActive('/mensajes')} />
-
-            {unread > 0 && (
-              <div style={styles.badge}>
-                {unread}
-              </div>
-            )}
+        {/* ✅ BOTÓN CENTRAL CORREGIDO */}
+        <div style={styles.centerItem} onClick={() => router.push('/crear')}>
+          <div
+            style={{
+              ...styles.centerButton,
+              ...(isCreate ? styles.centerButtonActive : {}),
+            }}
+          >
+            <Icon name="add" active={isCreate} size={20} />
           </div>
 
-          <span style={isActive('/mensajes') ? styles.labelActive : styles.label}>
-            Mensajes
+          <span style={isCreate ? styles.labelActive : styles.label}>
+            Publicar
           </span>
         </div>
 
-        {/* PERFIL */}
-        <div style={styles.item} onClick={() => router.push('/perfil')}>
-          <Icon name="user" active={isActive('/perfil')} />
-          <span style={isActive('/perfil') ? styles.labelActive : styles.label}>
-            Perfil
-          </span>
-        </div>
+        <NavItem
+          label="Mensajes"
+          active={isActive('/mensajes')}
+          onClick={() => router.push('/mensajes')}
+          icon={
+            <div style={{ position: 'relative' }}>
+              <Icon name="chat" active={isActive('/mensajes')} />
+              {unread > 0 && (
+                <div style={styles.badge}>{unread}</div>
+              )}
+            </div>
+          }
+        />
+
+        <NavItem
+          label="Perfil"
+          active={isActive('/perfil')}
+          onClick={() => router.push('/perfil')}
+          icon={<Icon name="user" active={isActive('/perfil')} />}
+        />
 
       </div>
+    </div>
+  )
+}
 
-      {/* FAB */}
-      <div
-        style={styles.fab}
-        onClick={() => router.push('/crear')}
-      >
-        <Icon name="add" active size={28} />
-      </div>
-
+function NavItem({ icon, label, active, onClick }) {
+  return (
+    <div style={styles.item} onClick={onClick}>
+      {icon}
+      <span style={active ? styles.labelActive : styles.label}>
+        {label}
+      </span>
     </div>
   )
 }
@@ -78,23 +88,25 @@ export default function BottomNav() {
 const styles = {
   wrapper: {
     position: 'fixed',
-    bottom: 20,
-    left: '50%',
-    transform: 'translateX(-50%)',
+    bottom: 12,
+    left: 0,
     width: '100%',
-    maxWidth: 420,
+    display: 'flex',
+    justifyContent: 'center',
     zIndex: 100,
   },
 
   nav: {
-    height: 72,
+    width: '100%',
+    maxWidth: 500,
+    height: 70,
     background: '#fff',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '0 18px',
-    borderRadius: 28,
-    boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+    padding: '0 20px',
+    borderRadius: 30,
+    boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
   },
 
   item: {
@@ -104,16 +116,43 @@ const styles = {
     fontSize: 11,
     cursor: 'pointer',
     gap: 2,
+    flex: 1,
+  },
+
+  /* 🔥 BOTÓN CENTRAL AJUSTADO */
+  centerItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    cursor: 'pointer',
+    flex: 1,
+  },
+
+  centerButton: {
+    width: 36,            // ⬅️ antes 44 (muy grande)
+    height: 36,
+    borderRadius: '50%',
+    background: 'transparent', // ⬅️ sin fondo por default
+    border: '2px solid #111',  // ⬅️ estilo mockup
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+
+  centerButtonActive: {
+    background: '#F97316',
+    border: 'none',
   },
 
   label: {
     color: '#6F7A82',
-    marginTop: 2,
+    fontSize: 11,
   },
 
   labelActive: {
     color: '#F97316',
-    marginTop: 2,
+    fontSize: 11,
     fontWeight: 600,
   },
 
@@ -127,21 +166,5 @@ const styles = {
     padding: '2px 6px',
     fontSize: 10,
     fontWeight: 'bold',
-  },
-
-  fab: {
-    position: 'absolute',
-    top: -30,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: 60,
-    height: 60,
-    borderRadius: '50%',
-    background: '#F97316',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
-    cursor: 'pointer',
   },
 }
