@@ -13,13 +13,19 @@ export default function RootLayout({
 }) {
   const pathname = usePathname()
 
-  const isItemPage = pathname.startsWith('/item')
+  const isItemPage =
+    pathname.startsWith('/item') ||
+    pathname.startsWith('/offer') ||
+    pathname.startsWith('/mensajes/') ||
+    pathname.startsWith('/exchange/')
 
   const hideNav =
     pathname.startsWith('/onboarding') ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/perfil/setup') ||
-    isItemPage
+    isItemPage ||
+    pathname.startsWith('/offer') ||
+    pathname.startsWith('/mensajes/')
 
   useEffect(() => {
     const init = async () => {

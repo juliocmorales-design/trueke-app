@@ -4,14 +4,26 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 
-export default function ChatPage() {
-  const { userId } = useParams()
+const STEPS: Record<string, { step: number; label: string }> = {
+  pending:   { step: 1, label: 'Esperando respuesta' },
+  accepted:  { step: 2, label: 'Acordar punto de encuentro' },
+  completed: { step: 3, label: 'Intercambio completado' },
+}
+
+export default function OfferChatPage() {
+  const { userId: offerId } = useParams()
   const router = useRouter()
 
   const [currentUser, setCurrentUser] = useState<any>(null)
+  const [offer, setOffer] = useState<any>(null)
+  const [myItem, setMyItem] = useState<any>(null)
+  const [theirItem, setTheirItem] = useState<any>(null)
+  const [otherUser, setOtherUser] = useState<any>(null)
+  const [trustScore, setTrustScore] = useState(0)
   const [messages, setMessages] = useState<any[]>([])
   const [text, setText] = useState('')
-  const [otherUser, setOtherUser] = useState<any>(null)
+  const [showMenu, setShowMenu] = useState(false)
+  const [reported, setReported] = useState(false)
 
   const bottomRef = useRef<any>(null)
 
@@ -20,156 +32,230 @@ export default function ChatPage() {
   }, [])
 
   useEffect(() => {
-    if (!currentUser) return
-
-    const channel = supabase.channel(`chat-${currentUser.id}-${userId}`)
-
+    if (!offerId) return
+    const channel = supabase.channel(`chat-offer-${offerId}`)
     channel
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-        },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new])
-        }
-      )
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `offer_id=eq.${offerId}`,
+      }, payload => {
+        setMessages(prev => [...prev, payload.new])
+      })
       .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [currentUser])
+    return () => { supabase.removeChannel(channel) }
+  }, [offerId])
 
   useEffect(() => {
-    scrollToBottom()
-    markAsRead()
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 80)
   }, [messages])
-
-  const scrollToBottom = () => {
-    setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
-  }
 
   const init = async () => {
     const { data } = await supabase.auth.getSession()
     const user = data.session?.user
     if (!user) return
-
     setCurrentUser(user)
 
-    await loadMessages(user.id)
-    await loadProfile()
-  }
-
-  const loadProfile = async () => {
-    const { data } = await supabase
-      .from('profiles')
+    const { data: offerData } = await supabase
+      .from('offers')
       .select('*')
-      .eq('id', userId)
+      .eq('id', offerId)
       .single()
 
-    setOtherUser(data)
-  }
+    if (!offerData) return
+    setOffer(offerData)
 
-  const loadMessages = async (myId: string) => {
-    const { data } = await supabase
-      .from('messages')
-      .select('*')
-      .or(
-        `and(sender_id.eq.${myId},receiver.eq.${userId}),and(sender_id.eq.${userId},receiver.eq.${myId})`
-      )
-      .order('created_at', { ascending: true })
+    const iAmFrom    = offerData.from_user_id === user.id
+    const myItemId   = iAmFrom ? offerData.from_item_id : offerData.to_item_id
+    const theirItemId = iAmFrom ? offerData.to_item_id  : offerData.from_item_id
+    const otherUserId = iAmFrom ? offerData.to_user_id  : offerData.from_user_id
 
-    setMessages(data || [])
-  }
+    const [
+      { data: myItemData },
+      { data: theirItemData },
+      { data: otherUserData },
+      { data: msgs },
+      { count: itemsCount },
+    ] = await Promise.all([
+      supabase.from('items').select('*').eq('id', myItemId).single(),
+      supabase.from('items').select('*').eq('id', theirItemId).single(),
+      supabase.from('profiles').select('*').eq('id', otherUserId).single(),
+      supabase.from('messages').select('*').eq('offer_id', offerId).order('created_at', { ascending: true }),
+      supabase.from('items').select('*', { count: 'exact', head: true }).eq('user_id', otherUserId),
+    ])
 
-  const markAsRead = async () => {
-    if (!currentUser) return
+    setMyItem(myItemData)
+    setTheirItem(theirItemData)
+    setOtherUser(otherUserData)
+    setMessages(msgs || [])
+    setTrustScore(Math.min(100, (itemsCount || 0) * 4 + 60))
 
-    await supabase
-      .from('messages')
+    supabase.from('messages')
       .update({ is_read: true })
-      .eq('receiver', currentUser.id)
-      .eq('sender_id', userId)
+      .eq('offer_id', offerId)
+      .eq('receiver', user.id)
       .eq('is_read', false)
   }
 
   const sendMessage = async () => {
-    if (!text.trim()) return
+    if (!text.trim() || !currentUser || !offer) return
+    const otherUserId = offer.from_user_id === currentUser.id
+      ? offer.to_user_id
+      : offer.from_user_id
 
     await supabase.from('messages').insert({
       sender_id: currentUser.id,
-      receiver: userId,
-      text,
+      receiver: otherUserId,
+      text: text.trim(),
+      offer_id: offerId,
       is_read: false,
     })
-
     setText('')
   }
 
-  const handleKey = (e: any) => {
-    if (e.key === 'Enter') sendMessage()
-  }
+  const isMine = (m: any) => currentUser && m.sender_id === currentUser.id
 
-  const isMine = (m: any) => {
-    if (!currentUser) return false
-    return m.sender_id === currentUser.id
-  }
+  const progress = offer ? (STEPS[offer.status] ?? STEPS.pending) : STEPS.pending
+  const progressPct = `${(progress.step / 3) * 100}%`
 
-  if (!currentUser) return null
+  if (!currentUser || !offer) return null
 
   return (
-    <div style={styles.container}>
-      
+    <div style={s.container} onClick={() => showMenu && setShowMenu(false)}>
+
       {/* HEADER */}
-      <div style={styles.header}>
-        <button onClick={() => router.back()} style={styles.back}>
-          ←
+      <div style={s.header}>
+        <button style={s.back} onClick={() => router.back()}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
         </button>
 
-        <div style={styles.user}>
-          <img
-            src={otherUser?.avatar_url || '/avatar.png'}
-            style={styles.avatar}
-          />
-          <div>
-            <strong>{otherUser?.name || 'Usuario'}</strong>
-            <div style={styles.status}>● Viendo ahora</div>
+        <div style={s.headerCenter}>
+          {otherUser?.avatar_url ? (
+            <img src={otherUser.avatar_url} style={s.avatar} />
+          ) : (
+            <div style={s.avatarFallback}>
+              {(otherUser?.name || 'U').charAt(0).toUpperCase()}
+            </div>
+          )}
+          <span style={s.headerName}>{otherUser?.name || 'Usuario'}</span>
+        </div>
+
+        <div style={s.menuWrapper}>
+          <button
+            style={s.menuBtn}
+            onClick={e => { e.stopPropagation(); setShowMenu(v => !v) }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round">
+              <circle cx="12" cy="5"  r="1" fill="#1A2744" />
+              <circle cx="12" cy="12" r="1" fill="#1A2744" />
+              <circle cx="12" cy="19" r="1" fill="#1A2744" />
+            </svg>
+          </button>
+          {showMenu && (
+            <div style={s.menu}>
+              <div
+                style={s.menuItem}
+                onClick={() => { setShowMenu(false); setReported(true) }}
+              >
+                🚩 Reportar usuario
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ÁREA SCROLLABLE */}
+      <div style={s.scrollArea}>
+
+        {/* TARJETA INTERCAMBIO */}
+        {myItem && theirItem && (
+          <div style={s.contextCard}>
+            <div style={s.contextTop}>
+              <div style={s.contextIconWrap}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="17 1 21 5 17 9"/>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                  <polyline points="7 23 3 19 7 15"/>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                </svg>
+              </div>
+              <div style={s.contextContent}>
+                <span style={s.contextTitle}>
+                  {myItem.title} por {theirItem.title}
+                </span>
+                <button
+                  style={s.detailLink}
+                  onClick={() => router.push(`/exchange/${offerId}`)}
+                >
+                  Ver detalle ›
+                </button>
+              </div>
+            </div>
+
+            <div style={s.progressTrack}>
+              <div style={{ ...s.progressBar, width: progressPct }} />
+            </div>
+
+            <div style={s.progressLabel}>
+              Paso {progress.step} de 3 · {progress.label}
+            </div>
+          </div>
+        )}
+
+        {/* TARJETA SCORE */}
+        <div style={s.scoreCard}>
+          <div style={s.scoreLeft}>
+            <div style={s.scoreIconWrap}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B8A5A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <span style={s.scoreLabel}>Score de confianza</span>
+          </div>
+          <div style={s.scoreBadge}>
+            <span style={s.scoreNum}>{trustScore}</span>
+            <span style={s.scoreTag}>Confiable</span>
           </div>
         </div>
 
-        <div>⋯</div>
-      </div>
+        {/* AVISO REPORTE */}
+        {reported && (
+          <div style={s.reportedBanner}>
+            ✅ Reporte enviado. Revisaremos el caso pronto.
+          </div>
+        )}
 
-      {/* CHAT */}
-      <div style={styles.chat}>
+        {/* MENSAJES */}
+        {messages.length === 0 && (
+          <p style={s.empty}>Inicia la conversación con el otro usuario.</p>
+        )}
+
         {messages.map((m, i) => {
-          const mine = isMine(m)
+          if (m.type === 'system') {
+            return (
+              <div key={m.id || i} style={s.systemMsg}>
+                {m.text}
+              </div>
+            )
+          }
 
+          const mine = isMine(m)
           return (
             <div
-              key={i}
-              style={{
-                ...styles.msg,
-                ...(mine ? styles.right : styles.left),
-              }}
+              key={m.id || i}
+              style={{ ...s.msg, ...(mine ? s.msgRight : s.msgLeft) }}
             >
               <div>{m.text}</div>
-
-              <div style={styles.meta}>
+              <div style={s.msgMeta}>
                 {new Date(m.created_at).toLocaleTimeString([], {
                   hour: '2-digit',
                   minute: '2-digit',
                 })}
-
                 {mine && (
-                  <span style={styles.check}>
-                    {m.is_read ? '✓✓' : '✓'}
-                  </span>
+                  <span style={s.check}>{m.is_read ? '✓✓' : '✓'}</span>
                 )}
               </div>
             </div>
@@ -180,33 +266,45 @@ export default function ChatPage() {
       </div>
 
       {/* INPUT */}
-      <div style={styles.input}>
-        <div style={styles.circle}>＋</div>
-
+      <div style={s.inputBar}>
+        <button style={s.attachBtn}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6F7A82" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
         <input
           value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={handleKey}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && sendMessage()}
           placeholder="Escribe un mensaje..."
-          style={styles.inputBox}
+          style={s.inputBox}
         />
-
-        <div style={styles.send} onClick={sendMessage}>
-          ➤
-        </div>
+        <button
+          style={{ ...s.sendBtn, ...(!text.trim() ? s.sendOff : {}) }}
+          onClick={sendMessage}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
       </div>
+
     </div>
   )
 }
 
-const styles: any = {
+const s: any = {
   container: {
     background: '#F6F3F0',
-    minHeight: '100vh',
+    height: '100vh',
     display: 'flex',
     flexDirection: 'column',
+    overflow: 'hidden',
   },
 
+  /* HEADER */
   header: {
     height: 60,
     display: 'flex',
@@ -214,119 +312,348 @@ const styles: any = {
     justifyContent: 'space-between',
     padding: '0 12px',
     background: '#fff',
-    borderBottom: '1px solid #eee',
+    borderBottom: '1px solid #EDEDED',
     position: 'sticky',
     top: 0,
-    zIndex: 10,
+    zIndex: 20,
   },
 
-  chat: {
+  back: {
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
+    background: '#F0EAE0',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+
+  headerCenter: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
     flex: 1,
-    padding: 12,
-    paddingBottom: 140, // 🔥 espacio para input + FAB
+    justifyContent: 'center',
+  },
+
+  avatar: {
+    width: 34,
+    height: 34,
+    borderRadius: '50%',
+    objectFit: 'cover',
+  },
+
+  avatarFallback: {
+    width: 34,
+    height: 34,
+    borderRadius: '50%',
+    background: '#F97316',
+    color: '#fff',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 700,
+    fontSize: 14,
+  },
+
+  headerName: {
+    fontWeight: 600,
+    fontSize: 15,
+  },
+
+  menuWrapper: {
+    position: 'relative',
+  },
+
+  menuBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
+    background: '#F0EAE0',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  menu: {
+    position: 'absolute',
+    top: 36,
+    right: 0,
+    background: '#fff',
+    borderRadius: 14,
+    boxShadow: '0 6px 24px rgba(0,0,0,0.12)',
+    overflow: 'hidden',
+    zIndex: 30,
+    minWidth: 190,
+  },
+
+  menuItem: {
+    padding: '14px 18px',
+    fontSize: 14,
+    cursor: 'pointer',
+    color: '#C62828',
+  },
+
+  /* SCROLL AREA */
+  scrollArea: {
+    flex: 1,
+    overflowY: 'auto',
+    padding: '16px 16px 100px',
     display: 'flex',
     flexDirection: 'column',
-    gap: 12,
-    overflowY: 'auto',
+    gap: 10,
   },
 
-  input: {
+  /* CONTEXT CARD */
+  contextCard: {
+    background: '#fff',
+    borderRadius: 16,
+    padding: '14px 16px',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+    marginBottom: 2,
+  },
+
+  contextTop: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 12,
+  },
+
+  contextIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    background: '#FFF0E6',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+
+  contextContent: {
+    flex: 1,
+    minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+  },
+
+  contextTitle: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: '#1E1E1E',
+    lineHeight: 1.4,
+  },
+
+  detailLink: {
+    border: 'none',
+    background: 'none',
+    color: '#F97316',
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: 'pointer',
+    padding: 0,
+    textAlign: 'left',
+  },
+
+  progressTrack: {
+    height: 6,
+    borderRadius: 99,
+    background: '#F0EAE4',
+    overflow: 'hidden',
+  },
+
+  progressBar: {
+    height: '100%',
+    borderRadius: 99,
+    background: '#F97316',
+    transition: 'width 0.4s ease',
+  },
+
+  progressLabel: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#6F7A82',
+  },
+
+  /* SCORE CARD */
+  scoreCard: {
+    background: '#fff',
+    borderRadius: 16,
+    padding: '12px 16px',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+
+  scoreLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  scoreIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    background: '#E8F5EE',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  scoreLabel: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#1E1E1E',
+  },
+
+  scoreBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    background: '#E8F5EE',
+    borderRadius: 99,
+    padding: '6px 12px',
+  },
+
+  scoreNum: {
+    fontSize: 15,
+    fontWeight: 800,
+    color: '#2E7D55',
+  },
+
+  scoreTag: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: '#3B8A5A',
+  },
+
+  /* REPORT */
+  reportedBanner: {
+    background: '#DCFCE7',
+    color: '#166534',
+    borderRadius: 12,
+    padding: '10px 14px',
+    fontSize: 13,
+    textAlign: 'center',
+  },
+
+  /* MESSAGES */
+  empty: {
+    textAlign: 'center',
+    color: '#6F7A82',
+    fontSize: 13,
+    margin: '30px 0',
+  },
+
+  systemMsg: {
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#9AA3AB',
+    background: '#EDE7E1',
+    borderRadius: 99,
+    padding: '4px 14px',
+    alignSelf: 'center',
+  },
+
+  msg: {
+    maxWidth: '75%',
+    padding: '10px 14px',
+    borderRadius: 18,
+    fontSize: 14,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+
+  msgLeft: {
+    background: '#EDE5DD',
+    alignSelf: 'flex-start',
+    borderBottomLeftRadius: 4,
+  },
+
+  msgRight: {
+    background: '#F97316',
+    color: '#fff',
+    alignSelf: 'flex-end',
+    borderBottomRightRadius: 4,
+  },
+
+  msgMeta: {
+    marginTop: 4,
+    fontSize: 11,
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 4,
+    opacity: 0.7,
+  },
+
+  check: {
+    fontSize: 11,
+  },
+
+  /* INPUT */
+  inputBar: {
     position: 'fixed',
-    bottom: 80, // 🔥 debajo del FAB
+    bottom: 0,
     left: '50%',
     transform: 'translateX(-50%)',
     width: '100%',
     maxWidth: 500,
     display: 'flex',
     gap: 10,
-    padding: 10,
+    padding: '10px 16px 20px',
     background: '#fff',
-    borderTop: '1px solid #eee',
+    borderTop: '1px solid #EDEDED',
     alignItems: 'center',
-  },
-
-  back: {
-    border: 'none',
-    background: 'none',
-    fontSize: 18,
-  },
-
-  user: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-  },
-
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: '50%',
-  },
-
-  status: {
-    fontSize: 12,
-    color: 'green',
-  },
-
-  msg: {
-    maxWidth: '75%',
-    padding: 12,
-    borderRadius: 16,
-    fontSize: 14,
-    display: 'flex',
-    flexDirection: 'column',
-  },
-
-  left: {
-    background: '#EDE5DD',
-    alignSelf: 'flex-start',
-  },
-
-  right: {
-    background: '#F97316',
-    color: '#fff',
-    alignSelf: 'flex-end',
-  },
-
-  meta: {
-    marginTop: 6,
-    fontSize: 11,
-    display: 'flex',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    gap: 4,
-    opacity: 0.8,
-  },
-
-  check: {
-    fontSize: 12,
   },
 
   inputBox: {
     flex: 1,
-    padding: 10,
-    borderRadius: 25,
-    border: '1px solid #ddd',
+    padding: '11px 16px',
+    borderRadius: 16,
+    border: '1.5px solid #E0DAD5',
+    fontSize: 14,
+    outline: 'none',
+    background: '#F6F3F0',
   },
 
-  circle: {
-    width: 40,
-    height: 40,
-    borderRadius: '50%',
-    background: '#eee',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  send: {
-    width: 40,
-    height: 40,
+  sendBtn: {
+    width: 42,
+    height: 42,
     borderRadius: '50%',
     background: '#F97316',
-    color: '#fff',
+    border: 'none',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    cursor: 'pointer',
+    flexShrink: 0,
+  },
+
+  sendOff: {
+    opacity: 0.35,
+  },
+
+  attachBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
+    background: '#EDE7E1',
+    border: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    flexShrink: 0,
   },
 }

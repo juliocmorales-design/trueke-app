@@ -6,6 +6,7 @@ import supabase from '@/app/lib/supabase'
 export default function useUnreadMessages() {
   const [unread, setUnread] = useState(0)
   const channelRef = useRef<any>(null)
+  const userIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -14,7 +15,7 @@ export default function useUnreadMessages() {
 
       if (!user) return
 
-      await loadUnread(user.id)
+      userIdRef.current = user.id
 
       if (channelRef.current) return
 
@@ -26,6 +27,7 @@ export default function useUnreadMessages() {
           event: '*',
           schema: 'public',
           table: 'messages',
+          filter: `receiver=eq.${user.id}`,
         },
         () => loadUnread(user.id)
       )
@@ -33,11 +35,21 @@ export default function useUnreadMessages() {
       channel.subscribe()
 
       channelRef.current = channel
+
+      await loadUnread(user.id)
     }
 
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && userIdRef.current) {
+        loadUnread(userIdRef.current)
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibility)
     init()
 
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
         channelRef.current = null
@@ -46,18 +58,22 @@ export default function useUnreadMessages() {
   }, [])
 
   const loadUnread = async (userId: string) => {
-    const { data, error } = await supabase
+    if (!userId) return
+
+    const { count, error } = await supabase
       .from('messages')
-      .select('id')
+      .select('*', { count: 'exact', head: true })
       .eq('receiver', userId)
       .eq('is_read', false)
+
+    console.log('[unread] userId:', userId, 'count:', count)
 
     if (error) {
       console.log('❌ unread error', error)
       return
     }
 
-    setUnread(data?.length || 0)
+    setUnread(count ?? 0)
   }
 
   return unread

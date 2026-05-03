@@ -166,7 +166,7 @@ const styles: any = {
     background: '#F97316',
     color: '#fff',
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 16,
     border: 'none',
     fontWeight: 600,
     fontSize: 16,

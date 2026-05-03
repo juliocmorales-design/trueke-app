@@ -1,16 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 
 export default function ItemDetail() {
   const { id } = useParams()
   const router = useRouter()
+  const carouselRef = useRef<HTMLDivElement>(null)
 
   const [item, setItem] = useState<any>(null)
   const [owner, setOwner] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const [ownerStats, setOwnerStats] = useState<any>(null)
+  const [current, setCurrent] = useState(0)
 
   useEffect(() => {
     loadItem()
@@ -23,169 +25,150 @@ export default function ItemDetail() {
       .eq('id', id)
       .single()
 
-    if (!data) {
-      router.push('/')
-      return
-    }
+    if (!data) return router.push('/')
 
     setItem(data)
 
-    if (data.user_id) {
-      const { data: userData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user_id)
-        .single()
-
-      setOwner(userData)
-    }
-
-    setLoading(false)
-  }
-
-  // 🔥 FUNCIÓN CORREGIDA
-  const createOffer = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      alert('Debes iniciar sesión')
-      return
-    }
-
-    if (!item || !owner) return
-
-    // 🔥 1. Obtener un item del usuario (lo que ofrece)
-    const { data: myItems } = await supabase
-      .from('items')
+    const { data: userData } = await supabase
+      .from('profiles')
       .select('*')
-      .eq('user_id', user.id)
-      .limit(1)
-
-    if (!myItems || myItems.length === 0) {
-      alert('Primero debes publicar un objeto para intercambiar')
-      return
-    }
-
-    const myItem = myItems[0]
-
-    // 🔥 2. Crear offer
-    const { data: offer, error } = await supabase
-      .from('offers')
-      .insert({
-        from_user_id: user.id,
-        to_user_id: owner.id,
-        status: 'pending',
-      })
-      .select()
+      .eq('id', data.user_id)
       .single()
 
-    if (error || !offer) {
-      console.error(error)
-      alert('Error creando intercambio')
-      return
+    setOwner(userData)
+
+    if (userData) {
+      const { data: ratingsData } = await supabase
+        .from('ratings')
+        .select('score')
+        .eq('rated_id', data.user_id)
+
+      if (ratingsData && ratingsData.length > 0) {
+        const avg = ratingsData.reduce((sum: number, r: any) => sum + r.score, 0) / ratingsData.length
+        setOwnerStats({ avg, count: ratingsData.length })
+      } else {
+        setOwnerStats({ avg: null, count: 0 })
+      }
     }
-
-    // 🔥 3. Insertar items (REQUESTED + OFFERED)
-    const { error: itemsError } = await supabase
-      .from('offer_items')
-      .insert([
-        {
-          offer_id: offer.id,
-          item_id: item.id,
-          owner_id: owner.id,
-          type: 'requested',
-        },
-        {
-          offer_id: offer.id,
-          item_id: myItem.id,
-          owner_id: user.id,
-          type: 'offered',
-        },
-      ])
-
-    if (itemsError) {
-      console.error(itemsError)
-      alert('Error guardando items del intercambio')
-      return
-    }
-
-    // 🔥 4. Redirigir
-    router.push('/intercambios')
   }
 
-  if (loading) return <div style={styles.loading}>Cargando...</div>
+  const scrollTo = (index: number) => {
+    if (!carouselRef.current) return
+    const width = carouselRef.current.clientWidth
+    carouselRef.current.scrollTo({
+      left: width * index,
+      behavior: 'smooth',
+    })
+    setCurrent(index)
+  }
 
-  const image =
-    Array.isArray(item.images) && item.images.length > 0
-      ? item.images[0]
-      : '/images/placeholder.png'
+  const next = () => {
+    if (!item?.images) return
+    const nextIndex = Math.min(current + 1, item.images.length - 1)
+    scrollTo(nextIndex)
+  }
+
+  const prev = () => {
+    const prevIndex = Math.max(current - 1, 0)
+    scrollTo(prevIndex)
+  }
+
+  const goToOffer = () => {
+    router.push(`/offer/new?itemId=${id}`)
+  }
+
+  if (!item) return null
+
+  const images = item.images?.length
+    ? item.images
+    : ['/images/placeholder.png']
 
   return (
     <div style={styles.screen}>
+      <div style={styles.container}>
 
-      <div style={styles.header}>
-        <div onClick={() => router.back()} style={styles.iconBtn}>
-          <Icon>
-            <polyline points="15 18 9 12 15 6"/>
-          </Icon>
-        </div>
+        {/* HEADER */}
+        <div style={styles.header}>
+          <button onClick={() => router.back()} style={styles.backBtn}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18l-6-6 6-6" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
 
-        <div style={styles.rightIcons}>
-          <Icon>
-            <path d="M12 3v12"/>
-            <polyline points="8 7 12 3 16 7"/>
-            <rect x="4" y="13" width="16" height="8" rx="2"/>
-          </Icon>
-
-          <Icon>
-            <circle cx="5" cy="12" r="1"/>
-            <circle cx="12" cy="12" r="1"/>
-            <circle cx="19" cy="12" r="1"/>
-          </Icon>
-        </div>
-      </div>
-
-      <div style={styles.wrapper}>
-        <div style={styles.body}>
-
-          <div style={styles.imageWrapper}>
-            <img src={image} style={styles.image} />
+          <div style={styles.headerRight}>
+            <button
+              style={styles.backBtn}
+              onClick={() => {
+                try {
+                  navigator.share({ title: item.title, text: item.description, url: window.location.href })
+                } catch {}
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
           </div>
+        </div>
+
+        {/* CARRUSEL */}
+        <div style={styles.carouselWrapper}>
+          <div style={styles.carousel} ref={carouselRef}>
+            {images.map((img: string, i: number) => (
+              <div key={i} style={styles.slide}>
+                <img src={img} style={styles.image} />
+              </div>
+            ))}
+          </div>
+
+          {images.length > 1 && (
+            <>
+              <div style={styles.arrowLeft} onClick={prev}>‹</div>
+              <div style={styles.arrowRight} onClick={next}>›</div>
+            </>
+          )}
+        </div>
+
+        {/* DOTS */}
+        <div style={styles.dots}>
+          {images.map((_: any, i: number) => (
+            <div
+              key={i}
+              style={{
+                ...styles.dot,
+                opacity: current === i ? 1 : 0.3,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* BODY */}
+        <div style={styles.body}>
 
           <h1 style={styles.title}>{item.title}</h1>
 
           <div style={styles.meta}>
-            Por {item.looking_for || 'algo'} • A 1.2 km
+            Por {item.wanted || 'algo a cambio'}
           </div>
 
-          <div style={styles.badge}>
-            92 • Muy confiable
+          <div style={styles.badgesRow}>
+            {item.city && (
+              <div style={styles.badge}>{item.city}</div>
+            )}
           </div>
 
-          <div style={styles.desc}>
-            {item.description || 'Sin descripción'}
+          <p style={styles.desc}>{item.description}</p>
+
+          <div style={styles.sectionTitle}>¿Te interesa?</div>
+
+          <div style={styles.button} onClick={goToOffer}>
+            Ofrecer algo a cambio
           </div>
 
-          <div style={styles.sectionTitle}>
-            ¿Te interesa?
-          </div>
-
-          <div style={styles.cta}>
-            <div style={styles.button} onClick={createOffer}>
-              Enviar mensaje
-            </div>
-
-            <div style={styles.circle}>
-              <Icon>
-                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
-              </Icon>
-            </div>
-          </div>
+          <div style={styles.divider} />
 
           {owner && (
-            <div style={styles.userCard}>
+            <div style={styles.userRow}>
               <div style={styles.userLeft}>
                 <img
                   src={owner.avatar_url || '/images/avatar.png'}
@@ -193,17 +176,16 @@ export default function ItemDetail() {
                 />
 
                 <div>
-                  <strong style={styles.userName}>{owner.name}</strong>
+                  <div style={styles.userName}>{owner.username || owner.name || 'Usuario'}</div>
 
                   <div style={styles.sub}>
-                    34 intercambios • 4.9 ⭐
+                    {owner.city || 'Monterrey'} · {ownerStats?.count || 0} intercambios · {ownerStats?.avg ? ownerStats.avg.toFixed(1) : 'Nuevo'}
+                    <StarIcon />
                   </div>
                 </div>
               </div>
 
-              <Icon>
-                <polyline points="9 6 15 12 9 18"/>
-              </Icon>
+              <div style={styles.arrow}>›</div>
             </div>
           )}
 
@@ -213,10 +195,14 @@ export default function ItemDetail() {
   )
 }
 
-function Icon({ children }: any) {
+/* ⭐ ICONO PRO */
+function StarIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="2" style={{ width: 22 }}>
-      {children}
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B" style={{ marginLeft: 4 }}>
+      <path d="M12 17.27L18.18 21 16.54 13.97 
+      22 9.24 14.81 8.63 12 2 
+      9.19 8.63 2 9.24 7.46 13.97 
+      5.82 21z"/>
     </svg>
   )
 }
@@ -224,132 +210,185 @@ function Icon({ children }: any) {
 const styles: any = {
   screen: {
     background: '#F6F3F0',
-    minHeight: '100vh',
-    width: '100%',
-  },
-
-  header: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
-    right: 20,
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-
-  iconBtn: {
-    padding: 6,
-    cursor: 'pointer',
-  },
-
-  rightIcons: {
-    display: 'flex',
-    gap: 14,
-  },
-
-  wrapper: {
     display: 'flex',
     justifyContent: 'center',
   },
 
-  body: {
+  container: {
     width: '100%',
     maxWidth: 500,
-    padding: 20,
-    paddingTop: 80,
+    paddingBottom: 80,
   },
 
-  imageWrapper: {
-    width: '100%',
-    height: 260,
-    borderRadius: 24,
-    overflow: 'hidden',
-    background: '#eee',
-  },
-
-  image: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    objectPosition: 'center',
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: 800,
-    marginTop: 20,
-    color: '#1F2A33',
-    textAlign: 'center',
-  },
-
-  meta: {
-    color: '#6F7A82',
-    fontSize: 14,
-    marginTop: 6,
-    textAlign: 'center',
-  },
-
-  badge: {
-    marginTop: 12,
-    display: 'inline-block',
-    background: '#DDE8DF',
-    color: '#2F6B3E',
-    padding: '6px 14px',
-    borderRadius: 20,
-    fontSize: 13,
-  },
-
-  desc: {
-    marginTop: 18,
-    lineHeight: 1.6,
-    fontSize: 15,
-    color: '#1F2A33',
-    textAlign: 'center',
-  },
-
-  sectionTitle: {
-    marginTop: 28,
-    fontSize: 18,
-    fontWeight: 700,
-    textAlign: 'center',
-  },
-
-  cta: {
+  header: {
     display: 'flex',
-    gap: 12,
-    marginTop: 14,
+    justifyContent: 'space-between',
+    padding: 20,
   },
 
-  button: {
-    flex: 1,
-    background: '#F97316',
-    color: '#fff',
-    textAlign: 'center',
-    padding: 16,
-    borderRadius: 30,
-    fontWeight: 600,
-    fontSize: 15,
-    boxShadow: '0 12px 30px rgba(249,115,22,0.35)',
+  headerRight: {
+    display: 'flex',
+    gap: 10,
+  },
+
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
+    background: '#F0EAE0',
+    border: 'none',
     cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  circle: {
-    width: 56,
-    height: 56,
+  iconCircle: {
+    width: 40,
+    height: 40,
     borderRadius: '50%',
     background: '#EDE5DD',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    cursor: 'pointer',
   },
 
-  userCard: {
-    marginTop: 24,
-    background: '#fff',
+  carouselWrapper: {
+    position: 'relative',
     borderRadius: 20,
-    padding: 14,
+    overflow: 'hidden',
+    marginLeft: 16,
+    marginRight: 16,
+  },
+
+  carousel: {
+    display: 'flex',
+    overflowX: 'hidden',
+  },
+
+  slide: {
+    minWidth: '100%',
+  },
+
+  image: {
+    width: '100%',
+    height: 280,
+    objectFit: 'cover',
+  },
+
+  arrowLeft: {
+    position: 'absolute',
+    top: '50%',
+    left: 10,
+    transform: 'translateY(-50%)',
+    background: '#fff',
+    borderRadius: '50%',
+    width: 32,
+    height: 32,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+  },
+
+  arrowRight: {
+    position: 'absolute',
+    top: '50%',
+    right: 10,
+    transform: 'translateY(-50%)',
+    background: '#fff',
+    borderRadius: '50%',
+    width: 32,
+    height: 32,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+  },
+
+  dots: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: '50%',
+    background: '#333',
+  },
+
+  body: {
+    padding: 20,
+  },
+
+  title: {
+    fontSize: 22,
+    fontWeight: 800,
+  },
+
+  meta: {
+    fontSize: 15,
+    color: '#6F7A82',
+    marginTop: 6,
+  },
+
+  badgesRow: {
+    display: 'flex',
+    gap: 8,
+    marginTop: 10,
+    flexWrap: 'wrap',
+  },
+
+  badge: {
+    background: '#E8F0E9',
+    color: '#2D6A4F',
+    fontSize: 13,
+    fontWeight: 600,
+    padding: '6px 12px',
+    borderRadius: 16,
+    display: 'inline-block',
+  },
+
+  desc: {
+    margin: 0,
+    marginTop: 14,
+    fontSize: 15,
+    color: '#3D3D3D',
+    lineHeight: 1.7,
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  },
+
+  sectionTitle: {
+    marginTop: 20,
+    fontSize: 16,
+    fontWeight: 700,
+    color: '#1A2744',
+  },
+
+  button: {
+    marginTop: 10,
+    background: '#F97316',
+    color: '#fff',
+    padding: '16px 0',
+    borderRadius: 16,
+    textAlign: 'center',
+    fontWeight: 600,
+    fontSize: 16,
+    cursor: 'pointer',
+  },
+
+  divider: {
+    marginTop: 20,
+    height: 1,
+    background: '#E5E7EB',
+  },
+
+  userRow: {
+    marginTop: 16,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -362,25 +401,24 @@ const styles: any = {
   },
 
   avatar: {
-    width: 46,
-    height: 46,
+    width: 48,
+    height: 48,
     borderRadius: '50%',
-    objectFit: 'cover',
   },
 
   userName: {
-    fontSize: 15,
+    fontWeight: 600,
   },
 
   sub: {
-    fontSize: 13,
-    color: '#6F7A82',
-  },
-
-  loading: {
-    height: '100vh',
+    fontSize: 14,
+    color: '#4A5568',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
+  },
+
+  arrow: {
+    fontSize: 18,
+    color: '#999',
   },
 }

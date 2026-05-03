@@ -1,143 +1,52 @@
-'use client'
+import { createClient } from '@supabase/supabase-js'
+import { notFound } from 'next/navigation'
+import ChainClient from './ChainClient'
+import type { ChainData } from './ChainClient'
 
-import { useParams } from 'next/navigation'
-
-export default function ChainPage() {
-  const params = useParams()
-  const id = Number(params?.id)
-
-  const chain = [
-    {
-      id: 1,
-      title: 'Libro',
-      user: 'Carlos',
-      image: '/images/books.jpg',
-    },
-    {
-      id: 2,
-      title: 'Audífonos',
-      user: 'Ana',
-      image: '/images/books.jpg',
-    },
-    {
-      id: 3,
-      title: 'Bicicleta',
-      user: 'Luis',
-      image: '/images/bike.jpg',
-    },
-    {
-      id: 4,
-      title: 'Cámara',
-      user: 'María',
-      image: '/images/guitar.jpg',
-    },
-  ]
-
-  const first = chain[0]
-  const last = chain[chain.length - 1]
-
-  const shareText = `Empecé con un ${first.title} y ahora tengo un ${last.title} 🔥 #Trueke`
-
-  const handleShare = async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: 'Mi cadena en Trueke',
-          text: shareText,
-          url: window.location.href,
-        })
-      } else {
-        await navigator.clipboard.writeText(
-          shareText + ' ' + window.location.href
-        )
-        alert('Texto copiado para compartir 🚀')
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>🔁 Cadena de intercambio #{id}</h2>
-
-      <button style={styles.shareBtn} onClick={handleShare}>
-        Compartir mi progreso 🚀
-      </button>
-
-      <div style={styles.timeline}>
-        {chain.map((step, index) => (
-          <div key={step.id} style={styles.step}>
-            {index !== chain.length - 1 && <div style={styles.line} />}
-
-            <div style={styles.content}>
-              <img src={step.image} style={styles.image} />
-
-              <div>
-                <div style={styles.item}>{step.title}</div>
-                <div style={styles.user}>Por {step.user}</div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+function getAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  return createClient(url, key, { auth: { persistSession: false } })
 }
 
-const styles = {
-  container: {
-    padding: 16,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 700,
-    marginBottom: 12,
-  },
-  shareBtn: {
-    width: '100%',
-    marginBottom: 20,
-    padding: 12,
-    borderRadius: 12,
-    border: 'none',
-    background: '#F97316',
-    color: '#fff',
-    fontWeight: 600,
-  },
-  timeline: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: 20,
-    position: 'relative' as const,
-  },
-  step: {
-    position: 'relative' as const,
-    paddingLeft: 20,
-  },
-  line: {
-    position: 'absolute' as const,
-    left: 8,
-    top: 40,
-    width: 2,
-    height: '100%',
-    background: '#E5E7EB',
-  },
-  content: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-  },
-  image: {
-    width: 50,
-    height: 50,
-    borderRadius: 10,
-    objectFit: 'cover' as const,
-  },
-  item: {
-    fontWeight: 600,
-  },
-  user: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
+export default async function ChainPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const supabase = getAdminClient()
+
+  /* 1 — Chain */
+  const { data: chain, error } = await supabase
+    .from('chains')
+    .select('id, creator_id, initial_item_id, status, steps_count, created_at')
+    .eq('id', id)
+    .single()
+
+  if (!chain || error) notFound()
+
+  /* 2 — Steps ordered */
+  const { data: steps } = await supabase
+    .from('chain_steps')
+    .select('id, chain_id, step_number, item_id, from_user_id, to_user_id, offer_id, created_at')
+    .eq('chain_id', id)
+    .order('step_number', { ascending: true })
+
+  const stepsData = steps ?? []
+
+  /* 3 — Items for each step + initial item */
+  const itemIds = Array.from(
+    new Set(
+      [chain.initial_item_id, ...stepsData.map((s: any) => s.item_id)].filter(Boolean)
+    )
+  ) as number[]
+
+  const { data: itemRows } = await supabase
+    .from('items')
+    .select('id, title, images')
+    .in('id', itemIds)
+
+  const itemMap: Record<number, { id: number; title: string; images: string[] | null }> = {}
+  itemRows?.forEach((item: any) => { itemMap[item.id] = item })
+
+  const data: ChainData = { chain, steps: stepsData, itemMap }
+
+  return <ChainClient data={data} />
 }

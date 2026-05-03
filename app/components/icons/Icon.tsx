@@ -1,7 +1,7 @@
 'use client'
 
 export default function Icon({ name, active = false, size = 24 }) {
-  const color = active ? '#F97316' : '#6F7A82'
+  const color = active ? '#F97316' : '#9CA3AF'
   const stroke = 2
 
   const common = {
@@ -52,6 +52,14 @@ export default function Icon({ name, active = false, size = 24 }) {
         <svg {...common}>
           <circle cx="12" cy="12" r="10" />
           <path d="M12 8v8M8 12h8" />
+        </svg>
+      )
+
+    case 'notifications':
+      return (
+        <svg {...common}>
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
       )
 

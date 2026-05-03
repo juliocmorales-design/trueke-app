@@ -139,7 +139,7 @@ export default function Feed() {
                 <div style={styles.title}>{item.title}</div>
 
                 <div style={styles.subtitle}>
-                  por {item.looking_for || 'algo'}
+                  por {item.wanted || 'algo'}
                 </div>
 
                 <div style={styles.meta}>
@@ -192,7 +192,7 @@ export default function Feed() {
                 <div style={styles.title}>{item.title}</div>
 
                 <div style={styles.subtitle}>
-                  por {item.looking_for || 'algo'}
+                  por {item.wanted || 'algo'}
                 </div>
 
                 <div style={styles.meta}>

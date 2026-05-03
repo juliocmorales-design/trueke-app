@@ -1,0 +1,121 @@
+.screen {
+  background: #FDF8F3;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ──────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 10px;
+  background: #FDF8F3;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 8px;
+}
+
+.backBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: #F0EAE0;
+  cursor: pointer;
+  color: #1A2744;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.backBtn:active { background: #F0EAE4; }
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.headerTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1A2744;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.headerSub {
+  font-size: 13px;
+  color: #9AA3AB;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* ── BODY ─────────────────────────────────────────────────────────── */
+.body {
+  flex: 1;
+  padding: 24px 16px 180px;
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 56px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 1.5px solid #E8E3DC;
+  background: #fff;
+  font-size: 16px;
+  font-family: inherit;
+  color: #1A2744;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input:focus        { border-color: #F97316; }
+.input::placeholder { color: #9AA3AB; }
+
+.hint {
+  margin: 10px 4px 0;
+  font-size: 13px;
+  color: #9AA3AB;
+}
+
+/* ── FOOTER ───────────────────────────────────────────────────────── */
+.footer {
+  position: fixed;
+  bottom: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 16px 16px;
+  background: #fff;
+  border-top: 1px solid #EDE7E1;
+}
+
+.confirmBtn {
+  width: 100%;
+  height: 52px;
+  background: #F97316;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  letter-spacing: 0.01em;
+}
+
+.confirmBtn:active { transform: scale(0.97); }
+.confirmBtnOff     { opacity: 0.4; cursor: not-allowed; }

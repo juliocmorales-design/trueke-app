@@ -1,74 +1,103 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import Icon from '../icons/Icon'
 import useUnreadMessages from '@/app/hooks/useUnreadMessages'
 
 export default function BottomNav() {
   const unread = useUnreadMessages()
-
   const pathname = usePathname()
   const router = useRouter()
 
+  const [visible, setVisible] = useState(true)
+  const [lastScroll, setLastScroll] = useState(0)
+
   const isActive = (path) => pathname === path
 
-  const isCreate = isActive('/crear')
+  // 🔥 HIDE / SHOW tipo Instagram
+  useEffect(() => {
+    const handleScroll = () => {
+      const current = window.scrollY
+
+      if (current > lastScroll && current > 50) {
+        setVisible(false)
+      } else {
+        setVisible(true)
+      }
+
+      setLastScroll(current)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [lastScroll])
+
+  // 🔥 HAPTIC
+  const go = (path) => {
+    if (navigator.vibrate) navigator.vibrate(10)
+    router.push(path)
+  }
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.nav}>
+    <div style={{
+      ...styles.wrapper,
+      transform: visible ? 'translateY(0)' : 'translateY(100%)',
+    }}>
+      <div style={styles.safeArea}>
+        <div style={styles.nav}>
 
-        <NavItem
-          label="Inicio"
-          active={isActive('/')}
-          onClick={() => router.push('/')}
-          icon={<Icon name="home" active={isActive('/')} />}
-        />
+          <NavItem
+            label="Inicio"
+            active={isActive('/')}
+            onClick={() => go('/')}
+            icon={<Icon name="home" active={isActive('/')} />}
+          />
 
-        <NavItem
-          label="Intercambios"
-          active={isActive('/intercambios')}
-          onClick={() => router.push('/intercambios')}
-          icon={<Icon name="swap" active={isActive('/intercambios')} />}
-        />
+          <NavItem
+            label="Intercambios"
+            active={isActive('/intercambios')}
+            onClick={() => go('/intercambios')}
+            icon={<Icon name="swap" active={isActive('/intercambios')} size={24} />}
+          />
 
-        {/* ✅ BOTÓN CENTRAL CORREGIDO */}
-        <div style={styles.centerItem} onClick={() => router.push('/crear')}>
-          <div
-            style={{
-              ...styles.centerButton,
-              ...(isCreate ? styles.centerButtonActive : {}),
-            }}
-          >
-            <Icon name="add" active={isCreate} size={20} />
+          <div style={styles.centerItem} onClick={() => go('/crear')}>
+            <div style={styles.centerButton}>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#fff"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </div>
+            <span style={styles.label}>Publicar</span>
           </div>
 
-          <span style={isCreate ? styles.labelActive : styles.label}>
-            Publicar
-          </span>
+          <NavItem
+            label="Mensajes"
+            active={isActive('/mensajes')}
+            onClick={() => go('/mensajes')}
+            icon={
+              <div style={{ position: 'relative' }}>
+                <Icon name="chat" active={isActive('/mensajes')} />
+                {unread > 0 && <div style={styles.badge}>{unread}</div>}
+              </div>
+            }
+          />
+
+          <NavItem
+            label="Perfil"
+            active={isActive('/perfil')}
+            onClick={() => go('/perfil')}
+            icon={<Icon name="user" active={isActive('/perfil')} />}
+          />
+
         </div>
-
-        <NavItem
-          label="Mensajes"
-          active={isActive('/mensajes')}
-          onClick={() => router.push('/mensajes')}
-          icon={
-            <div style={{ position: 'relative' }}>
-              <Icon name="chat" active={isActive('/mensajes')} />
-              {unread > 0 && (
-                <div style={styles.badge}>{unread}</div>
-              )}
-            </div>
-          }
-        />
-
-        <NavItem
-          label="Perfil"
-          active={isActive('/perfil')}
-          onClick={() => router.push('/perfil')}
-          icon={<Icon name="user" active={isActive('/perfil')} />}
-        />
-
       </div>
     </div>
   )
@@ -77,10 +106,8 @@ export default function BottomNav() {
 function NavItem({ icon, label, active, onClick }) {
   return (
     <div style={styles.item} onClick={onClick}>
-      {icon}
-      <span style={active ? styles.labelActive : styles.label}>
-        {label}
-      </span>
+      <div style={styles.iconWrap}>{icon}</div>
+      <span style={active ? styles.labelActive : styles.label}>{label}</span>
     </div>
   )
 }
@@ -88,72 +115,84 @@ function NavItem({ icon, label, active, onClick }) {
 const styles = {
   wrapper: {
     position: 'fixed',
-    bottom: 12,
+    bottom: 0,
     left: 0,
     width: '100%',
     display: 'flex',
     justifyContent: 'center',
     zIndex: 100,
+    transition: 'transform 0.3s ease',
+  },
+
+  safeArea: {
+    width: '100%',
+    maxWidth: 500,
   },
 
   nav: {
     width: '100%',
-    maxWidth: 500,
-    height: 70,
-    background: '#fff',
+    height: 'calc(68px + env(safe-area-inset-bottom))',
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '0 20px',
-    borderRadius: 30,
-    boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+    padding: '0 18px',
+    paddingBottom: 'env(safe-area-inset-bottom)',
+    background: '#FFFFFF',
+    boxShadow: '0 -1px 8px rgba(0,0,0,0.08)',
+    boxSizing: 'border-box',
   },
 
   item: {
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    fontSize: 11,
+    justifyContent: 'center',
+    gap: 4,
     cursor: 'pointer',
-    gap: 2,
-    flex: 1,
   },
 
-  /* 🔥 BOTÓN CENTRAL AJUSTADO */
-  centerItem: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    cursor: 'pointer',
-    flex: 1,
-  },
-
-  centerButton: {
-    width: 36,            // ⬅️ antes 44 (muy grande)
+  /* Same fixed height as centerButton so labels always share one baseline */
+  iconWrap: {
+    width: 36,
     height: 36,
-    borderRadius: '50%',
-    background: 'transparent', // ⬅️ sin fondo por default
-    border: '2px solid #111',  // ⬅️ estilo mockup
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 2,
+    flexShrink: 0,
   },
 
-  centerButtonActive: {
+  centerItem: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    cursor: 'pointer',
+  },
+
+  /* Same 36×36 as iconWrap, but orange circle */
+  centerButton: {
+    width: 36,
+    height: 36,
+    borderRadius: '50%',
     background: '#F97316',
-    border: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
 
   label: {
-    color: '#6F7A82',
+    color: '#9CA3AF',
     fontSize: 11,
+    fontWeight: 400,
   },
 
   labelActive: {
     color: '#F97316',
-    fontSize: 11,
     fontWeight: 600,
+    fontSize: 11,
   },
 
   badge: {
@@ -165,6 +204,5 @@ const styles = {
     borderRadius: 999,
     padding: '2px 6px',
     fontSize: 10,
-    fontWeight: 'bold',
   },
 }
