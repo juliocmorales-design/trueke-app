@@ -128,7 +128,7 @@ export default function Home() {
       </div>
 
       {/* SEARCH */}
-      <div style={styles.search}>
+      <div style={{ ...styles.search, cursor: 'pointer' }} onClick={() => router.push('/buscar')}>
         <svg viewBox="0 0 24 24" width={16} height={16} style={{ flexShrink: 0 }}>
           <circle cx="11" cy="11" r="7" stroke="#9AA3AB" strokeWidth="2" fill="none"/>
           <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#9AA3AB" strokeWidth="2" strokeLinecap="round"/>

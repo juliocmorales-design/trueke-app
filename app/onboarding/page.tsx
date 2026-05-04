@@ -223,17 +223,16 @@ export default function Onboarding() {
       {step === 0 && (
         <>
           <div>
-            <h1 style={{ ...styles.title, fontWeight: 800, whiteSpace: 'nowrap' }}>
-              Bienvenido a <span style={styles.accent}>Trueke</span>
+            <h1 style={{ ...styles.title, fontWeight: 800, whiteSpace: 'normal', fontSize: 38 }}>
+              Bienvenido a<br/><span style={styles.accent}>Trueke</span>
             </h1>
 
-            <p style={{ ...styles.subtitle, fontSize: 19, color: '#1A2744', fontWeight: 500, marginTop: 12 }}>
+            <p style={{ ...styles.subtitle, fontSize: 18, color: '#1A2744', fontWeight: 500, marginTop: 12 }}>
               Intercambia, conecta y crea comunidad.
             </p>
           </div>
 
           <div style={styles.illustrationWrapper}>
-            <div style={styles.blob} />
             <img src="/images/portada.png" alt="Trueke" style={styles.image} />
           </div>
 
@@ -562,7 +561,7 @@ const styles: any = {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    background: '#F6F3F0',
+    background: '#FDF8F3',
   },
 
   stepContainer: {
@@ -595,26 +594,14 @@ const styles: any = {
 
   illustrationWrapper: {
     position: 'relative',
-    height: 280,
+    height: 320,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    overflow: 'hidden',
-  },
-
-  blob: {
-    position: 'absolute',
-    width: 260,
-    height: 180,
-    background: '#E9E2DB',
-    borderRadius: '50%',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
   },
 
   image: {
-    width: '90%',
+    width: '105%',
     zIndex: 1,
   },
 

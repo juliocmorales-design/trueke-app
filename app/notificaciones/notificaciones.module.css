@@ -126,6 +126,7 @@
 .emptyIcon {
   font-size: 52px;
   line-height: 1;
+  margin-bottom: 8px;
 }
 
 .emptyTitle {
@@ -136,10 +137,11 @@
 }
 
 .emptySub {
-  font-size: 14px;
-  color: #9AA3AB;
+  font-size: 15px;
+  font-weight: 500;
+  color: #4A5568;
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.7;
 }
 
 .loading {

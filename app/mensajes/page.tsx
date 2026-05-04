@@ -136,7 +136,7 @@ export default function MessagesPage() {
 
       {conversations.length === 0 && (
         <p style={styles.empty}>
-          Aún no tienes conversaciones. Envía una oferta desde la ficha de un item.
+          Aún no tienes conversaciones.<br/>Envía una oferta desde la ficha de un item.
         </p>
       )}
 
@@ -198,11 +198,12 @@ const styles: any = {
   },
 
   empty: {
-    color: '#6F7A82',
-    fontSize: 14,
+    color: '#1A2744',
+    fontSize: 15,
+    fontWeight: 500,
     textAlign: 'center',
     marginTop: 60,
-    lineHeight: 1.6,
+    lineHeight: 1.8,
   },
 
   item: {

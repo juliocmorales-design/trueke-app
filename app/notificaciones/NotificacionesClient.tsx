@@ -147,10 +147,15 @@ export default function NotificacionesClient() {
 
       ) : notifs.length === 0 ? (
         <div className={s.emptyWrap}>
-          <div className={s.emptyIcon}>🔔</div>
+          <div className={s.emptyIcon}>
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </div>
           <p className={s.emptyTitle}>Todo tranquilo por aquí</p>
           <p className={s.emptySub}>
-            Cuando alguien te envíe una oferta o acepte la tuya, lo verás aquí
+            Cuando alguien te envíe una oferta o acepte la tuya,<br/>lo verás aquí
           </p>
         </div>
 
