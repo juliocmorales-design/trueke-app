@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 4 Mayo 2026
+> Última actualización: 4 Mayo 2026 (sesión 2)
 
 ---
 
@@ -73,7 +73,8 @@ Las tarjetas compartibles solo muestran:
 - **Supabase**: PostgreSQL + Auth OTP + Storage + Realtime
 - Cliente Supabase en `app/lib/supabase.js`
 - Admin client con SERVICE_ROLE_KEY en rutas API (bypasea RLS)
-- **GitHub Codespaces** — repositorio: `barter-app/trueke-app`, branch: `ui/navbar-refactor`
+- **GitHub Codespaces** — repositorio: `juliocmorales-design/trueke-app`, branch: `ui/navbar-refactor`
+- **Remote URL corregida:** `git@github.com:juliocmorales-design/trueke-app.git` (era `juliomorales-design` sin la c)
 - **Claude Code v2.1.123** instalado y autenticado en Codespaces
 
 ---
@@ -133,6 +134,7 @@ trueke-app/app/
 ├── api/notifications/create/        ✅ POST — inserta notificación con admin client
 ├── api/notifications/list/          ✅ GET — lista notificaciones del usuario
 ├── api/notifications/unread-count/  ✅ GET — conteo no leídas
+├── buscar/page.tsx                  ✅ Pantalla de búsqueda con filtro ciudad + debounce
 ├── api/chains/create/               ✅ POST — crea cadena de intercambio
 └── lib/
     ├── supabase.js                  ✅ Cliente Supabase (anon)
@@ -145,7 +147,8 @@ trueke-app/app/
 
 | Pantalla | Notas |
 |---|---|
-| Inicio / Home | Tarjetas cuadradas, ícono mensajes en header, cadenas |
+| Inicio / Home | Tarjetas cuadradas, ícono mensajes en header, cadenas. Buscador → navega a /buscar |
+| Búsqueda | Grid 2 col, debounce 300ms, filtro chips ciudad, empty state SVG lupa, skeleton 3 cards |
 | Crear publicación | Hasta 5 fotos, sube a Supabase Storage, botón "Publicar", requiere foto para activarse |
 | Detalle de item | Carrusel con márgenes laterales, CTA "Ofrecer algo a cambio", owner stats con avg rating ("Nuevo" si sin calificaciones) |
 | ¿Qué ofreces a cambio? | Radio buttons naranja, estado vacío si no tiene items |
@@ -153,9 +156,10 @@ trueke-app/app/
 | Acordar punto de encuentro | BottomNav oculto, input fondo #F0EAE0, mensaje es propuesta con confirmación por chat, sender dinámico según usuario actual |
 | Calificación post-intercambio | Se activa tras marcar "Ya hicimos el intercambio" desde ExchangeClient |
 | Chat por oferta | Vinculado a offer_id, ícono "..." vertical SVG, reportar usuario |
-| Lista de mensajes | Cards con sombra sobre fondo beige, avatar navy, símbolo ⇄ en naranja |
+| Lista de mensajes | Empty state: SVG campana, 2 líneas, color #1A2744, fontWeight 500 |
 | Mis intercambios | Tabs Activos/Completados/Cancelados, fotos con borderRadius: 12 |
-| Notificaciones | Cards con SVGs por tipo, routing correcto por tipo, fondo dinámico en iconWrap |
+| Notificaciones | Empty state: SVG campana trazo fino #C4BAB1, texto mejorado. Cards con SVGs por tipo |
+| Onboarding step 0 | Título 38px en 2 líneas, imagen portada.png sin blob de fondo, fondo #FDF8F3 |
 | Perfil | Stats reales (ratings + items count), sin logros, con "Mis cadenas" y sub-páginas |
 
 ---
@@ -202,6 +206,7 @@ rating/[offerId] → calificación 1-5 + comentario
 4. **Push notifications** — PWA o web push para notificaciones en tiempo real
 5. **Rating visible en perfil** — conectar promedio de ratings a la página de perfil público
 6. **Mis intercambios** — verificar que los tabs Activos/Completados/Cancelados filtren correctamente
+7. **Búsqueda** — agregar filtro por categoría además de ciudad
 
 ---
 
