@@ -73,6 +73,20 @@ export default function OfferNewPage() {
       { offer_id: offer.id, item_id: itemId, type: 'requested' },
     ])
 
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token ?? ''
+    fetch('/api/notifications/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        userId:  targetItem.user_id,
+        type:    'offer_received',
+        title:   'Nueva oferta de intercambio 🔄',
+        body:    'Alguien quiere intercambiar algo contigo',
+        offerId: offer.id,
+      }),
+    }).catch(() => {})
+
     router.push(`/mensajes/${offer.id}`)
   }
 
