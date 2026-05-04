@@ -297,7 +297,7 @@ export default function OfferChatPage() {
 
 const s: any = {
   container: {
-    background: '#F6F3F0',
+    background: '#FDF8F3',
     height: '100vh',
     display: 'flex',
     flexDirection: 'column',
@@ -447,7 +447,7 @@ const s: any = {
   contextTitle: {
     fontSize: 14,
     fontWeight: 700,
-    color: '#1E1E1E',
+    color: '#1A2744',
     lineHeight: 1.4,
   },
 
@@ -513,7 +513,7 @@ const s: any = {
   scoreLabel: {
     fontSize: 14,
     fontWeight: 600,
-    color: '#1E1E1E',
+    color: '#1A2744',
   },
 
   scoreBadge: {
@@ -624,7 +624,7 @@ const s: any = {
     border: '1.5px solid #E0DAD5',
     fontSize: 14,
     outline: 'none',
-    background: '#F6F3F0',
+    background: '#FDF8F3',
   },
 
   sendBtn: {
@@ -650,7 +650,7 @@ const s: any = {
     borderRadius: '50%',
     background: '#EDE7E1',
     border: 'none',
-    display: 'flex',
+    display: 'none',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',

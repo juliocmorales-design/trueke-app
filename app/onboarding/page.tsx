@@ -59,12 +59,10 @@ export default function Onboarding() {
         .eq('id', user.id)
         .single()
 
-      console.log('[onboarding] init profile?.username:', profile?.username ?? null)
-      // if (profile?.username) {
-      //   console.log('[onboarding] perfil completo → /')
-      //   router.push('/')
-      //   return
-      // }
+      if (profile?.username) {
+        router.push('/')
+        return
+      }
 
       if (profile) {
         setUsername(profile.username || '')
@@ -624,10 +622,10 @@ const styles: any = {
     width: '100%',
     padding: 14,
     borderRadius: 10,
-    border: '1px solid #ddd',
+    border: 'none',
     marginBottom: 16,
     fontSize: 16,
-    background: '#fff',
+    background: '#F0EAE0',
     boxSizing: 'border-box',
   },
 
@@ -683,7 +681,7 @@ const styles: any = {
     border: '2px solid #F97316',
     textAlign: 'center',
     padding: 16,
-    borderRadius: 30,
+    borderRadius: 16,
     fontWeight: 600,
     cursor: 'pointer',
     fontSize: 16,
@@ -697,7 +695,7 @@ const styles: any = {
     background: 'transparent',
     textAlign: 'center',
     padding: 16,
-    borderRadius: 30,
+    borderRadius: 16,
     fontWeight: 600,
     cursor: 'pointer',
     fontSize: 16,

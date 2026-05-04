@@ -209,7 +209,7 @@ function StarIcon() {
 
 const styles: any = {
   screen: {
-    background: '#F6F3F0',
+    background: '#FDF8F3',
     display: 'flex',
     justifyContent: 'center',
   },

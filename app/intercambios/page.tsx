@@ -231,7 +231,7 @@ const shimmer = {
 
 const s: any = {
   screen: {
-    background: '#F6F3F0',
+    background: '#FDF8F3',
     minHeight: '100vh',
     display: 'flex',
     justifyContent: 'center',

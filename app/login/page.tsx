@@ -202,7 +202,7 @@ const styles: any = {
   container: {
     padding: 24,
     minHeight: '100vh',
-    background: '#F6F3F0',
+    background: '#FDF8F3',
     display: 'flex',
     flexDirection: 'column',
   },
@@ -218,7 +218,7 @@ const styles: any = {
   title: {
     fontSize: 28,
     fontWeight: 700,
-    color: '#1a1a2e',
+    color: '#1A2744',
     marginBottom: 8,
   },
 
@@ -232,10 +232,10 @@ const styles: any = {
     width: '100%',
     padding: 14,
     borderRadius: 10,
-    border: '1px solid #ddd',
+    border: 'none',
     marginBottom: 16,
     fontSize: 16,
-    background: '#fff',
+    background: '#F0EAE0',
     boxSizing: 'border-box',
   },
 

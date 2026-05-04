@@ -102,7 +102,7 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         userId:  ratedProfile.id,
-        type:    'new_rating',
+        type:    'rating_received',
         title:   '¡Tienes una nueva valoración! ⭐',
         body:    `Recibiste ${stars} estrella${stars !== 1 ? 's' : ''} en tu último intercambio`,
         offerId: data.offer.id,

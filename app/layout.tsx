@@ -93,7 +93,7 @@ export default function RootLayout({
 const styles: any = {
   body: {
     margin: 0,
-    background: '#cfc7bb',
+    background: '#FDF8F3',
     display: 'flex',
     justifyContent: 'center',
   },
@@ -105,7 +105,7 @@ const styles: any = {
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
-    background: '#F6F3F0', // 🔥 fondo correcto tipo app moderna
+    background: '#FDF8F3',
   },
 
   // 🔥 CONTENIDO NORMAL
@@ -118,7 +118,7 @@ const styles: any = {
   // 🔥 PANTALLA ITEM FULL
   full: {
     flex: 1,
-    background: '#F6F3F0',
+    background: '#FDF8F3',
   },
 
   // 🔥 NAVBAR FIJO ABAJO PERO DENTRO DEL WIDTH

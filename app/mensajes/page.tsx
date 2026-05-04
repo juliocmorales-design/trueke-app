@@ -268,7 +268,7 @@ const styles: any = {
 
   offerContext: {
     fontSize: 12,
-    color: '#E8642C',
+    color: '#F97316',
     fontWeight: 600,
     marginTop: 2,
     overflow: 'hidden',

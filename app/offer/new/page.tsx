@@ -210,7 +210,7 @@ export default function OfferNewPage() {
 const s: any = {
   screen: {
     minHeight: '100vh',
-    background: '#F6F3F0',
+    background: '#FDF8F3',
     display: 'flex',
     flexDirection: 'column',
   },
@@ -239,7 +239,7 @@ const s: any = {
     fontSize: 20,
     fontWeight: 700,
     margin: 0,
-    color: '#1E1E1E',
+    color: '#1A2744',
   },
 
   body: {
@@ -315,7 +315,7 @@ const s: any = {
   contextItemTitle: {
     fontSize: 15,
     fontWeight: 700,
-    color: '#1E1E1E',
+    color: '#1A2744',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
@@ -347,7 +347,7 @@ const s: any = {
   sectionTitle: {
     fontSize: 15,
     fontWeight: 700,
-    color: '#1E1E1E',
+    color: '#1A2744',
   },
 
   counter: {
@@ -452,7 +452,7 @@ const s: any = {
   cardTitle: {
     fontSize: 14,
     fontWeight: 600,
-    color: '#1E1E1E',
+    color: '#1A2744',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
@@ -497,7 +497,7 @@ const s: any = {
     width: '100%',
     maxWidth: 500,
     padding: '12px 16px 28px',
-    background: '#F6F3F0',
+    background: '#FDF8F3',
     borderTop: '1px solid #EDE7E1',
   },
 

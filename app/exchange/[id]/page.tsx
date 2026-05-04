@@ -20,7 +20,6 @@ export default async function ExchangeDetail({ params }: { params: Promise<{ id:
     .eq('id', offerId)
     .single()
 
-  console.log('[exchange] offer:', JSON.stringify(offer), 'err:', offerErr?.message)
 
   if (!offer || (offerErr as any)?.code === 'PGRST116') notFound()
   if (offerErr) {
@@ -42,7 +41,6 @@ export default async function ExchangeDetail({ params }: { params: Promise<{ id:
       supabase.from('items').select('id, title, images, user_id').eq('id', offer.from_item_id).single(),
       supabase.from('items').select('id, title, images, user_id').eq('id', offer.to_item_id).single(),
     ])
-    console.log('[exchange] fromItem:', JSON.stringify(fi), 'toItem:', JSON.stringify(ti))
     offeredItem   = fi ?? null
     requestedItem = ti ?? null
   }
@@ -52,8 +50,6 @@ export default async function ExchangeDetail({ params }: { params: Promise<{ id:
       .from('offer_items')
       .select('type, item_id')
       .eq('offer_id', offerId)
-    console.log('[exchange] offer_items fallback:', JSON.stringify(rows))
-
     if (rows?.length) {
       const offRow = rows.find((r: any) => r.type === 'offered')
       const reqRow = rows.find((r: any) => r.type === 'requested')

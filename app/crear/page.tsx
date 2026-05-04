@@ -19,6 +19,7 @@ export default function CrearPage() {
   const [previews, setPreviews] = useState<string[]>([])
 
   const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const handleImages = (e: any) => {
     const selected = Array.from(e.target.files || []) as File[]
@@ -42,8 +43,10 @@ export default function CrearPage() {
   }
 
   const handleSubmit = async () => {
+    setErrorMsg(null)
+
     if (files.length === 0) {
-      alert('Agrega al menos una imagen')
+      setErrorMsg('Agrega al menos una imagen')
       return
     }
 
@@ -54,7 +57,7 @@ export default function CrearPage() {
       const user = sessionData.session?.user
 
       if (!user) {
-        alert('No autenticado')
+        setErrorMsg('No autenticado')
         setLoading(false)
         return
       }
@@ -70,7 +73,7 @@ export default function CrearPage() {
 
         if (error) {
           console.error(error)
-          alert('Error subiendo imagen')
+          setErrorMsg('Error subiendo imagen')
           setLoading(false)
           return
         }
@@ -90,7 +93,7 @@ export default function CrearPage() {
 
       if (error || !newItem) {
         console.error(error)
-        alert('Error guardando')
+        setErrorMsg('Error guardando la publicación')
         setLoading(false)
         return
       }
@@ -125,7 +128,7 @@ export default function CrearPage() {
 
     } catch (err) {
       console.error(err)
-      alert('Error general')
+      setErrorMsg('Ocurrió un error inesperado')
     }
 
     setLoading(false)
@@ -236,6 +239,10 @@ export default function CrearPage() {
           style={styles.textarea}
         />
       </div>
+
+      {errorMsg && (
+        <div style={styles.errorBox}>{errorMsg}</div>
+      )}
 
       <button
         onClick={handleSubmit}
@@ -395,5 +402,14 @@ const styles: any = {
     fontWeight: 600,
     marginTop: 24,
     marginBottom: 24,
+  },
+
+  errorBox: {
+    background: '#FEE2E2',
+    color: '#991B1B',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 14,
+    marginTop: 8,
   },
 }
