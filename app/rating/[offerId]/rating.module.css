@@ -319,6 +319,19 @@
 
 .modalBtnSecondary:active { color: #6F7A82; }
 
+.chainSelect {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #E5DDD6;
+  background: #F8F4F0;
+  font-size: 14px;
+  color: #1A2744;
+  font-family: inherit;
+  margin-bottom: 8px;
+  outline: none;
+}
+
 /* ── FOOTER STICKY ───────────────────────────────────────────────── */
 .footer {
   position: fixed;

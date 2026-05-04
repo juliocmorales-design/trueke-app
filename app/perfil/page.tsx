@@ -118,7 +118,7 @@ export default function PerfilPage() {
       <div style={styles.chainsSection}>
         <div style={styles.sectionHeader}>
           <span style={styles.sectionTitle}>Mis cadenas</span>
-          <span style={styles.link} onClick={() => router.push('/intercambios')}>Ver todas</span>
+          <span style={styles.link} onClick={() => router.push('/mis-cadenas')}>Ver todas</span>
         </div>
 
         {chains.length === 0 ? (

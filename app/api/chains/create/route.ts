@@ -15,8 +15,8 @@ export async function POST(req: NextRequest) {
     const { offerId, receivedItemId } = await req.json()
     console.log('[chains/create] body:', { offerId, receivedItemId })
 
-    if (!offerId || !receivedItemId) {
-      return NextResponse.json({ error: 'offerId y receivedItemId son requeridos' }, { status: 400 })
+    if (!receivedItemId) {
+      return NextResponse.json({ error: 'receivedItemId es requerido' }, { status: 400 })
     }
 
     /* Authenticate caller via the anon client cookie/header */
@@ -38,24 +38,28 @@ export async function POST(req: NextRequest) {
 
     const supabase = adminClient()
 
-    /* 1 — Offer */
-    const { data: offer, error: offerError } = await supabase
-      .from('offers')
-      .select('id, from_user_id, to_user_id, from_item_id, to_item_id')
-      .eq('id', offerId)
-      .single()
-    console.log('[chains/create] offer result:', offer ?? offerError)
+    /* 1 — Offer (optional) */
+    let fromUser = user.id
+    let toUser: string | null = null
 
-    if (offerError || !offer) {
-      return NextResponse.json({ error: offerError?.message || 'Oferta no encontrada' }, { status: 404 })
+    if (offerId) {
+      const { data: offer, error: offerError } = await supabase
+        .from('offers')
+        .select('id, from_user_id, to_user_id')
+        .eq('id', offerId)
+        .single()
+      console.log('[chains/create] offer result:', offer ?? offerError)
+
+      if (offerError || !offer) {
+        return NextResponse.json({ error: offerError?.message || 'Oferta no encontrada' }, { status: 404 })
+      }
+
+      const iAmFrom = user.id === offer.from_user_id
+      fromUser = iAmFrom ? offer.from_user_id : offer.to_user_id
+      toUser   = iAmFrom ? offer.to_user_id   : offer.from_user_id
     }
 
-    /* 2 — Determine from/to for this step from the perspective of the caller */
-    const iAmFrom  = user.id === offer.from_user_id
-    const fromUser = iAmFrom ? offer.from_user_id : offer.to_user_id
-    const toUser   = iAmFrom ? offer.to_user_id   : offer.from_user_id
-
-    /* 3 — INSERT chain */
+    /* 2 — INSERT chain */
     const chainPayload = {
       creator_id:       user.id,
       initial_item_id:  receivedItemId,
@@ -85,8 +89,8 @@ export async function POST(req: NextRequest) {
         step_number:  1,
         item_id:      receivedItemId,
         from_user_id: fromUser,
-        to_user_id:   toUser,
-        offer_id:     offerId,
+        ...(toUser   ? { to_user_id: toUser }   : {}),
+        ...(offerId  ? { offer_id:   offerId }   : {}),
       })
 
     if (stepError) {

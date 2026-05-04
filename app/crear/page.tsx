@@ -1,11 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import supabase from '../lib/supabase'
 
 export default function CrearPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const chainId  = searchParams.get('chainId')
+  const newChain = searchParams.get('newChain')
+  const itemId   = searchParams.get('itemId')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [wanted, setWanted] = useState('')
@@ -78,23 +82,42 @@ export default function CrearPage() {
         uploadedUrls.push(data.publicUrl)
       }
 
-      const { error } = await supabase
+      const { data: newItem, error } = await supabase
         .from('items')
-        .insert([
-          {
-            title,
-            description,
-            wanted,
-            city,
-            user_id: user.id,
-            images: uploadedUrls,
-          }
-        ])
+        .insert([{ title, description, wanted, city, user_id: user.id, images: uploadedUrls }])
+        .select('id')
+        .single()
 
-      if (error) {
+      if (error || !newItem) {
         console.error(error)
         alert('Error guardando')
         setLoading(false)
+        return
+      }
+
+      const newItemId = newItem.id
+      const { data: { session: sess } } = await supabase.auth.getSession()
+      const token = sess?.access_token ?? ''
+
+      if (newChain === 'true') {
+        const res = await fetch('/api/chains/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ receivedItemId: newItemId }),
+        })
+        const json = await res.json().catch(() => null)
+        router.push(res.ok ? `/chain/${json?.chainId}` : '/')
+        return
+      }
+
+      if (chainId) {
+        const res = await fetch('/api/chains/add-step', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ chainId: Number(chainId), newItemId }),
+        })
+        const json = await res.json().catch(() => null)
+        router.push(res.ok ? `/chain/${json?.chainId}` : '/')
         return
       }
 
@@ -127,6 +150,15 @@ export default function CrearPage() {
         <span style={styles.headerTitle}>Crear publicación</span>
         <div style={{ width: 40 }} />
       </div>
+
+      {/* BANNER CADENA */}
+      {(chainId || newChain) && (
+        <div style={styles.chainBanner}>
+          {chainId
+            ? '🔗 Continuando cadena — publica lo que vas a intercambiar'
+            : '✨ Nueva cadena — publica el primer objeto'}
+        </div>
+      )}
 
       {/* FOTOS */}
       <div style={styles.section}>
@@ -251,6 +283,16 @@ const styles: any = {
     fontSize: 18,
     fontWeight: 700,
     color: '#1A2744',
+  },
+
+  chainBanner: {
+    background: '#FFF0E6',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 14,
+    fontWeight: 500,
+    color: '#C2410C',
+    marginBottom: 20,
   },
 
   section: {

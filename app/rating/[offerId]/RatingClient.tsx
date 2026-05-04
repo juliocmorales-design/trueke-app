@@ -48,7 +48,8 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
   const [saving,       setSaving]       = useState(false)
   const [ready,        setReady]        = useState(false)
   const [showModal,    setShowModal]    = useState(false)
-  const [chainLoading, setChainLoading] = useState(false)
+  const [myChains,     setMyChains]     = useState<any[]>([])
+  const [selectedChainId, setSelectedChainId] = useState<number | null>(null)
 
   /* Resolved per current user */
   const [receivedItem,  setReceivedItem]  = useState<Item>(null)
@@ -108,36 +109,19 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
       }),
     }).catch(() => {})
 
+    // Fetch active chains in parallel with notification fire-and-forget
+    const { data: chainsData } = await supabase
+      .from('chains')
+      .select('id, goal_description, initial_item_id')
+      .eq('creator_id', raterId)
+      .eq('status', 'active')
+
+    const chains = chainsData || []
+    setMyChains(chains)
+    if (chains.length > 0) setSelectedChainId(chains[0].id)
+
     setSaving(false)
     setShowModal(true)
-  }
-
-  const handleChainStart = async () => {
-    if (!receivedItem || chainLoading) return
-    setChainLoading(true)
-
-    const { data: { session } } = await supabase.auth.getSession()
-    const token = session?.access_token ?? ''
-
-    const res = await fetch('/api/chains/create', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body:    JSON.stringify({ offerId: data.offer.id, receivedItemId: receivedItem.id }),
-    })
-
-    const responseData = await res.json().catch(() => null)
-    console.log('[handleChainStart] response data:', responseData)
-
-    if (!res.ok) {
-      alert(`No se pudo iniciar la cadena: ${responseData?.error ?? 'Error desconocido'}`)
-      setChainLoading(false)
-      return
-    }
-
-    const { chainId } = responseData ?? {}
-    console.log('[handleChainStart] chainId recibido:', chainId)
-    console.log('[handleChainStart] redirigiendo a:', `/chain/${chainId}`)
-    router.replace(`/chain/${chainId}`)
   }
 
   /* While checking auth — no flash of content */
@@ -261,16 +245,38 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
 
             <div className={s.modalItemTitle}>{receivedItem?.title}</div>
 
-            <div className={s.modalTitle}>¿Quieres seguir intercambiando?</div>
-            <div className={s.modalSub}>Publica lo que recibiste y sigue la cadena</div>
+            <div className={s.modalTitle}>¿Qué haces con lo que recibiste?</div>
+            <div className={s.modalSub}>Puedes continuar una cadena o empezar una nueva</div>
+
+            {myChains.length > 0 && (
+              <>
+                {myChains.length > 1 && (
+                  <select
+                    className={s.chainSelect}
+                    value={selectedChainId ?? ''}
+                    onChange={e => setSelectedChainId(Number(e.target.value))}
+                  >
+                    {myChains.map(c => (
+                      <option key={c.id} value={c.id}>
+                        {c.goal_description || `Cadena #${c.id}`}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <button
+                  className={s.modalBtnPrimary}
+                  onClick={() => router.replace(`/crear?chainId=${selectedChainId}&itemId=${receivedItem?.id}`)}
+                >
+                  Continuar una cadena existente
+                </button>
+              </>
+            )}
 
             <button
-              className={s.modalBtnPrimary}
-              onClick={handleChainStart}
-              disabled={chainLoading}
-              style={chainLoading ? { opacity: 0.6 } : undefined}
+              className={myChains.length > 0 ? s.modalBtnSecondary : s.modalBtnPrimary}
+              onClick={() => router.replace(`/crear?newChain=true&itemId=${receivedItem?.id}`)}
             >
-              {chainLoading ? 'Un momento…' : 'Sí, publicarlo para intercambio'}
+              Empezar cadena nueva
             </button>
             <button
               className={s.modalBtnSecondary}
