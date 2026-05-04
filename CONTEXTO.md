@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 3 Mayo 2026
+> Última actualización: 4 Mayo 2026
 
 ---
 
@@ -46,10 +46,16 @@ Las tarjetas compartibles solo muestran:
 - Score de confianza visible en perfil y en chat
 
 ### 4. Consistencia visual — nunca romper esto
-- **Color primario: naranja #E8642C** → todas las acciones principales
+- **Color primario: naranja #F97316** → todas las acciones principales (estandarizado — no usar #E8642C ni otros legacy)
 - Fondo: beige/crema #FDF8F3 | Texto principal: navy #1A2744
 - El CTA principal SIEMPRE es naranja — nunca navy, nunca gris
 - Pills de estado por color: amber=pendiente, verde=aceptado/completado, rojo=rechazado
+- **`border-radius` de botones CTA: 16px** — no usar 999px ni valores diferentes
+- **BottomNav** se oculta en pantallas de flujo (meeting point) usando `id="bottom-nav"` + `display: none` en useEffect
+- **Flujo post-aceptación completo:** Exchange → Meeting point → Completado → Rating
+- **Notificaciones** usan SVGs consistentes con routing por tipo: offer_received/accepted/completed → /mensajes/, offer_rejected → /intercambios, rating_received → /perfil/resenas
+- **Mensaje de meeting point** es propuesta con confirmación por chat, no confirmación unilateral
+- **Perfil:** logros removidos, reemplazados por "Mis cadenas". Stats usan datos reales (ratings query, items count)
 
 ### 5. Flujo de oferta — reglas importantes
 - El chat SIEMPRE está vinculado a una oferta específica (offer_id)
@@ -144,13 +150,13 @@ trueke-app/app/
 | Detalle de item | Carrusel con márgenes laterales, CTA "Ofrecer algo a cambio", owner stats con avg rating ("Nuevo" si sin calificaciones) |
 | ¿Qué ofreces a cambio? | Radio buttons naranja, estado vacío si no tiene items |
 | Detalle del intercambio | Footer dinámico: accepted→meeting+chat+completar, pending→aceptar/rechazar, resto→solo chat |
-| Acordar punto de encuentro | Guarda meeting_point en offers, manda mensaje al chat, redirige a mensajes |
+| Acordar punto de encuentro | BottomNav oculto, input fondo #F0EAE0, mensaje es propuesta con confirmación por chat, sender dinámico según usuario actual |
 | Calificación post-intercambio | Se activa tras marcar "Ya hicimos el intercambio" desde ExchangeClient |
 | Chat por oferta | Vinculado a offer_id, ícono "..." vertical SVG, reportar usuario |
 | Lista de mensajes | Cards con sombra sobre fondo beige, avatar navy, símbolo ⇄ en naranja |
 | Mis intercambios | Tabs Activos/Completados/Cancelados, fotos con borderRadius: 12 |
-| Notificaciones | Centro de notificaciones con API routes propias |
-| Perfil | Publicaciones y reseñas en sub-páginas |
+| Notificaciones | Cards con SVGs por tipo, routing correcto por tipo, fondo dinámico en iconWrap |
+| Perfil | Stats reales (ratings + items count), sin logros, con "Mis cadenas" y sub-páginas |
 
 ---
 
@@ -190,11 +196,12 @@ rating/[offerId] → calificación 1-5 + comentario
 
 ## ⏳ Pendiente MVP — en orden de prioridad
 
-1. **Twilio** — configurar para SMS reales en onboarding/login
-2. **Cadenas** — flujo completo crear/seguir progreso, tarjeta compartible
-3. **Push notifications** — PWA o web push para notificaciones en tiempo real
-4. **Rating visible en perfil** — conectar promedio de ratings a la página de perfil público
-5. **Mis intercambios** — verificar que los tabs Activos/Completados/Cancelados filtren correctamente
+1. **Conectar createNotification() a flujos reales** — llamar al helper en: oferta enviada (offer/new), oferta aceptada/rechazada (ExchangeClient ya lo hace), intercambio completado (ExchangeClient ya lo hace), calificación recibida (RatingClient pendiente)
+2. **Twilio** — configurar para SMS reales en onboarding/login
+3. **Cadenas** — flujo completo crear/seguir progreso, tarjeta compartible
+4. **Push notifications** — PWA o web push para notificaciones en tiempo real
+5. **Rating visible en perfil** — conectar promedio de ratings a la página de perfil público
+6. **Mis intercambios** — verificar que los tabs Activos/Completados/Cancelados filtren correctamente
 
 ---
 
