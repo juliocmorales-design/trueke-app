@@ -12,28 +12,33 @@ export default function EditProfile() {
   const [username, setUsername] = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
+  const [saving,   setSaving]   = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     loadProfile()
   }, [])
 
   const loadProfile = async () => {
-    const { data: sessionData } = await supabase.auth.getSession()
-    const user = sessionData.session?.user
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const user = sessionData.session?.user
 
-    if (!user) return router.push('/login')
+      if (!user) return router.push('/login')
 
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
 
-    setProfile(data)
-    setName(data?.name || '')
-    setUsername(data?.username || '')
-    setPreview(data?.avatar_url || null)
+      setProfile(data)
+      setName(data?.name || '')
+      setUsername(data?.username || '')
+      setPreview(data?.avatar_url || null)
+    } catch {
+      router.replace('/')
+    }
   }
 
   const handleFile = (e: any) => {
@@ -70,25 +75,28 @@ export default function EditProfile() {
 
   const handleSave = async () => {
     setSaving(true)
+    setSaveError(null)
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const user = sessionData.session?.user
 
-    const { data: sessionData } = await supabase.auth.getSession()
-    const user = sessionData.session?.user
+      if (!user) return
 
-    if (!user) return
+      const avatar_url = await uploadAvatar(user.id)
 
-    const avatar_url = await uploadAvatar(user.id)
+      const { error } = await supabase
+        .from('profiles')
+        .update({ name, username, avatar_url })
+        .eq('id', user.id)
 
-    await supabase
-      .from('profiles')
-      .update({
-        name,
-        username,
-        avatar_url,
-      })
-      .eq('id', user.id)
+      if (error) throw error
 
-    setSaving(false)
-    router.push('/perfil')
+      router.push('/perfil')
+    } catch {
+      setSaveError('Error al guardar, intenta de nuevo')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -123,6 +131,12 @@ export default function EditProfile() {
         placeholder="Username"
         style={styles.input}
       />
+
+      {saveError && (
+        <div style={{ background: '#FEE2E2', color: '#991B1B', borderRadius: 12, padding: 12, fontSize: 14, marginBottom: 10 }}>
+          {saveError}
+        </div>
+      )}
 
       <button onClick={handleSave} style={styles.button}>
         {saving ? 'Guardando...' : 'Guardar'}

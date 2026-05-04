@@ -46,6 +46,7 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
   const [hovered,      setHovered]      = useState(0)
   const [comment,      setComment]      = useState('')
   const [saving,       setSaving]       = useState(false)
+  const [saveError,    setSaveError]    = useState(false)
   const [ready,        setReady]        = useState(false)
   const [showModal,    setShowModal]    = useState(false)
   const [myChains,     setMyChains]     = useState<any[]>([])
@@ -85,43 +86,49 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
   const handleSave = async () => {
     if (!stars || !raterId || !ratedProfile || saving) return
     setSaving(true)
+    setSaveError(false)
 
-    await supabase.from('ratings').insert({
-      offer_id: data.offer.id,
-      rater_id: raterId,
-      rated_id: ratedProfile.id,
-      score:    stars,
-      comment:  comment.trim() || null,
-    })
+    try {
+      await supabase.from('ratings').insert({
+        offer_id: data.offer.id,
+        rater_id: raterId,
+        rated_id: ratedProfile.id,
+        score:    stars,
+        comment:  comment.trim() || null,
+      })
 
-    // Notify the person who was rated
-    const { data: { session } } = await supabase.auth.getSession()
-    const token = session?.access_token ?? ''
-    fetch('/api/notifications/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        userId:  ratedProfile.id,
-        type:    'rating_received',
-        title:   '¡Tienes una nueva valoración! ⭐',
-        body:    `Recibiste ${stars} estrella${stars !== 1 ? 's' : ''} en tu último intercambio`,
-        offerId: data.offer.id,
-      }),
-    }).catch(() => {})
+      // Notify the person who was rated
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token ?? ''
+      fetch('/api/notifications/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          userId:  ratedProfile.id,
+          type:    'rating_received',
+          title:   '¡Tienes una nueva valoración! ⭐',
+          body:    `Recibiste ${stars} estrella${stars !== 1 ? 's' : ''} en tu último intercambio`,
+          offerId: data.offer.id,
+        }),
+      }).catch(() => {})
 
-    // Fetch active chains in parallel with notification fire-and-forget
-    const { data: chainsData } = await supabase
-      .from('chains')
-      .select('id, goal_description, initial_item_id')
-      .eq('creator_id', raterId)
-      .eq('status', 'active')
+      // Fetch active chains in parallel with notification fire-and-forget
+      const { data: chainsData } = await supabase
+        .from('chains')
+        .select('id, goal_description, initial_item_id')
+        .eq('creator_id', raterId)
+        .eq('status', 'active')
 
-    const chains = chainsData || []
-    setMyChains(chains)
-    if (chains.length > 0) setSelectedChainId(chains[0].id)
+      const chains = chainsData || []
+      setMyChains(chains)
+      if (chains.length > 0) setSelectedChainId(chains[0].id)
 
-    setSaving(false)
-    setShowModal(true)
+      setSaving(false)
+      setShowModal(true)
+    } catch {
+      setSaveError(true)
+      setSaving(false)
+    }
   }
 
   /* While checking auth — no flash of content */
@@ -290,6 +297,11 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
 
       {/* FOOTER STICKY */}
       <div className={s.footer}>
+        {saveError && (
+          <p style={{ margin: '0 0 8px', fontSize: 13, color: '#DC2626', textAlign: 'center' }}>
+            Error al guardar la calificación, intenta de nuevo
+          </p>
+        )}
         <button
           className={`${s.saveBtn} ${!stars || saving ? s.saveBtnOff : ''}`}
           onClick={handleSave}

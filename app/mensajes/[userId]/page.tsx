@@ -4,6 +4,12 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 
+type AuthUser = { id: string; email?: string }
+type Item     = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string }
+type Profile  = { id: string; name: string; username: string | null; avatar_url: string | null }
+type Offer    = { id: number; from_user_id: string; to_user_id: string; status: string; from_item_id: number | null; to_item_id: number | null }
+type Message  = { id: number; sender_id: string; receiver: string; text: string; created_at: string; is_read: boolean; offer_id: number; type?: 'system' | 'text' }
+
 const STEPS: Record<string, { step: number; label: string }> = {
   pending:   { step: 1, label: 'Esperando respuesta' },
   accepted:  { step: 2, label: 'Acordar punto de encuentro' },
@@ -14,18 +20,18 @@ export default function OfferChatPage() {
   const { userId: offerId } = useParams()
   const router = useRouter()
 
-  const [currentUser, setCurrentUser] = useState<any>(null)
-  const [offer, setOffer] = useState<any>(null)
-  const [myItem, setMyItem] = useState<any>(null)
-  const [theirItem, setTheirItem] = useState<any>(null)
-  const [otherUser, setOtherUser] = useState<any>(null)
-  const [trustScore, setTrustScore] = useState(0)
-  const [messages, setMessages] = useState<any[]>([])
-  const [text, setText] = useState('')
-  const [showMenu, setShowMenu] = useState(false)
-  const [reported, setReported] = useState(false)
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
+  const [offer, setOffer]             = useState<Offer | null>(null)
+  const [myItem, setMyItem]           = useState<Item | null>(null)
+  const [theirItem, setTheirItem]     = useState<Item | null>(null)
+  const [otherUser, setOtherUser]     = useState<Profile | null>(null)
+  const [trustScore, setTrustScore]   = useState(0)
+  const [messages, setMessages]       = useState<Message[]>([])
+  const [text, setText]               = useState('')
+  const [showMenu, setShowMenu]       = useState(false)
+  const [reported, setReported]       = useState(false)
 
-  const bottomRef = useRef<any>(null)
+  const bottomRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     init()
@@ -41,7 +47,7 @@ export default function OfferChatPage() {
         table: 'messages',
         filter: `offer_id=eq.${offerId}`,
       }, payload => {
-        setMessages(prev => [...prev, payload.new])
+        setMessages(prev => [...prev, payload.new as Message])
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }

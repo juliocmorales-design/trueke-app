@@ -3,15 +3,21 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
+import type { RealtimeChannel } from '@supabase/supabase-js'
+
+type AuthUser    = { id: string; email?: string }
+type Item        = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string }
+type Profile     = { id: string; name: string; username: string | null; avatar_url: string | null }
+type Conversation = { offerId: number; otherUser: Profile; myItem: Item | null; theirItem: Item | null; lastMessage: string; created_at: string; unread: number }
 
 export default function MessagesPage() {
   const router = useRouter()
 
-  const [currentUser, setCurrentUser] = useState<any>(null)
-  const [conversations, setConversations] = useState<any[]>([])
-  const [mounted, setMounted] = useState(false)
+  const [currentUser, setCurrentUser]     = useState<AuthUser | null>(null)
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [mounted, setMounted]             = useState(false)
 
-  const channelRef = useRef<any>(null)
+  const channelRef = useRef<RealtimeChannel | null>(null)
 
   useEffect(() => {
     setMounted(true)

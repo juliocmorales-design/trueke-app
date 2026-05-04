@@ -6,12 +6,12 @@ type Chain = {
   id: number
   initial_item_id: number
   creator_id?: string
-  initial_item_title?: string
-  initial_item_image?: string
-  final_item_title?: string
-  final_item_image?: string
-  creator_username?: string
-  creator_avatar?: string
+  initial_item_title?: string | null
+  initial_item_image?: string | null
+  final_item_title?: string | null
+  final_item_image?: string | null
+  creator_username?: string | null
+  creator_avatar?: string | null
   steps_count: number
   created_at: string
 }

@@ -4,15 +4,19 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 
+type AuthUser = { id: string; email?: string }
+type Item     = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string }
+type Profile  = { id: string; name: string; username: string | null; avatar_url: string | null }
+
 export default function OfferNewPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const itemId = searchParams.get('itemId')
 
-  const [currentUser, setCurrentUser] = useState<any>(null)
-  const [targetItem, setTargetItem] = useState<any>(null)
-  const [targetOwner, setTargetOwner] = useState<any>(null)
-  const [myItems, setMyItems] = useState<any[]>([])
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
+  const [targetItem, setTargetItem]   = useState<Item | null>(null)
+  const [targetOwner, setTargetOwner] = useState<Profile | null>(null)
+  const [myItems, setMyItems]         = useState<Item[]>([])
   const [selected, setSelected] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -90,7 +94,7 @@ export default function OfferNewPage() {
     router.push(`/mensajes/${offer.id}`)
   }
 
-  const targetImage = targetItem?.images?.[0] || targetItem?.image || null
+  const targetImage = targetItem?.images?.[0] || null
   const ownerHandle = targetOwner?.username
     ? `@${targetOwner.username}`
     : targetOwner?.name || 'Usuario'
@@ -163,13 +167,13 @@ export default function OfferNewPage() {
         ) : (
           <div style={s.list}>
             {myItems.map(item => {
-              const img = item.images?.[0] || item.image || null
-              const isSelected = selected === item.id
+              const img = item.images?.[0] || null
+              const isSelected = selected === String(item.id)
               return (
                 <div
                   key={item.id}
                   style={{ ...s.card, ...(isSelected ? s.cardSelected : {}) }}
-                  onClick={() => setSelected(isSelected ? null : item.id)}
+                  onClick={() => setSelected(isSelected ? null : String(item.id))}
                 >
                   {img ? (
                     <img src={img} style={s.cardImg} />

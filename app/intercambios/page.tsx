@@ -4,13 +4,17 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase'
 
+type Item     = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string }
+type Profile  = { id: string; name: string; username: string | null; avatar_url: string | null }
+type OfferRow = { id: number; from_user_id: string; to_user_id: string; from_item_id: number | null; to_item_id: number | null; status: string; created_at: string; myItem: Item | null; theirItem: Item | null; otherUser: Profile | null }
+
 const TABS = ['Activos', 'Completados', 'Cancelados'] as const
 type TabKey = 'active' | 'completed' | 'cancelled'
 const TAB_KEYS: TabKey[] = ['active', 'completed', 'cancelled']
 
 export default function IntercambiosPage() {
   const router = useRouter()
-  const [offers, setOffers] = useState<any[]>([])
+  const [offers, setOffers] = useState<OfferRow[]>([])
   const [loading, setLoading] = useState(true)
   const [tabIndex, setTabIndex] = useState(0)
   const [anim, setAnim] = useState('')

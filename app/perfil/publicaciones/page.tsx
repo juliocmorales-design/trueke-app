@@ -15,24 +15,30 @@ type Item = {
 
 export default function MisPublicacionesPage() {
   const router = useRouter()
-  const [items,   setItems]   = useState<Item[]>([])
-  const [loading, setLoading] = useState(true)
+  const [items,     setItems]     = useState<Item[]>([])
+  const [loading,   setLoading]   = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => { load() }, [])
 
   const load = async () => {
-    const { data: sessionData } = await supabase.auth.getSession()
-    const user = sessionData.session?.user
-    if (!user) { router.replace('/login'); return }
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const user = sessionData.session?.user
+      if (!user) { router.replace('/login'); return }
 
-    const { data } = await supabase
-      .from('items')
-      .select('id, title, wanted, city, images, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+      const { data } = await supabase
+        .from('items')
+        .select('id, title, wanted, city, images, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
 
-    setItems(data || [])
-    setLoading(false)
+      setItems(data || [])
+    } catch {
+      setLoadError(true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -51,6 +57,8 @@ export default function MisPublicacionesPage() {
 
       {loading ? (
         <div style={styles.center}>Cargando...</div>
+      ) : loadError ? (
+        <div style={styles.center}>Error al cargar las publicaciones. Intenta de nuevo.</div>
       ) : items.length === 0 ? (
         <div style={styles.empty}>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1C8BE" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

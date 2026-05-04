@@ -15,6 +15,7 @@ export default function BuscarPage() {
   const [city, setCity]     = useState('Todas')
   const [items, setItems]   = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [searchError, setSearchError] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -29,23 +30,30 @@ export default function BuscarPage() {
 
   const search = async (q: string, selectedCity: string) => {
     setLoading(true)
-    let req = supabase.from('items').select('*')
+    setSearchError(false)
+    try {
+      let req = supabase.from('items').select('*')
 
-    if (q.length >= 2) {
-      req = req.or(
-        `title.ilike.%${q}%,description.ilike.%${q}%,wanted.ilike.%${q}%,city.ilike.%${q}%`
-      )
-    } else {
-      req = req.order('created_at', { ascending: false }).limit(12)
+      if (q.length >= 2) {
+        req = req.or(
+          `title.ilike.%${q}%,description.ilike.%${q}%,wanted.ilike.%${q}%,city.ilike.%${q}%`
+        )
+      } else {
+        req = req.order('created_at', { ascending: false }).limit(12)
+      }
+
+      if (selectedCity !== 'Todas') {
+        req = req.eq('city', selectedCity)
+      }
+
+      const { data } = await req
+      setItems(data || [])
+    } catch {
+      setSearchError(true)
+      setItems([])
+    } finally {
+      setLoading(false)
     }
-
-    if (selectedCity !== 'Todas') {
-      req = req.eq('city', selectedCity)
-    }
-
-    const { data } = await req
-    setItems(data || [])
-    setLoading(false)
   }
 
   return (
@@ -101,9 +109,11 @@ export default function BuscarPage() {
 
       {/* LABEL */}
       <div style={s.label}>
-        {query.length >= 2
-          ? `Resultados para "${query}"`
-          : 'Sugerencias'}
+        {searchError
+          ? 'Error al buscar, intenta de nuevo'
+          : query.length >= 2
+            ? `Resultados para "${query}"`
+            : 'Sugerencias'}
       </div>
 
       {/* CONTENT */}

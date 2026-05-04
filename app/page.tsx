@@ -6,11 +6,14 @@ import supabase from './lib/supabase'
 import FeaturedChains from './components/feed/FeaturedChains'
 import NotifBadge from './components/feed/NotifBadge'
 
+type Item  = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string }
+type Chain = { id: number; initial_item_id: number; created_at: string; initial_item_title: string | null; initial_item_image: string | null; final_item_title: string | null; final_item_image: string | null; creator_username: string | null; creator_avatar: string | null; steps_count: number }
+
 export default function Home() {
   const router = useRouter()
   const [ready,  setReady]  = useState(false)
-  const [items,  setItems]  = useState<any[]>([])
-  const [chains, setChains] = useState<any[]>([])
+  const [items,  setItems]  = useState<Item[]>([])
+  const [chains, setChains] = useState<Chain[]>([])
 
   useEffect(() => { checkFlow() }, [])
 
@@ -28,78 +31,80 @@ export default function Home() {
 
       localStorage.setItem('onboarding_seen', 'true')
 
-      const [{ data: itemsData }, { data: chainsData }] = await Promise.all([
-        supabase.from('items').select('*').order('created_at', { ascending: false }).limit(12),
-        supabase.from('chains')
+      // Items — independent, failure shows empty feed
+      try {
+        const { data: itemsData } = await supabase
+          .from('items').select('*').order('created_at', { ascending: false }).limit(12)
+        setItems(itemsData || [])
+      } catch { setItems([]) }
+
+      // Chains — independent, failure shows empty chains section
+      try {
+        const { data: chainsData } = await supabase
+          .from('chains')
           .select('id, initial_item_id, creator_id, steps_count, created_at')
           .eq('status', 'active')
           .order('steps_count', { ascending: false })
-          .limit(6),
-      ])
+          .limit(6)
 
-      setItems(itemsData || [])
+        const rawChains = chainsData || []
+        if (rawChains.length > 0) {
+          const chainIds   = rawChains.map((c: any) => c.id)
+          const itemIds    = rawChains.map((c: any) => c.initial_item_id).filter(Boolean)
+          const creatorIds = rawChains.map((c: any) => c.creator_id).filter(Boolean)
 
-      const rawChains = chainsData || []
-      if (rawChains.length > 0) {
-        const chainIds   = rawChains.map((c: any) => c.id)
-        const itemIds    = rawChains.map((c: any) => c.initial_item_id).filter(Boolean)
-        const creatorIds = rawChains.map((c: any) => c.creator_id).filter(Boolean)
+          const [{ data: initItems }, { data: profileData }, { data: stepsData }] = await Promise.all([
+            supabase.from('items').select('id, title, images').in('id', itemIds),
+            supabase.from('profiles').select('id, username, avatar_url').in('id', creatorIds),
+            supabase.from('chain_steps')
+              .select('chain_id, step_number, item_id')
+              .in('chain_id', chainIds),
+          ])
 
-        // Parallel: initial items + profiles + chain_steps (to find final item)
-        const [{ data: initItems }, { data: profileData }, { data: stepsData }] = await Promise.all([
-          supabase.from('items').select('id, title, images').in('id', itemIds),
-          supabase.from('profiles').select('id, username, avatar_url').in('id', creatorIds),
-          supabase.from('chain_steps')
-            .select('chain_id, step_number, item_id')
-            .in('chain_id', chainIds),
-        ])
+          const lastStepByChain: Record<number, { stepNum: number; itemId: number }> = {}
+          stepsData?.forEach((s: any) => {
+            const cur = lastStepByChain[s.chain_id]
+            if (!cur || s.step_number > cur.stepNum) {
+              lastStepByChain[s.chain_id] = { stepNum: s.step_number, itemId: s.item_id }
+            }
+          })
 
-        // Find last step per chain → final item_id
-        const lastStepByChain: Record<number, { stepNum: number; itemId: number }> = {}
-        stepsData?.forEach((s: any) => {
-          const cur = lastStepByChain[s.chain_id]
-          if (!cur || s.step_number > cur.stepNum) {
-            lastStepByChain[s.chain_id] = { stepNum: s.step_number, itemId: s.item_id }
+          const finalItemIds = [...new Set(
+            Object.values(lastStepByChain).map(s => s.itemId).filter(Boolean)
+          )]
+
+          let finalItemsData: any[] = []
+          if (finalItemIds.length > 0) {
+            const { data } = await supabase
+              .from('items').select('id, title, images').in('id', finalItemIds)
+            finalItemsData = data || []
           }
-        })
 
-        const finalItemIds = [...new Set(
-          Object.values(lastStepByChain).map(s => s.itemId).filter(Boolean)
-        )]
+          const itemMap: Record<number, any> = {}
+          ;[...(initItems || []), ...finalItemsData].forEach((i: any) => { itemMap[i.id] = i })
 
-        // Fetch final items (sequential — depends on stepsData)
-        let finalItemsData: any[] = []
-        if (finalItemIds.length > 0) {
-          const { data } = await supabase
-            .from('items').select('id, title, images').in('id', finalItemIds)
-          finalItemsData = data || []
+          const profileMap: Record<string, any> = {}
+          profileData?.forEach((p: any) => { profileMap[p.id] = p })
+
+          setChains(rawChains.map((c: any) => {
+            const initItem  = itemMap[c.initial_item_id]
+            const finalId   = lastStepByChain[c.id]?.itemId
+            const finalItem = finalId ? itemMap[finalId] : null
+            const profile   = profileMap[c.creator_id]
+            return {
+              ...c,
+              initial_item_title: initItem?.title ?? null,
+              initial_item_image: initItem?.images?.[0] ?? null,
+              final_item_title:   finalItem?.title ?? null,
+              final_item_image:   finalItem?.images?.[0] ?? null,
+              creator_username:   profile?.username ?? null,
+              creator_avatar:     profile?.avatar_url ?? null,
+            }
+          }))
+        } else {
+          setChains([])
         }
-
-        // Build lookup maps
-        const itemMap: Record<number, any> = {}
-        ;[...(initItems || []), ...finalItemsData].forEach((i: any) => { itemMap[i.id] = i })
-
-        const profileMap: Record<string, any> = {}
-        profileData?.forEach((p: any) => { profileMap[p.id] = p })
-
-        setChains(rawChains.map((c: any) => {
-          const initItem  = itemMap[c.initial_item_id]
-          const finalId   = lastStepByChain[c.id]?.itemId
-          const finalItem = finalId ? itemMap[finalId] : null
-          const profile   = profileMap[c.creator_id]
-          return {
-            ...c,
-            initial_item_title: initItem?.title ?? null,
-            initial_item_image: initItem?.images?.[0] ?? null,
-            final_item_title:   finalItem?.title ?? null,
-            final_item_image:   finalItem?.images?.[0] ?? null,
-            creator_username:   profile?.username ?? null,
-            creator_avatar:     profile?.avatar_url ?? null,
-          }
-        }))
-      } else {
-        setChains([])
-      }
+      } catch { setChains([]) }
 
       setReady(true)
     } catch (err) {

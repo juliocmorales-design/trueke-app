@@ -19,36 +19,43 @@ export default function ItemDetail() {
   }, [])
 
   const loadItem = async () => {
-    const { data } = await supabase
-      .from('items')
-      .select('*')
-      .eq('id', id)
-      .single()
+    try {
+      const { data } = await supabase
+        .from('items')
+        .select('*')
+        .eq('id', id)
+        .single()
 
-    if (!data) return router.push('/')
+      if (!data) { router.push('/'); return }
 
-    setItem(data)
+      setItem(data)
 
-    const { data: userData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', data.user_id)
-      .single()
+      // Owner and ratings — failure leaves them null, doesn't break the screen
+      try {
+        const { data: userData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user_id)
+          .single()
 
-    setOwner(userData)
+        setOwner(userData)
 
-    if (userData) {
-      const { data: ratingsData } = await supabase
-        .from('ratings')
-        .select('score')
-        .eq('rated_id', data.user_id)
+        if (userData) {
+          const { data: ratingsData } = await supabase
+            .from('ratings')
+            .select('score')
+            .eq('rated_id', data.user_id)
 
-      if (ratingsData && ratingsData.length > 0) {
-        const avg = ratingsData.reduce((sum: number, r: any) => sum + r.score, 0) / ratingsData.length
-        setOwnerStats({ avg, count: ratingsData.length })
-      } else {
-        setOwnerStats({ avg: null, count: 0 })
-      }
+          if (ratingsData && ratingsData.length > 0) {
+            const avg = ratingsData.reduce((sum: number, r: any) => sum + r.score, 0) / ratingsData.length
+            setOwnerStats({ avg, count: ratingsData.length })
+          } else {
+            setOwnerStats({ avg: null, count: 0 })
+          }
+        }
+      } catch { /* owner/ratings optional — screen still works */ }
+    } catch {
+      router.push('/')
     }
   }
 
