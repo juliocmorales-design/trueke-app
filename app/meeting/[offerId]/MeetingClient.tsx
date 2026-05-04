@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 import s from './meeting.module.css'
@@ -20,33 +20,55 @@ export interface MeetingData {
 
 export default function MeetingClient({ offerId, data }: { offerId: string; data: MeetingData }) {
   const router = useRouter()
-  const [place,  setPlace]  = useState('')
-  const [saving, setSaving] = useState(false)
+  const [place,         setPlace]         = useState('')
+  const [saving,        setSaving]        = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const nav = document.getElementById('bottom-nav')
+    if (nav) nav.style.display = 'none'
+    return () => { if (nav) nav.style.display = '' }
+  }, [])
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: s }) => {
+      setCurrentUserId(s.session?.user?.id ?? null)
+    })
+  }, [])
 
   const handleConfirm = async () => {
     if (!place.trim() || saving) return
     setSaving(true)
 
-    await Promise.all([
-      supabase
-        .from('offers')
-        .update({
-          meeting_point:        place.trim(),
-          meeting_confirmed_at: new Date().toISOString(),
-        })
-        .eq('id', data.offer.id),
+    const receiver = currentUserId === data.offer.from_user_id
+      ? data.offer.to_user_id
+      : data.offer.from_user_id
 
-      supabase.from('messages').insert({
-        offer_id:  data.offer.id,
-        sender_id: data.offer.from_user_id,
-        sender:    data.offer.from_user_id,
-        receiver:  data.offer.to_user_id,
-        text:      `📍 Punto acordado: ${place.trim()}. Coordinen la hora en el chat.`,
-        is_read:   false,
-      }),
-    ])
+    try {
+      await Promise.all([
+        supabase
+          .from('offers')
+          .update({
+            meeting_point:        place.trim(),
+            meeting_confirmed_at: new Date().toISOString(),
+          })
+          .eq('id', data.offer.id),
 
-    router.replace(`/mensajes/${offerId}`)
+        supabase.from('messages').insert({
+          offer_id:  data.offer.id,
+          sender_id: currentUserId,
+          sender:    currentUserId,
+          receiver,
+          text:      `📍 Propuesta de encuentro: ${place.trim()}. ¿Te queda bien? Responde aquí si quieres cambiar el lugar.`,
+          is_read:   false,
+        }),
+      ])
+
+      router.replace(`/mensajes/${offerId}`)
+    } catch {
+      setSaving(false)
+      alert('Error al confirmar el punto, intenta de nuevo')
+    }
   }
 
   const canConfirm = place.trim().length > 0 && !saving

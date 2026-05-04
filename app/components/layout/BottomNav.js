@@ -40,7 +40,7 @@ export default function BottomNav() {
   }
 
   return (
-    <div style={{
+    <div id="bottom-nav" style={{
       ...styles.wrapper,
       transform: visible ? 'translateY(0)' : 'translateY(100%)',
     }}>
