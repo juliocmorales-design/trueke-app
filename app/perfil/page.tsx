@@ -9,8 +9,9 @@ export default function PerfilPage() {
 
   const [profile, setProfile] = useState<any>(null)
   const [items,   setItems]   = useState<any[]>([])
-  const [chains,  setChains]  = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [chains,     setChains]     = useState<any[]>([])
+  const [avgRating,  setAvgRating]  = useState<number | null>(null)
+  const [loading,    setLoading]    = useState(true)
 
   useEffect(() => { loadData() }, [])
 
@@ -45,6 +46,16 @@ export default function PerfilPage() {
         ...c,
         initial_item_title: titleMap[c.initial_item_id] ?? null,
       })))
+    }
+
+    const { data: ratingsData } = await supabase
+      .from('ratings')
+      .select('score')
+      .eq('rated_id', user.id)
+
+    if (ratingsData && ratingsData.length > 0) {
+      const avg = ratingsData.reduce((sum: number, r: any) => sum + r.score, 0) / ratingsData.length
+      setAvgRating(avg)
     }
 
     setProfile(profileData)
@@ -94,24 +105,13 @@ export default function PerfilPage() {
 
       {/* STATS — directo sobre fondo crema */}
       <div style={styles.stats}>
-        <Stat label="Intercambios" value={items.length} />
+        <Stat label="Publicaciones" value={items.length} />
         <div style={styles.statDivider} />
-        <Stat label="Calificación" value="4.9" />
+        <Stat label="Calificación" value={avgRating ? avgRating.toFixed(1) : '—'} />
         <div style={styles.statDivider} />
         <Stat label="Reseñas" value="0" />
       </div>
 
-      {/* LOGROS — dentro del mismo card blanco */}
-      <div style={styles.sectionHeader}>
-        <span style={styles.sectionTitle}>Logros</span>
-        <span style={styles.link}>Ver todos</span>
-      </div>
-
-      <div style={styles.achievements}>
-        <Achievement type="primer-intercambio" title="Primer intercambio" />
-        <Achievement type="comunidad-activa"   title="Comunidad activa" />
-        <Achievement type="confiable"          title="Intercambista confiable" />
-      </div>
       </div>{/* /contentCard */}
 
       {/* MIS CADENAS */}
@@ -125,7 +125,7 @@ export default function PerfilPage() {
           <div style={styles.chainsEmpty}>
             <p style={styles.chainsEmptyText}>Aún no tienes cadenas activas</p>
             <button style={styles.chainsBtn} onClick={() => router.push('/crear')}>
-              Crear mi primera cadena
+              Publicar algo para empezar
             </button>
           </div>
         ) : (

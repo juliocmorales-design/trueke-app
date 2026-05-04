@@ -239,14 +239,14 @@ const s: any = {
   wrapper: {
     width: '100%',
     maxWidth: 500,
-    padding: '20px 16px 100px',
+    padding: '28px 16px 100px',
   },
   header: {
     display: 'flex',
     alignItems: 'center',
     marginBottom: 20,
   },
-  title: { fontSize: 20, fontWeight: 700, color: '#1A2744', margin: 0 },
+  title: { fontSize: 24, fontWeight: 700, color: '#1A2744', margin: 0 },
 
   /* TABS */
   tabs: {

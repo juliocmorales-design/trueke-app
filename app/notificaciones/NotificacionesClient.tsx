@@ -15,13 +15,63 @@ type Notif = {
   created_at: string
 }
 
-const TYPE_ICON: Record<string, string> = {
-  new_offer:       '📦',
-  offer_accepted:  '✅',
-  offer_rejected:  '❌',
-  offer_completed: '🎉',
-  new_rating:      '⭐',
+const TYPE_BG: Record<string, string> = {
+  offer_received:  '#FFF0E6',
+  offer_accepted:  '#DCFCE7',
+  offer_rejected:  '#FEE2E2',
+  offer_completed: '#DBEAFE',
+  rating_received: '#FEF3C7',
 }
+const DEFAULT_BG = '#F0EAE0'
+
+const TYPE_SVG: Record<string, React.ReactElement> = {
+  offer_received: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="17 1 21 5 17 9"/>
+      <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+      <polyline points="7 23 3 19 7 15"/>
+      <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+    </svg>
+  ),
+  offer_accepted: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="9 12 12 15 16 9"/>
+    </svg>
+  ),
+  offer_rejected: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M15 9l-6 6M9 9l6 6"/>
+    </svg>
+  ),
+  offer_completed: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 21h8M12 17v4M17 3H7l-2 9h14L17 3zM5 12h14"/>
+    </svg>
+  ),
+  rating_received: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="#F59E0B" stroke="none">
+      <polygon points="12,2 15,9 22,9 17,14 19,21 12,16 5,21 7,14 2,9 9,9"/>
+    </svg>
+  ),
+}
+
+const FALLBACK_SVG = (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6F7A82" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+)
+
+const TYPE_DEST: Record<string, string> = {
+  offer_received:  '/mensajes/',
+  offer_accepted:  '/mensajes/',
+  offer_rejected:  '/intercambios',
+  offer_completed: '/mensajes/',
+  rating_received: '/perfil/resenas',
+}
+const DEFAULT_DEST = '/intercambios'
 
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
@@ -68,7 +118,12 @@ export default function NotificacionesClient() {
   }
 
   const handlePress = (n: Notif) => {
-    if (n.offer_id) router.push(`/exchange/${n.offer_id}`)
+    const dest = TYPE_DEST[n.type] ?? DEFAULT_DEST
+    if (dest.endsWith('/')) {
+      router.push(n.offer_id ? `${dest}${n.offer_id}` : '/intercambios')
+    } else {
+      router.push(dest)
+    }
   }
 
   return (
@@ -107,8 +162,11 @@ export default function NotificacionesClient() {
               className={`${s.row} ${!n.is_read ? s.rowUnread : ''}`}
               onClick={() => handlePress(n)}
             >
-              <div className={s.iconWrap}>
-                {TYPE_ICON[n.type] ?? '🔔'}
+              <div
+                className={s.iconWrap}
+                style={{ background: TYPE_BG[n.type] ?? DEFAULT_BG }}
+              >
+                {TYPE_SVG[n.type] ?? FALLBACK_SVG}
               </div>
 
               <div className={s.textBlock}>

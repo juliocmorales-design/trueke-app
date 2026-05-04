@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 29 Abril 2026
+> Última actualización: 3 Mayo 2026
 
 ---
 
@@ -66,6 +66,7 @@ Las tarjetas compartibles solo muestran:
 - CSS Modules por pantalla + globals.css
 - **Supabase**: PostgreSQL + Auth OTP + Storage + Realtime
 - Cliente Supabase en `app/lib/supabase.js`
+- Admin client con SERVICE_ROLE_KEY en rutas API (bypasea RLS)
 - **GitHub Codespaces** — repositorio: `barter-app/trueke-app`, branch: `ui/navbar-refactor`
 - **Claude Code v2.1.123** instalado y autenticado en Codespaces
 
@@ -77,13 +78,14 @@ Las tarjetas compartibles solo muestran:
 |---|---|---|
 | `profiles` | id (uuid), username, avatar_url, city | id = auth.users.id |
 | `items` | id (bigint), title, description, wanted, city, user_id (uuid), images (jsonb) | user_id ya es uuid |
-| `offers` | id (bigint), from_user_id (uuid), to_user_id (uuid), status, created_at | |
+| `offers` | id (bigint), from_user_id (uuid), to_user_id (uuid), status, created_at, meeting_point, meeting_confirmed_at | meeting_point agregado |
 | `offer_items` | id (bigint), offer_id → offers | |
-| `messages` | id (bigint), sender_id (uuid), receiver (uuid), text, offer_id (uuid), is_read | offer_id agregado hoy |
+| `messages` | id (bigint), sender_id (uuid), receiver (uuid), text, offer_id (uuid), is_read | |
 | `exchanges` | id (bigint), item_id, message, status, created_at | |
-| `ratings` | id (uuid), offer_id, rater_id, rated_id, score (1-5), comment | NUEVA |
-| `chains` | id (bigint), creator_id, initial_item_id, goal_description, status, steps_count, show_name | NUEVA |
-| `chain_steps` | id (bigint), chain_id, step_number, item_id, from_user_id, to_user_id, offer_id | NUEVA |
+| `ratings` | id (uuid), offer_id, rater_id, rated_id, score (1-5), comment | |
+| `chains` | id (bigint), creator_id, initial_item_id, goal_description, status, steps_count, show_name | |
+| `chain_steps` | id (bigint), chain_id, step_number, item_id, from_user_id, to_user_id, offer_id | |
+| `notifications` | id, user_id, type, title, body, offer_id, is_read, created_at | NUEVA — usa admin client |
 
 **Usuarios de prueba:**
 - Julio: julio.morales@elnorte.com → UUID: `93f2cc3e-0a5d-4ed6-9aff-07ac6f0bc7a1`
@@ -98,20 +100,37 @@ Las tarjetas compartibles solo muestran:
 
 ```
 trueke-app/app/
-├── onboarding/page.tsx       ✅ Registro OTP 5 pasos
-├── login/page.tsx            ✅ Login OTP
-├── page.tsx                  ✅ Inicio/Home
-├── crear/page.tsx            ✅ Crear publicación (hasta 5 fotos)
-├── item/[id]/page.tsx        ✅ Detalle de item
-├── intercambios/page.tsx     ⏳ Existe pero sin datos reales
-├── perfil/page.tsx           ✅ Perfil usuario
-├── perfil/edit/page.tsx      ✅ Editar perfil
-├── mensajes/page.tsx         ✅ Lista conversaciones
-├── mensajes/[userId]/        ✅ Chat con Realtime (vinculado a offer_id)
-├── offer/new/page.tsx        ✅ ¿Qué ofreces a cambio?
-├── exchange/[id]/page.tsx    ✅ Detalle del intercambio
-├── chain/[id]/page.tsx       ⏳ Detalle de cadena (pendiente)
-└── lib/supabase.js           ✅ Cliente Supabase
+├── onboarding/page.tsx              ✅ Registro OTP 5 pasos
+├── login/page.tsx                   ✅ Login OTP
+├── page.tsx                         ✅ Inicio/Home
+├── crear/page.tsx                   ✅ Crear publicación (hasta 5 fotos, botón "Publicar")
+├── item/[id]/page.tsx               ✅ Detalle de item (carrusel con márgenes, owner stats con rating)
+├── intercambios/page.tsx            ✅ Mis intercambios — tabs Activos/Completados/Cancelados
+├── perfil/page.tsx                  ✅ Perfil usuario
+├── perfil/edit/page.tsx             ✅ Editar perfil
+├── perfil/publicaciones/page.tsx    ✅ Publicaciones del perfil
+├── perfil/resenas/page.tsx          ✅ Reseñas del perfil
+├── mensajes/page.tsx                ✅ Lista conversaciones (estilo cards beige)
+├── mensajes/[userId]/               ✅ Chat con Realtime (ícono "..." vertical como SVG)
+├── mensajes/oferta/[offerId]/       ✅ Redirect helper a chat por offerId
+├── offer/new/page.tsx               ✅ ¿Qué ofreces a cambio?
+├── exchange/[id]/page.tsx           ✅ Server component — fetches offer + items + profiles
+├── exchange/[id]/ExchangeClient.tsx ✅ Client component — flujo completo post-aceptación
+├── meeting/[offerId]/page.tsx       ✅ Acordar punto de encuentro
+├── meeting/[offerId]/MeetingClient.tsx ✅
+├── rating/[offerId]/page.tsx        ✅ Calificación post-intercambio
+├── rating/[offerId]/RatingClient.tsx ✅
+├── notificaciones/page.tsx          ✅ Centro de notificaciones
+├── notificaciones/NotificacionesClient.tsx ✅
+├── chain/[id]/page.tsx              ✅ Detalle de cadena
+├── chain/[id]/ChainClient.tsx       ✅
+├── api/notifications/create/        ✅ POST — inserta notificación con admin client
+├── api/notifications/list/          ✅ GET — lista notificaciones del usuario
+├── api/notifications/unread-count/  ✅ GET — conteo no leídas
+├── api/chains/create/               ✅ POST — crea cadena de intercambio
+└── lib/
+    ├── supabase.js                  ✅ Cliente Supabase (anon)
+    └── notifications.ts             ✅ Helper createNotification con admin client
 ```
 
 ---
@@ -120,23 +139,62 @@ trueke-app/app/
 
 | Pantalla | Notas |
 |---|---|
-| Inicio / Home | Tarjetas cuadradas, ícono mensajes en header, cadenas con ? en intermedios |
-| Crear publicación | Hasta 5 fotos, sube a Supabase Storage |
-| Detalle de item | Carrusel fotos, botón "Enviar mensaje" → /offer/new |
+| Inicio / Home | Tarjetas cuadradas, ícono mensajes en header, cadenas |
+| Crear publicación | Hasta 5 fotos, sube a Supabase Storage, botón "Publicar", requiere foto para activarse |
+| Detalle de item | Carrusel con márgenes laterales, CTA "Ofrecer algo a cambio", owner stats con avg rating ("Nuevo" si sin calificaciones) |
 | ¿Qué ofreces a cambio? | Radio buttons naranja, estado vacío si no tiene items |
-| Chat por oferta | Vinculado a offer_id, contexto visible, score confianza, "+" adjuntar, reportar usuario |
-| Detalle del intercambio | Lógica dual simple/cadena, aceptar/rechazar solo al receptor |
+| Detalle del intercambio | Footer dinámico: accepted→meeting+chat+completar, pending→aceptar/rechazar, resto→solo chat |
+| Acordar punto de encuentro | Guarda meeting_point en offers, manda mensaje al chat, redirige a mensajes |
+| Calificación post-intercambio | Se activa tras marcar "Ya hicimos el intercambio" desde ExchangeClient |
+| Chat por oferta | Vinculado a offer_id, ícono "..." vertical SVG, reportar usuario |
+| Lista de mensajes | Cards con sombra sobre fondo beige, avatar navy, símbolo ⇄ en naranja |
+| Mis intercambios | Tabs Activos/Completados/Cancelados, fotos con borderRadius: 12 |
+| Notificaciones | Centro de notificaciones con API routes propias |
+| Perfil | Publicaciones y reseñas en sub-páginas |
+
+---
+
+## 🔄 Flujo de oferta completo (estado actual)
+
+```
+item/[id] → "Ofrecer algo a cambio"
+    ↓
+offer/new?itemId=[id] → seleccionar item propio → insertar en offers + offer_items
+    ↓
+mensajes/[offerId] → chat en tiempo real
+    ↓
+exchange/[id] → detalle con footer dinámico:
+  • pending   → to_user: Aceptar / Rechazar
+  • accepted  → Acordar punto de encuentro + Ir al chat
+              → (si meeting_point existe) ✓ Ya hicimos el intercambio (verde)
+  • completed → solo Ir al chat
+    ↓
+meeting/[offerId] → guardar lugar, mensaje automático al chat
+    ↓
+"✓ Ya hicimos el intercambio" → status=completed → notifica a ambos → /rating/[offerId]
+    ↓
+rating/[offerId] → calificación 1-5 + comentario
+```
+
+---
+
+## 🔔 Sistema de notificaciones
+
+- **Tabla:** `notifications` con admin client (SERVICE_ROLE_KEY) para bypassear RLS
+- **API routes:** `/api/notifications/create`, `/list`, `/unread-count`
+- **Autenticación:** Bearer token verificado con `anon.auth.getUser(token)` antes de cada operación
+- **Triggers actuales:** offer_accepted, offer_rejected, offer_completed
+- **Helper:** `app/lib/notifications.ts` → `createNotification({ user_id, type, title, body, offer_id })`
 
 ---
 
 ## ⏳ Pendiente MVP — en orden de prioridad
 
-1. **Fix "Ver detalle ›" en chat** — apunta a /item en lugar de /exchange/[offerId]
-2. **Mis intercambios** — conectar a datos reales de offers (tabs: Activos/Completados/Cancelados)
-3. **Confirmar punto de encuentro** — pantalla de mapa para acordar dónde se encuentran
-4. **Calificación post-intercambio** — pantalla de rating obligatoria al completar
-5. **Twilio** — configurar para SMS reales
-6. **Cadenas** — flujo completo: crear, seguir progreso, generar tarjeta compartible
+1. **Twilio** — configurar para SMS reales en onboarding/login
+2. **Cadenas** — flujo completo crear/seguir progreso, tarjeta compartible
+3. **Push notifications** — PWA o web push para notificaciones en tiempo real
+4. **Rating visible en perfil** — conectar promedio de ratings a la página de perfil público
+5. **Mis intercambios** — verificar que los tabs Activos/Completados/Cancelados filtren correctamente
 
 ---
 

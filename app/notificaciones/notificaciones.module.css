@@ -38,6 +38,7 @@
 
 .list {
   flex: 1;
+  padding-top: 8px;
   padding-bottom: 80px;
 }
 
@@ -46,12 +47,16 @@
   align-items: flex-start;
   gap: 14px;
   padding: 14px 20px;
-  border-bottom: 1px solid #EDE8E1;
+  margin: 6px 16px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #F0EAE4;
   cursor: pointer;
 }
 
 .rowUnread {
   background: #FFF5F0;
+  border-color: #F5D5C0;
 }
 
 .iconWrap {
@@ -72,20 +77,21 @@
 }
 
 .notifTitle {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #1A2744;
   margin-bottom: 2px;
 }
 
 .notifBody {
-  font-size: 13px;
+  font-size: 14px;
   color: #7A8599;
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
