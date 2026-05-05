@@ -208,7 +208,7 @@ export default function Onboarding() {
             Necesitamos verificarte
           </h1>
           <p style={{ ...styles.subtitle, fontSize: 15 }}>
-            Elige cómo quieres confirmar tu identidad
+            Te enviamos un enlace a tu correo para entrar
           </p>
 
           {/* Opción: Email */}
