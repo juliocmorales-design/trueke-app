@@ -23,11 +23,6 @@ export default function Onboarding() {
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [sending, setSending] = useState(false)
-  const [verifying, setVerifying] = useState(false)
-
-  const [phone, setPhone] = useState('')
-  const [otp, setOtp] = useState('')
   const [error, setError] = useState('')
 
   const [userId, setUserId] = useState<string | null>(null)
@@ -78,13 +73,6 @@ export default function Onboarding() {
     init()
   }, [])
 
-  const formatPhone = (raw: string) => {
-    const digits = raw.replace(/\D/g, '')
-    if (raw.startsWith('+')) return raw
-    // Default México +52
-    return `+52${digits}`
-  }
-
   const sendEmailOtp = async () => {
     if (!email.trim()) return
     setSendingEmail(true)
@@ -98,62 +86,6 @@ export default function Onboarding() {
       setError(err.message)
     } else {
       setEmailSent(true)
-    }
-  }
-
-  const sendOtp = async () => {
-    if (!phone.trim()) return
-    setSending(true)
-    setError('')
-
-    const formattedPhone = formatPhone(phone.trim())
-
-    const { error: err } = await supabase.auth.signInWithOtp({
-      phone: formattedPhone,
-    })
-
-    setSending(false)
-
-    if (err) {
-      setError(err.message)
-    } else {
-      setPhone(formattedPhone)
-      setStep(2)
-    }
-  }
-
-  const verifyOtp = async () => {
-    if (!otp.trim()) return
-    setVerifying(true)
-    setError('')
-
-    const { data, error: err } = await supabase.auth.verifyOtp({
-      phone,
-      token: otp.trim(),
-      type: 'sms',
-    })
-
-    setVerifying(false)
-
-    if (err) {
-      setError(err.message)
-      return
-    }
-
-    if (data.user) {
-      setUserId(data.user.id)
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', data.user.id)
-        .single()
-
-      if (profile?.username) {
-        router.push('/')
-      } else {
-        setStep(3)
-      }
     }
   }
 
@@ -269,7 +201,7 @@ export default function Onboarding() {
       {step === 1 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '20%' }} />
+            <div style={{ ...styles.bar, width: '25%' }} />
           </div>
 
           <h1 style={{ ...styles.title, fontSize: 24, color: '#1A2744' }}>
@@ -279,36 +211,7 @@ export default function Onboarding() {
             Elige cómo quieres confirmar tu identidad
           </p>
 
-          {/* Opción A: Teléfono */}
-          <p style={styles.optionLabel}>Con tu teléfono</p>
-          <p style={styles.optionSub}>Te enviamos un SMS con un código</p>
-          <input
-            style={styles.input}
-            placeholder="+52 55 1234 5678"
-            value={phone}
-            onChange={e => { setPhone(e.target.value); setError('') }}
-            type="tel"
-          />
-          <div
-            style={{
-              ...styles.verifyBtn,
-              background: phone.length > 0 ? '#F97316' : 'transparent',
-              color: phone.length > 0 ? '#fff' : '#F97316',
-              opacity: phone.length > 0 ? 1 : 0.6,
-            }}
-            onClick={sendOtp}
-          >
-            {sending ? 'Enviando...' : 'Enviar código por SMS'}
-          </div>
-
-          {/* Separador */}
-          <div style={styles.separator}>
-            <div style={styles.separatorLine} />
-            <span style={styles.separatorText}>o</span>
-            <div style={styles.separatorLine} />
-          </div>
-
-          {/* Opción B: Email */}
+          {/* Opción: Email */}
           <p style={styles.optionLabel}>Con tu email</p>
           <p style={styles.optionSub}>Te enviamos un enlace para entrar</p>
           {emailSent ? (
@@ -354,42 +257,11 @@ export default function Onboarding() {
         </div>
       )}
 
-      {/* ── STEP 2: Verificar OTP ── */}
-      {step === 2 && (
-        <div style={styles.stepContainer}>
-          <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '40%' }} />
-          </div>
-
-          <h1 style={styles.title}>Código de verificación</h1>
-          <p style={styles.subtitle}>Ingresa el código que enviamos a {phone}</p>
-
-          <input
-            style={{ ...styles.input, letterSpacing: 8, fontSize: 22, textAlign: 'center' }}
-            placeholder="000000"
-            value={otp}
-            onChange={e => { setOtp(e.target.value); setError('') }}
-            type="number"
-            maxLength={6}
-          />
-
-          {error && <p style={styles.errorText}>{error}</p>}
-
-          <div style={styles.button} onClick={verifyOtp}>
-            {verifying ? 'Verificando...' : 'Verificar'}
-          </div>
-
-          <div style={styles.back} onClick={() => { setOtp(''); setError(''); sendOtp() }}>
-            Reenviar SMS
-          </div>
-        </div>
-      )}
-
       {/* ── STEP 3: Username ── */}
       {step === 3 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '60%' }} />
+            <div style={{ ...styles.bar, width: '50%' }} />
           </div>
 
           <h1 style={styles.title}>¡Bienvenido!</h1>
@@ -415,7 +287,7 @@ export default function Onboarding() {
       {step === 4 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '80%' }} />
+            <div style={{ ...styles.bar, width: '75%' }} />
           </div>
 
           <h1 style={styles.title}>Elige tu ciudad</h1>
@@ -671,25 +543,6 @@ const styles: any = {
     margin: '0 0 12px 0',
   },
 
-  separator: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-    margin: '20px 0',
-  },
-
-  separatorLine: {
-    flex: 1,
-    height: 1,
-    background: '#E5E7EB',
-  },
-
-  separatorText: {
-    fontSize: 13,
-    color: '#9CA3AF',
-    fontWeight: 500,
-  },
-
   verifyBtn: {
     border: '2px solid #F97316',
     textAlign: 'center',
@@ -700,19 +553,6 @@ const styles: any = {
     fontSize: 16,
     marginBottom: 8,
     transition: 'all 0.2s ease',
-  },
-
-  buttonOutline: {
-    border: '2px solid #F97316',
-    color: '#F97316',
-    background: 'transparent',
-    textAlign: 'center',
-    padding: 16,
-    borderRadius: 16,
-    fontWeight: 600,
-    cursor: 'pointer',
-    fontSize: 16,
-    marginBottom: 8,
   },
 
   successMsg: {
