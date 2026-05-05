@@ -165,7 +165,7 @@ export default function MessagesPage() {
         </>
       ) : conversations.length === 0 ? (
         <p style={styles.empty}>
-          Aún no tienes conversaciones.<br/>Envía una oferta desde la ficha de un item.
+          Aún no tienes conversaciones.<br/>Envía una oferta desde la ficha de un objeto.
         </p>
       ) : null}
 

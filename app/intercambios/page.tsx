@@ -222,7 +222,7 @@ function EmptyState({ tab, onChangeTab }: { tab: TabKey; onChangeTab: (i: number
         </button>
       ) : (
         <button style={btnStyle} onClick={() => window.location.href = '/'}>
-          Explorar items
+          Explorar publicaciones
         </button>
       )}
     </div>

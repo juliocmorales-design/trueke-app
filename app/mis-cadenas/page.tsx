@@ -110,7 +110,7 @@ export default function MisCadenasPage() {
           <p style={s.emptyTitle}>Aún no tienes cadenas</p>
           <p style={s.emptySub}>Completa un intercambio y elige continuar la cadena</p>
           <button style={s.emptyBtn} onClick={() => router.push('/')}>
-            Explorar items
+            Explorar publicaciones
           </button>
         </div>
 
