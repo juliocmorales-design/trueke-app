@@ -12,6 +12,7 @@ export default function PerfilPage() {
   const [chains,     setChains]     = useState<any[]>([])
   const [avgRating,  setAvgRating]  = useState<number | null>(null)
   const [loading,    setLoading]    = useState(true)
+  const [reviewCount, setReviewCount] = useState(0)
   const [showComingSoon, setShowComingSoon] = useState(false)
 
   useEffect(() => { loadData() }, [])
@@ -49,15 +50,16 @@ export default function PerfilPage() {
       })))
     }
 
-    const { data: ratingsData } = await supabase
-      .from('ratings')
-      .select('score')
-      .eq('rated_id', user.id)
+    const [{ data: ratingsData }, { count: rCount }] = await Promise.all([
+      supabase.from('ratings').select('score').eq('rated_id', user.id),
+      supabase.from('ratings').select('*', { count: 'exact', head: true }).eq('rated_id', user.id),
+    ])
 
     if (ratingsData && ratingsData.length > 0) {
       const avg = ratingsData.reduce((sum: number, r: any) => sum + r.score, 0) / ratingsData.length
       setAvgRating(avg)
     }
+    setReviewCount(rCount ?? 0)
 
     setProfile(profileData)
     setItems(itemsData || [])
@@ -116,7 +118,7 @@ export default function PerfilPage() {
         <div style={styles.statDivider} />
         <Stat label="Calificación" value={avgRating ? avgRating.toFixed(1) : '—'} />
         <div style={styles.statDivider} />
-        <Stat label="Reseñas" value="0" />
+        <Stat label="Reseñas" value={reviewCount} />
       </div>
 
       </div>{/* /contentCard */}

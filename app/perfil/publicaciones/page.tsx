@@ -4,6 +4,9 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 
+// NOTE: if the `active` column doesn't exist in Supabase, run:
+// ALTER TABLE items ADD COLUMN active boolean DEFAULT true;
+
 type Item = {
   id: number
   title: string
@@ -15,9 +18,11 @@ type Item = {
 
 export default function MisPublicacionesPage() {
   const router = useRouter()
-  const [items,     setItems]     = useState<Item[]>([])
-  const [loading,   setLoading]   = useState(true)
-  const [loadError, setLoadError] = useState(false)
+  const [items,       setItems]       = useState<Item[]>([])
+  const [loading,     setLoading]     = useState(true)
+  const [loadError,   setLoadError]   = useState(false)
+  const [deleting,    setDeleting]    = useState<number | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => { load() }, [])
 
@@ -41,6 +46,37 @@ export default function MisPublicacionesPage() {
     }
   }
 
+  const handleDelete = async (itemId: number) => {
+    setDeleting(itemId)
+    setDeleteError(null)
+
+    try {
+      const { data: activeOffers } = await supabase
+        .from('offers')
+        .select('id')
+        .or(`from_item_id.eq.${itemId},to_item_id.eq.${itemId}`)
+        .in('status', ['pending', 'accepted'])
+        .limit(1)
+
+      if (activeOffers && activeOffers.length > 0) {
+        setDeleteError('Este item tiene intercambios activos, no puedes eliminarlo')
+        setDeleting(null)
+        return
+      }
+
+      await supabase
+        .from('items')
+        .update({ active: false })
+        .eq('id', itemId)
+
+      setItems(prev => prev.filter(i => i.id !== itemId))
+    } catch {
+      setDeleteError('Error al eliminar. Intenta de nuevo.')
+    } finally {
+      setDeleting(null)
+    }
+  }
+
   return (
     <div style={styles.container}>
 
@@ -54,6 +90,14 @@ export default function MisPublicacionesPage() {
         <h1 style={styles.title}>Mis publicaciones</h1>
         <div style={{ width: 40 }} />
       </div>
+
+      {/* ERROR BANNER */}
+      {deleteError && (
+        <div style={styles.errorBanner}>
+          <span>{deleteError}</span>
+          <button style={styles.errorClose} onClick={() => setDeleteError(null)}>✕</button>
+        </div>
+      )}
 
       {loading ? (
         <div style={styles.center}>Cargando...</div>
@@ -76,7 +120,13 @@ export default function MisPublicacionesPage() {
       ) : (
         <div style={styles.grid}>
           {items.map(item => (
-            <ItemCard key={item.id} item={item} onClick={() => router.push(`/item/${item.id}`)} />
+            <ItemCard
+              key={item.id}
+              item={item}
+              deleting={deleting === item.id}
+              onClick={() => router.push(`/item/${item.id}`)}
+              onDelete={(e) => { e.stopPropagation(); handleDelete(item.id) }}
+            />
           ))}
         </div>
       )}
@@ -84,16 +134,40 @@ export default function MisPublicacionesPage() {
   )
 }
 
-function ItemCard({ item, onClick }: { item: Item; onClick: () => void }) {
+function ItemCard({
+  item,
+  deleting,
+  onClick,
+  onDelete,
+}: {
+  item: Item
+  deleting: boolean
+  onClick: () => void
+  onDelete: (e: React.MouseEvent) => void
+}) {
   const img = item.images?.[0] ?? null
 
   return (
-    <div style={styles.card} onClick={onClick}>
+    <div style={{ ...styles.card, opacity: deleting ? 0.5 : 1 }} onClick={onClick}>
       <div style={styles.cardImg}>
         {img
           ? <img src={img} alt={item.title} style={styles.imgEl} />
           : <div style={styles.imgFallback} />
         }
+        <button style={styles.deleteBtn} onClick={onDelete} aria-label="Eliminar">
+          {deleting ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
+              <circle cx="12" cy="12" r="9" strokeDasharray="28 56" style={{ animation: 'spin 0.8s linear infinite' }}/>
+            </svg>
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6"/>
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+          )}
+        </button>
       </div>
       <div style={styles.cardBody}>
         <div style={styles.itemTitle}>{item.title}</div>
@@ -141,6 +215,31 @@ const styles: any = {
     fontWeight: 700,
     color: '#1A2744',
     margin: 0,
+  },
+
+  errorBanner: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    background: '#FEE2E2',
+    color: '#991B1B',
+    fontSize: 13,
+    fontWeight: 500,
+    padding: '10px 16px',
+    margin: '0 16px 8px',
+    borderRadius: 12,
+    gap: 8,
+  },
+
+  errorClose: {
+    background: 'none',
+    border: 'none',
+    color: '#991B1B',
+    fontSize: 16,
+    cursor: 'pointer',
+    padding: 0,
+    lineHeight: 1,
+    flexShrink: 0,
   },
 
   center: {
@@ -200,6 +299,7 @@ const styles: any = {
     overflow: 'hidden',
     cursor: 'pointer',
     boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+    transition: 'opacity 0.2s',
   },
 
   cardImg: {
@@ -207,6 +307,7 @@ const styles: any = {
     aspectRatio: '1 / 1',
     overflow: 'hidden',
     background: '#EDE7DF',
+    position: 'relative',
   },
 
   imgEl: {
@@ -220,6 +321,22 @@ const styles: any = {
     width: '100%',
     height: '100%',
     background: '#E0D8D0',
+  },
+
+  deleteBtn: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 28,
+    height: 28,
+    borderRadius: '50%',
+    background: 'rgba(0,0,0,0.5)',
+    border: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    flexShrink: 0,
   },
 
   cardBody: {

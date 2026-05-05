@@ -1,6 +1,6 @@
 'use client'
 
-export default function Icon({ name, active = false, size = 24 }) {
+export default function Icon({ name, active = false, size = 24 }: { name: string; active?: boolean; size?: number }) {
   const color = active ? '#F97316' : '#9CA3AF'
   const stroke = 2
 
@@ -11,8 +11,8 @@ export default function Icon({ name, active = false, size = 24 }) {
     fill: 'none',
     stroke: color,
     strokeWidth: stroke,
-    strokeLinecap: 'round',
-    strokeLinejoin: 'round',
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
   }
 
   switch (name) {

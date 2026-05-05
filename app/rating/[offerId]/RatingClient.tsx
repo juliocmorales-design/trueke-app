@@ -267,17 +267,34 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
             {myChains.length > 0 && (
               <>
                 {myChains.length > 1 && (
-                  <select
-                    className={s.chainSelect}
-                    value={selectedChainId ?? ''}
-                    onChange={e => setSelectedChainId(Number(e.target.value))}
-                  >
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
                     {myChains.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {c.goal_description || `Cadena #${c.id}`}
-                      </option>
+                      <div
+                        key={c.id}
+                        onClick={() => setSelectedChainId(c.id)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12,
+                          padding: '12px 14px',
+                          borderRadius: 12,
+                          border: `1.5px solid ${selectedChainId === c.id ? '#F97316' : '#E5DDD6'}`,
+                          background: selectedChainId === c.id ? '#FFF5EE' : '#F8F4F0',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <div style={{
+                          width: 18, height: 18, borderRadius: '50%',
+                          border: `2px solid ${selectedChainId === c.id ? '#F97316' : '#C4BAB1'}`,
+                          background: selectedChainId === c.id ? '#F97316' : 'transparent',
+                          flexShrink: 0,
+                        }} />
+                        <span style={{ fontSize: 14, color: '#1A2744', fontWeight: 500 }}>
+                          {c.goal_description || `Cadena #${c.id}`}
+                        </span>
+                      </div>
                     ))}
-                  </select>
+                  </div>
                 )}
                 <button
                   className={s.modalBtnPrimary}

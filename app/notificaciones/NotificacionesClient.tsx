@@ -143,7 +143,17 @@ export default function NotificacionesClient() {
       </div>
 
       {loading ? (
-        <div className={s.loading}>Cargando…</div>
+        <div className={s.skeletonList}>
+          {[1, 2, 3].map(i => (
+            <div key={i} className={s.skeletonRow}>
+              <div className={s.skeletonCircle} />
+              <div style={{ flex: 1 }}>
+                <div className={s.skeletonLine} style={{ width: '65%' }} />
+                <div className={s.skeletonLineShort} style={{ width: '40%' }} />
+              </div>
+            </div>
+          ))}
+        </div>
 
       ) : notifs.length === 0 ? (
         <div className={s.emptyWrap}>

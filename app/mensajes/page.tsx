@@ -16,6 +16,7 @@ export default function MessagesPage() {
   const [currentUser, setCurrentUser]     = useState<AuthUser | null>(null)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [mounted, setMounted]             = useState(false)
+  const [loading, setLoading]             = useState(true)
 
   const channelRef = useRef<RealtimeChannel | null>(null)
 
@@ -67,6 +68,7 @@ export default function MessagesPage() {
 
     if (!offersData?.length) {
       setConversations([])
+      setLoading(false)
       return
     }
 
@@ -121,6 +123,7 @@ export default function MessagesPage() {
     final.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
     setConversations(final)
+    setLoading(false)
   }
 
   const formatTime = (dateString: string) => {
@@ -136,15 +139,35 @@ export default function MessagesPage() {
     return date.toLocaleDateString()
   }
 
+  const shimmerStyle: any = {
+    background: 'linear-gradient(90deg,#eee 25%,#ddd 37%,#eee 63%)',
+    backgroundSize: '400% 100%',
+    animation: 'shimmer 1.4s ease infinite',
+    borderRadius: 8,
+  }
+
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>Mensajes</h2>
 
-      {conversations.length === 0 && (
+      {loading ? (
+        <>
+          <style>{`@keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}`}</style>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{ ...styles.item, alignItems: 'center' }}>
+              <div style={{ width: 46, height: 46, borderRadius: '50%', flexShrink: 0, ...shimmerStyle }} />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ height: 14, width: '55%', ...shimmerStyle }} />
+                <div style={{ height: 11, width: '80%', ...shimmerStyle }} />
+              </div>
+            </div>
+          ))}
+        </>
+      ) : conversations.length === 0 ? (
         <p style={styles.empty}>
           Aún no tienes conversaciones.<br/>Envía una oferta desde la ficha de un item.
         </p>
-      )}
+      ) : null}
 
       {conversations.map(c => (
         <div

@@ -253,7 +253,7 @@ const s: any = {
 
   chip: {
     borderRadius: 999,
-    padding: '6px 14px',
+    padding: '10px 14px',
     fontSize: 13,
     fontWeight: 500,
     cursor: 'pointer',

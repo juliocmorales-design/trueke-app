@@ -16,6 +16,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [emailError, setEmailError] = useState('')
   const [emailLoading, setEmailLoading] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
 
   const formatPhone = (raw: string) => {
     const digits = raw.replace(/\D/g, '')
@@ -153,6 +155,25 @@ export default function LoginPage() {
             {emailLoading ? 'Entrando...' : 'Entrar con email'}
           </button>
 
+          {resetSent ? (
+            <p style={{ color: '#16A34A', fontSize: 14, textAlign: 'center', margin: '0 0 12px' }}>
+              Te enviamos un enlace para restablecer tu contraseña
+            </p>
+          ) : (
+            <p
+              style={{ color: '#F97316', fontSize: 14, textAlign: 'center', cursor: 'pointer', margin: '0 0 12px' }}
+              onClick={async () => {
+                if (!email.trim() || resetLoading) return
+                setResetLoading(true)
+                await supabase.auth.resetPasswordForEmail(email.trim())
+                setResetLoading(false)
+                setResetSent(true)
+              }}
+            >
+              {resetLoading ? 'Enviando...' : '¿Olvidaste tu contraseña?'}
+            </p>
+          )}
+
           <p style={styles.register}>
             ¿No tienes cuenta?{' '}
             <span
@@ -179,7 +200,9 @@ export default function LoginPage() {
             placeholder="000000"
             value={otp}
             onChange={e => { setOtp(e.target.value); setError('') }}
-            type="number"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             maxLength={6}
           />
 
@@ -213,6 +236,7 @@ const styles: any = {
     cursor: 'pointer',
     marginBottom: 32,
     marginTop: 16,
+    padding: '12px 0',
   },
 
   title: {

@@ -1,10 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import supabase from '../lib/supabase'
 
 export default function CrearPage() {
+  return (
+    <Suspense fallback={null}>
+      <CrearForm />
+    </Suspense>
+  )
+}
+
+function CrearForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const chainId  = searchParams.get('chainId')
@@ -134,7 +142,7 @@ export default function CrearPage() {
     setLoading(false)
   }
 
-  const canSubmit = title.trim().length > 0 && files.length > 0 && !loading
+  const canSubmit = title.trim().length > 0 && files.length > 0 && city.trim().length > 0 && !loading
 
   return (
     <div style={styles.container}>
@@ -176,6 +184,7 @@ export default function CrearPage() {
               <input
                 type="file"
                 multiple
+                accept="image/*"
                 style={{ display: 'none' }}
                 onChange={handleImages}
               />
@@ -356,12 +365,12 @@ const styles: any = {
     position: 'absolute',
     top: -6,
     right: -6,
-    width: 22,
-    height: 22,
+    width: 28,
+    height: 28,
     borderRadius: '50%',
     background: '#1A2744',
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

@@ -11,9 +11,10 @@ type Chain = { id: number; initial_item_id: number; created_at: string; initial_
 
 export default function Home() {
   const router = useRouter()
-  const [ready,  setReady]  = useState(false)
-  const [items,  setItems]  = useState<Item[]>([])
-  const [chains, setChains] = useState<Chain[]>([])
+  const [ready,    setReady]    = useState(false)
+  const [items,    setItems]    = useState<Item[]>([])
+  const [chains,   setChains]   = useState<Chain[]>([])
+  const [userCity, setUserCity] = useState('')
 
   useEffect(() => { checkFlow() }, [])
 
@@ -25,10 +26,11 @@ export default function Home() {
       if (!user) { router.replace('/login'); return }
 
       const { data: profile } = await supabase
-        .from('profiles').select('username').eq('id', user.id).single()
+        .from('profiles').select('username, city').eq('id', user.id).single()
 
       if (!profile?.username) { router.replace('/onboarding'); return }
 
+      if (profile.city) setUserCity(profile.city)
       localStorage.setItem('onboarding_seen', 'true')
 
       // Items — independent, failure shows empty feed
@@ -125,7 +127,7 @@ export default function Home() {
             <path d="M12 21s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z" fill="#F97316"/>
             <circle cx="12" cy="11" r="2" fill="#fff"/>
           </svg>
-          <span style={styles.city}>Monterrey</span>
+          <span style={styles.city}>{userCity || 'Mi ciudad'}</span>
         </div>
         <div style={styles.headerIcons}>
           <NotifBadge />
@@ -145,20 +147,37 @@ export default function Home() {
       <FeaturedChains chains={chains} />
 
       {/* CERCA DE TI — 2 columnas */}
-      <Section title="Cerca de ti" />
-      <div style={styles.grid2}>
-        {items.slice(0, 6).map(item => (
-          <Card key={item.id} router={router} item={item} />
-        ))}
-      </div>
+      {items.length === 0 ? (
+        <div style={styles.emptyFeed}>
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+          <p style={styles.emptyFeedTitle}>Aún no hay items cerca de ti</p>
+          <p style={styles.emptyFeedSub}>Sé el primero en publicar algo</p>
+          <button style={styles.emptyFeedBtn} onClick={() => router.push('/crear')}>
+            Publicar algo
+          </button>
+        </div>
+      ) : (
+        <>
+          <Section title="Cerca de ti" />
+          <div style={styles.grid2}>
+            {items.slice(0, 6).map(item => (
+              <Card key={item.id} router={router} item={item} />
+            ))}
+          </div>
 
-      {/* RECOMENDADOS — scroll horizontal compacto */}
-      <Section title="Recomendados" />
-      <div style={styles.scrollRow}>
-        {items.slice(6, 12).map(item => (
-          <Card key={item.id} router={router} item={item} small />
-        ))}
-      </div>
+          {/* RECOMENDADOS — scroll horizontal compacto */}
+          <Section title="Recomendados" />
+          <div style={styles.scrollRow}>
+            {items.slice(6, 12).map(item => (
+              <Card key={item.id} router={router} item={item} small />
+            ))}
+          </div>
+        </>
+      )}
 
     </div>
   )
@@ -175,7 +194,7 @@ function Section({ title }: { title: string }) {
 }
 
 function Card({ router, item, small = false }: any) {
-  const image = item?.images?.[0] || item?.image || item?.image_url || null
+  const image = item?.images?.[0] ?? null
 
   return (
     <div
@@ -191,12 +210,6 @@ function Card({ router, item, small = false }: any) {
       <div style={styles.cardBody}>
         <div style={styles.name}>{item.title}</div>
         <div style={styles.exchange}>por {item.wanted || 'algo'}</div>
-        <div style={styles.userRow}>
-          <div style={styles.avatarWrap}>
-            <img src={item?.user?.avatar_url || '/images/avatar.svg'} style={styles.avatar} alt="" />
-          </div>
-          <span style={styles.distance}>{item?.distance || '1.2 km'}</span>
-        </div>
       </div>
     </div>
   )
@@ -312,14 +325,22 @@ const styles: any = {
 
   exchange: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
 
-  userRow: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 },
-
-  avatarWrap: {
-    width: 20, height: 20, borderRadius: 999,
-    overflow: 'hidden', background: '#E8E0D8', flexShrink: 0,
+  emptyFeed: {
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    justifyContent: 'center', padding: '48px 32px', gap: 10, textAlign: 'center',
   },
 
-  avatar: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
+  emptyFeedTitle: {
+    margin: 0, fontSize: 16, fontWeight: 700, color: '#1A2744',
+  },
 
-  distance: { fontSize: 11, color: '#9CA3AF' },
+  emptyFeedSub: {
+    margin: 0, fontSize: 14, color: '#9AA3AB',
+  },
+
+  emptyFeedBtn: {
+    marginTop: 4, background: '#F97316', color: '#fff', border: 'none',
+    borderRadius: 16, padding: '14px 28px', fontSize: 15, fontWeight: 600,
+    cursor: 'pointer', fontFamily: 'inherit',
+  },
 }

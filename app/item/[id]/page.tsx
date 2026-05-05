@@ -4,15 +4,23 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 
+// NOTE: if the `active` column doesn't exist in Supabase, run:
+// ALTER TABLE items ADD COLUMN active boolean DEFAULT true;
+
 export default function ItemDetail() {
   const { id } = useParams()
   const router = useRouter()
   const carouselRef = useRef<HTMLDivElement>(null)
 
-  const [item, setItem] = useState<any>(null)
-  const [owner, setOwner] = useState<any>(null)
-  const [ownerStats, setOwnerStats] = useState<any>(null)
-  const [current, setCurrent] = useState(0)
+  const [item,        setItem]        = useState<any>(null)
+  const [owner,       setOwner]       = useState<any>(null)
+  const [ownerStats,  setOwnerStats]  = useState<any>(null)
+  const [current,     setCurrent]     = useState(0)
+  const [currentUser, setCurrentUser] = useState<string | null>(null)
+
+  const [showMenu,      setShowMenu]      = useState(false)
+  const [menuDeleting,  setMenuDeleting]  = useState(false)
+  const [menuDeleteErr, setMenuDeleteErr] = useState<string | null>(null)
 
   useEffect(() => {
     loadItem()
@@ -20,6 +28,9 @@ export default function ItemDetail() {
 
   const loadItem = async () => {
     try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      setCurrentUser(sessionData.session?.user?.id ?? null)
+
       const { data } = await supabase
         .from('items')
         .select('*')
@@ -30,7 +41,6 @@ export default function ItemDetail() {
 
       setItem(data)
 
-      // Owner and ratings — failure leaves them null, doesn't break the screen
       try {
         const { data: userData } = await supabase
           .from('profiles')
@@ -59,36 +69,74 @@ export default function ItemDetail() {
     }
   }
 
+  const handleDeleteItem = async () => {
+    if (!item) return
+    setMenuDeleting(true)
+    setMenuDeleteErr(null)
+
+    try {
+      const { data: activeOffers } = await supabase
+        .from('offers')
+        .select('id')
+        .or(`from_item_id.eq.${item.id},to_item_id.eq.${item.id}`)
+        .in('status', ['pending', 'accepted'])
+        .limit(1)
+
+      if (activeOffers && activeOffers.length > 0) {
+        setMenuDeleteErr('Este item tiene intercambios activos, no puedes eliminarlo')
+        setMenuDeleting(false)
+        setShowMenu(false)
+        return
+      }
+
+      await supabase
+        .from('items')
+        .update({ active: false })
+        .eq('id', item.id)
+
+      router.back()
+    } catch {
+      setMenuDeleteErr('Error al eliminar. Intenta de nuevo.')
+      setMenuDeleting(false)
+    }
+  }
+
   const scrollTo = (index: number) => {
     if (!carouselRef.current) return
     const width = carouselRef.current.clientWidth
-    carouselRef.current.scrollTo({
-      left: width * index,
-      behavior: 'smooth',
-    })
+    carouselRef.current.scrollTo({ left: width * index, behavior: 'smooth' })
     setCurrent(index)
   }
 
   const next = () => {
     if (!item?.images) return
-    const nextIndex = Math.min(current + 1, item.images.length - 1)
-    scrollTo(nextIndex)
+    scrollTo(Math.min(current + 1, item.images.length - 1))
   }
 
   const prev = () => {
-    const prevIndex = Math.max(current - 1, 0)
-    scrollTo(prevIndex)
+    scrollTo(Math.max(current - 1, 0))
   }
 
   const goToOffer = () => {
     router.push(`/offer/new?itemId=${id}`)
   }
 
-  if (!item) return null
+  if (!item) return (
+    <div style={{ background: '#FDF8F3', minHeight: '100vh' }}>
+      <style>{`@keyframes shimmer{0%{opacity:.6}50%{opacity:1}100%{opacity:.6}}`}</style>
+      <div style={{ height: 280, background: '#E8E0D8', animation: 'shimmer 1.4s ease infinite' }} />
+      <div style={{ padding: '20px 20px 0' }}>
+        <div style={{ height: 26, width: '70%', borderRadius: 8, background: '#E8E0D8', animation: 'shimmer 1.4s ease infinite', marginBottom: 12 }} />
+        <div style={{ height: 16, width: '40%', borderRadius: 8, background: '#E8E0D8', animation: 'shimmer 1.4s ease infinite', marginBottom: 20 }} />
+        <div style={{ height: 14, width: '100%', borderRadius: 8, background: '#E8E0D8', animation: 'shimmer 1.4s ease infinite', marginBottom: 8 }} />
+        <div style={{ height: 14, width: '85%', borderRadius: 8, background: '#E8E0D8', animation: 'shimmer 1.4s ease infinite', marginBottom: 8 }} />
+        <div style={{ height: 14, width: '60%', borderRadius: 8, background: '#E8E0D8', animation: 'shimmer 1.4s ease infinite' }} />
+      </div>
+    </div>
+  )
 
-  const images = item.images?.length
-    ? item.images
-    : ['/images/placeholder.png']
+  const images = item.images?.length ? item.images : ['/images/placeholder.png']
+  const isOwner = currentUser != null && item.user_id === currentUser
 
   return (
     <div style={styles.screen}>
@@ -103,20 +151,65 @@ export default function ItemDetail() {
           </button>
 
           <div style={styles.headerRight}>
+            {/* Share */}
             <button
               style={styles.backBtn}
               onClick={() => {
-                try {
-                  navigator.share({ title: item.title, text: item.description, url: window.location.href })
-                } catch {}
+                try { navigator.share({ title: item.title, text: item.description, url: window.location.href }) } catch {}
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
+
+            {/* Three-dots menu — only visible to the owner */}
+            {isOwner && (
+              <div style={{ position: 'relative' }}>
+                <button style={styles.backBtn} onClick={() => setShowMenu(v => !v)} aria-label="Opciones">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="5"  r="1" fill="#1A2744"/>
+                    <circle cx="12" cy="12" r="1" fill="#1A2744"/>
+                    <circle cx="12" cy="19" r="1" fill="#1A2744"/>
+                  </svg>
+                </button>
+
+                {showMenu && (
+                  <>
+                    {/* Backdrop to close menu on outside tap */}
+                    <div
+                      style={{ position: 'fixed', inset: 0, zIndex: 19 }}
+                      onClick={() => setShowMenu(false)}
+                    />
+                    <div style={styles.dropdown}>
+                      <button
+                        style={styles.dropdownItem}
+                        onClick={() => { setShowMenu(false); handleDeleteItem() }}
+                        disabled={menuDeleting}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                          <path d="M10 11v6M14 11v6"/>
+                          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                        </svg>
+                        {menuDeleting ? 'Eliminando...' : 'Eliminar publicación'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
+
+        {/* DELETE ERROR BANNER */}
+        {menuDeleteErr && (
+          <div style={styles.errorBanner}>
+            <span>{menuDeleteErr}</span>
+            <button style={styles.errorClose} onClick={() => setMenuDeleteErr(null)}>✕</button>
+          </div>
+        )}
 
         {/* CARRUSEL */}
         <div style={styles.carouselWrapper}>
@@ -130,8 +223,8 @@ export default function ItemDetail() {
 
           {images.length > 1 && (
             <>
-              <div style={styles.arrowLeft} onClick={prev}>‹</div>
-              <div style={styles.arrowRight} onClick={next}>›</div>
+              <button style={styles.arrowLeft} onClick={prev}>‹</button>
+              <button style={styles.arrowRight} onClick={next}>›</button>
             </>
           )}
         </div>
@@ -139,13 +232,7 @@ export default function ItemDetail() {
         {/* DOTS */}
         <div style={styles.dots}>
           {images.map((_: any, i: number) => (
-            <div
-              key={i}
-              style={{
-                ...styles.dot,
-                opacity: current === i ? 1 : 0.3,
-              }}
-            />
+            <div key={i} style={{ ...styles.dot, opacity: current === i ? 1 : 0.3 }} />
           ))}
         </div>
 
@@ -166,11 +253,14 @@ export default function ItemDetail() {
 
           <p style={styles.desc}>{item.description}</p>
 
-          <div style={styles.sectionTitle}>¿Te interesa?</div>
-
-          <div style={styles.button} onClick={goToOffer}>
-            Ofrecer algo a cambio
-          </div>
+          {!isOwner && (
+            <>
+              <div style={styles.sectionTitle}>¿Te interesa?</div>
+              <div style={styles.button} onClick={goToOffer}>
+                Ofrecer algo a cambio
+              </div>
+            </>
+          )}
 
           <div style={styles.divider} />
 
@@ -181,17 +271,14 @@ export default function ItemDetail() {
                   src={owner.avatar_url || '/images/avatar.png'}
                   style={styles.avatar}
                 />
-
                 <div>
                   <div style={styles.userName}>{owner.username || owner.name || 'Usuario'}</div>
-
                   <div style={styles.sub}>
                     {owner.city || 'Monterrey'} · {ownerStats?.count || 0} intercambios · {ownerStats?.avg ? ownerStats.avg.toFixed(1) : 'Nuevo'}
                     <StarIcon />
                   </div>
                 </div>
               </div>
-
               <div style={styles.arrow}>›</div>
             </div>
           )}
@@ -202,14 +289,10 @@ export default function ItemDetail() {
   )
 }
 
-/* ⭐ ICONO PRO */
 function StarIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B" style={{ marginLeft: 4 }}>
-      <path d="M12 17.27L18.18 21 16.54 13.97 
-      22 9.24 14.81 8.63 12 2 
-      9.19 8.63 2 9.24 7.46 13.97 
-      5.82 21z"/>
+      <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"/>
     </svg>
   )
 }
@@ -248,6 +331,59 @@ const styles: any = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  dropdown: {
+    position: 'absolute',
+    top: 46,
+    right: 0,
+    background: '#fff',
+    borderRadius: 14,
+    boxShadow: '0 6px 24px rgba(0,0,0,0.12)',
+    overflow: 'hidden',
+    zIndex: 20,
+    minWidth: 200,
+  },
+
+  dropdownItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    width: '100%',
+    padding: '14px 18px',
+    background: 'none',
+    border: 'none',
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#DC2626',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    textAlign: 'left',
+  },
+
+  errorBanner: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    background: '#FEE2E2',
+    color: '#991B1B',
+    fontSize: 13,
+    fontWeight: 500,
+    padding: '10px 20px',
+    margin: '0 20px 8px',
+    borderRadius: 12,
+    gap: 8,
+  },
+
+  errorClose: {
+    background: 'none',
+    border: 'none',
+    color: '#991B1B',
+    fontSize: 16,
+    cursor: 'pointer',
+    padding: 0,
+    lineHeight: 1,
+    flexShrink: 0,
   },
 
   iconCircle: {
@@ -289,10 +425,11 @@ const styles: any = {
     top: '50%',
     left: 10,
     transform: 'translateY(-50%)',
-    background: '#fff',
+    background: 'rgba(255,255,255,0.9)',
+    border: 'none',
     borderRadius: '50%',
-    width: 32,
-    height: 32,
+    width: 44,
+    height: 44,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -304,10 +441,11 @@ const styles: any = {
     top: '50%',
     right: 10,
     transform: 'translateY(-50%)',
-    background: '#fff',
+    background: 'rgba(255,255,255,0.9)',
+    border: 'none',
     borderRadius: '50%',
-    width: 32,
-    height: 32,
+    width: 44,
+    height: 44,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

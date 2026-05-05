@@ -1,10 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import supabase from '../lib/supabase'
 
 export default function OfferPage() {
+  return (
+    <Suspense fallback={null}>
+      <OfferForm />
+    </Suspense>
+  )
+}
+
+function OfferForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const itemId = searchParams.get('itemId')

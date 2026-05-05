@@ -145,7 +145,7 @@ export default function IntercambiosPage() {
           {loading ? (
             [1, 2, 3].map(i => <Skeleton key={i} />)
           ) : filtered.length === 0 ? (
-            <EmptyState tab={currentKey} />
+            <EmptyState tab={currentKey} onChangeTab={changeTab} />
           ) : (
             filtered.map(o => {
               const img = o.myItem?.images?.[0]
@@ -202,13 +202,31 @@ function StatusPill({ status }: { status: string }) {
 
 /* ---------- EMPTY STATE ---------- */
 
-function EmptyState({ tab }: { tab: TabKey }) {
+function EmptyState({ tab, onChangeTab }: { tab: TabKey; onChangeTab: (i: number) => void }) {
   const msg: Record<TabKey, string> = {
     active:    'No tienes intercambios activos.',
     completed: 'Aún no has completado ningún intercambio.',
     cancelled: 'No tienes intercambios cancelados.',
   }
-  return <p style={s.empty}>{msg[tab]}</p>
+  const btnStyle: any = {
+    background: '#F97316', color: '#fff', borderRadius: 16,
+    padding: '12px 24px', border: 'none', fontSize: 14,
+    fontWeight: 600, marginTop: 12, cursor: 'pointer', fontFamily: 'inherit',
+  }
+  return (
+    <div style={{ textAlign: 'center', marginTop: 48 }}>
+      <p style={{ ...s.empty, marginTop: 0 }}>{msg[tab]}</p>
+      {tab === 'completed' ? (
+        <button style={btnStyle} onClick={() => onChangeTab(0)}>
+          Ver mis intercambios activos
+        </button>
+      ) : (
+        <button style={btnStyle} onClick={() => window.location.href = '/'}>
+          Explorar items
+        </button>
+      )}
+    </div>
+  )
 }
 
 /* ---------- SKELETON ---------- */
@@ -336,7 +354,7 @@ const s: any = {
   },
 
   /* SKELETON */
-  skeletonCircle: { width: 64, height: 64, borderRadius: '50%', flexShrink: 0, ...shimmer },
+  skeletonCircle: { width: 64, height: 64, borderRadius: 12, flexShrink: 0, ...shimmer },
   skeletonLine: { height: 14, width: '70%', borderRadius: 6, marginBottom: 8, ...shimmer },
   skeletonLineSmall: { height: 10, width: '40%', borderRadius: 6, ...shimmer },
 }

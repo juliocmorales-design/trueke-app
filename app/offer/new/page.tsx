@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 
@@ -9,6 +9,14 @@ type Item     = { id: number; title: string; images: string[] | null; wanted: st
 type Profile  = { id: string; name: string; username: string | null; avatar_url: string | null }
 
 export default function OfferNewPage() {
+  return (
+    <Suspense fallback={null}>
+      <OfferNewForm />
+    </Suspense>
+  )
+}
+
+function OfferNewForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const itemId = searchParams.get('itemId')
@@ -18,8 +26,9 @@ export default function OfferNewPage() {
   const [targetOwner, setTargetOwner] = useState<Profile | null>(null)
   const [myItems, setMyItems]         = useState<Item[]>([])
   const [selected, setSelected] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [sending, setSending] = useState(false)
+  const [loading,    setLoading]    = useState(true)
+  const [sending,    setSending]    = useState(false)
+  const [sendError,  setSendError]  = useState<string | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -85,6 +94,7 @@ export default function OfferNewPage() {
       .single()
 
     if (error || !offer) {
+      setSendError('No se pudo enviar la oferta, intenta de nuevo')
       setSending(false)
       return
     }
@@ -215,6 +225,11 @@ export default function OfferNewPage() {
 
       {/* BOTÓN FIJO */}
       <div style={s.footer}>
+        {sendError && (
+          <div style={{ background: '#FEE2E2', color: '#991B1B', borderRadius: 12, padding: 12, fontSize: 14, marginBottom: 10 }}>
+            {sendError}
+          </div>
+        )}
         <button
           style={{ ...s.sendBtn, ...(!selected || sending ? s.sendDisabled : {}) }}
           disabled={!selected || sending}

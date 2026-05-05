@@ -248,18 +248,18 @@ export default function Onboarding() {
           </div>
 
           <div>
-            <div style={{ ...styles.button, marginTop: 16 }} onClick={() => setStep(1)}>
+            <button style={{ ...styles.button, marginTop: 16, border: 'none' }} onClick={() => setStep(1)}>
               Comenzar
-            </div>
+            </button>
 
             <div style={{ ...styles.login, fontSize: 16, color: '#6B7280' }}>
               ¿Ya tienes cuenta?{' '}
-              <span
-                style={{ color: '#F97316', fontWeight: 600, cursor: 'pointer', fontSize: 16 }}
+              <button
+                style={{ color: '#F97316', fontWeight: 600, cursor: 'pointer', fontSize: 16, border: 'none', background: 'none', padding: '8px', fontFamily: 'inherit' }}
                 onClick={() => router.push('/login')}
               >
                 Iniciar sesión
-              </span>
+              </button>
             </div>
           </div>
         </>
@@ -269,7 +269,7 @@ export default function Onboarding() {
       {step === 1 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '25%' }} />
+            <div style={{ ...styles.bar, width: '20%' }} />
           </div>
 
           <h1 style={{ ...styles.title, fontSize: 24, color: '#1A2744' }}>
@@ -358,11 +358,11 @@ export default function Onboarding() {
       {step === 2 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '50%' }} />
+            <div style={{ ...styles.bar, width: '40%' }} />
           </div>
 
           <h1 style={styles.title}>Código de verificación</h1>
-          <p style={styles.subtitle}>Ingresaste el código enviado a {phone}</p>
+          <p style={styles.subtitle}>Ingresa el código que enviamos a {phone}</p>
 
           <input
             style={{ ...styles.input, letterSpacing: 8, fontSize: 22, textAlign: 'center' }}
@@ -379,8 +379,8 @@ export default function Onboarding() {
             {verifying ? 'Verificando...' : 'Verificar'}
           </div>
 
-          <div style={styles.back} onClick={() => { setStep(1); setOtp(''); setError('') }}>
-            Reenviar código
+          <div style={styles.back} onClick={() => { setOtp(''); setError(''); sendOtp() }}>
+            Reenviar SMS
           </div>
         </div>
       )}
@@ -389,7 +389,7 @@ export default function Onboarding() {
       {step === 3 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '33%' }} />
+            <div style={{ ...styles.bar, width: '60%' }} />
           </div>
 
           <h1 style={styles.title}>¡Bienvenido!</h1>
@@ -397,17 +397,17 @@ export default function Onboarding() {
 
           <input
             style={styles.input}
-            placeholder="@username"
+            placeholder="tunombre"
             value={username}
-            onChange={e => setUsername(e.target.value)}
+            onChange={e => setUsername(e.target.value.replace('@', '').trim())}
           />
 
-          <div style={styles.button} onClick={() => {
+          <button style={{ ...styles.button, border: 'none' }} onClick={() => {
             if (!username.trim()) return
             setStep(4)
           }}>
             Siguiente →
-          </div>
+          </button>
         </div>
       )}
 
@@ -415,7 +415,7 @@ export default function Onboarding() {
       {step === 4 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '66%' }} />
+            <div style={{ ...styles.bar, width: '80%' }} />
           </div>
 
           <h1 style={styles.title}>Elige tu ciudad</h1>
@@ -444,12 +444,12 @@ export default function Onboarding() {
             onChange={e => setCity(e.target.value)}
           />
 
-          <div style={styles.button} onClick={() => {
+          <button style={{ ...styles.button, border: 'none' }} onClick={() => {
             if (!city.trim()) return
             setStep(5)
           }}>
             Siguiente →
-          </div>
+          </button>
 
           <div style={styles.back} onClick={() => setStep(3)}>Atrás</div>
         </div>
@@ -553,9 +553,9 @@ export default function Onboarding() {
 
           {error && <p style={styles.errorText}>{error}</p>}
 
-          <div style={styles.button} onClick={saveAll}>
+          <button style={{ ...styles.button, border: 'none' }} onClick={saveAll}>
             {saving ? 'Guardando...' : '¡Todo listo! ✓'}
-          </div>
+          </button>
 
           <div style={styles.back} onClick={() => setStep(4)}>Atrás</div>
         </div>

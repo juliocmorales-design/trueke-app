@@ -145,7 +145,7 @@ export default function MisCadenasPage() {
                 background: c.status === 'active' ? '#DCFCE7' : '#F0EAE0',
                 color: c.status === 'active' ? '#16A34A' : '#9AA3AB',
               }}>
-                {c.status === 'active' ? 'Activa' : c.status}
+                {({ active: 'Activa', completed: 'Completada', cancelled: 'Cancelada' } as Record<string, string>)[c.status] ?? c.status}
               </div>
             </div>
           ))}

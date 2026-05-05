@@ -275,12 +275,6 @@ export default function OfferChatPage() {
 
       {/* INPUT */}
       <div style={s.inputBar}>
-        <button style={s.attachBtn}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6F7A82" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-        </button>
         <input
           value={text}
           onChange={e => setText(e.target.value)}
@@ -619,7 +613,7 @@ const s: any = {
     maxWidth: 500,
     display: 'flex',
     gap: 10,
-    padding: '10px 16px 20px',
+    padding: '10px 16px calc(20px + env(safe-area-inset-bottom))',
     background: '#fff',
     borderTop: '1px solid #EDEDED',
     alignItems: 'center',
@@ -652,16 +646,4 @@ const s: any = {
     opacity: 0.35,
   },
 
-  attachBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: '50%',
-    background: '#EDE7E1',
-    border: 'none',
-    display: 'none',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    flexShrink: 0,
-  },
 }

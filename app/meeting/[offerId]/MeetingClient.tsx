@@ -23,6 +23,7 @@ export default function MeetingClient({ offerId, data }: { offerId: string; data
   const [place,         setPlace]         = useState('')
   const [saving,        setSaving]        = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [meetingError,  setMeetingError]  = useState<string | null>(null)
 
   useEffect(() => {
     const nav = document.getElementById('bottom-nav')
@@ -67,7 +68,7 @@ export default function MeetingClient({ offerId, data }: { offerId: string; data
       router.replace(`/mensajes/${offerId}`)
     } catch {
       setSaving(false)
-      alert('Error al confirmar el punto, intenta de nuevo')
+      setMeetingError('Error al confirmar el punto, intenta de nuevo')
     }
   }
 
@@ -108,6 +109,11 @@ export default function MeetingClient({ offerId, data }: { offerId: string; data
 
       {/* FOOTER */}
       <div className={s.footer}>
+        {meetingError && (
+          <div style={{ background: '#FEE2E2', color: '#991B1B', borderRadius: 12, padding: 12, fontSize: 14, marginBottom: 10 }}>
+            {meetingError}
+          </div>
+        )}
         <button
           className={`${s.confirmBtn} ${!canConfirm ? s.confirmBtnOff : ''}`}
           onClick={handleConfirm}
