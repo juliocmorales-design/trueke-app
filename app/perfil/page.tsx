@@ -12,6 +12,7 @@ export default function PerfilPage() {
   const [chains,     setChains]     = useState<any[]>([])
   const [avgRating,  setAvgRating]  = useState<number | null>(null)
   const [loading,    setLoading]    = useState(true)
+  const [showComingSoon, setShowComingSoon] = useState(false)
 
   useEffect(() => { loadData() }, [])
 
@@ -65,10 +66,16 @@ export default function PerfilPage() {
 
   if (loading) return <div style={{ padding: 20, background: '#FDF8F3', minHeight: '100vh' }}>Cargando...</div>
 
-  const score = Math.min(100, items.length * 4)
+  const score = Math.min(100, items.length * 4 + 60)
 
   return (
     <div style={styles.container}>
+
+      {showComingSoon && (
+        <div style={styles.toast} onClick={() => setShowComingSoon(false)}>
+          Próximamente disponible
+        </div>
+      )}
 
       {/* HEADER */}
       <div style={styles.header}>
@@ -141,8 +148,8 @@ export default function PerfilPage() {
       <div style={styles.menu}>
         <MenuItem label="Mis publicaciones" type="publicaciones" onClick={() => router.push('/perfil/publicaciones')} />
         <MenuItem label="Mis reseñas"       type="resenas"       onClick={() => router.push('/perfil/resenas')} />
-        <MenuItem label="Ayuda y soporte"   type="ayuda"         onClick={() => alert('Soporte próximamente')} />
-        <MenuItem label="Configuración"     type="config"        onClick={() => alert('Próximamente')} last />
+        <MenuItem label="Ayuda y soporte"   type="ayuda"         onClick={() => setShowComingSoon(true)} />
+        <MenuItem label="Configuración"     type="config"        onClick={() => setShowComingSoon(true)} last />
       </div>
 
     </div>
@@ -553,5 +560,22 @@ const styles: any = {
     fontSize: 15,
     color: '#1A2744',
     fontWeight: 500,
+  },
+
+  toast: {
+    position: 'fixed',
+    bottom: 100,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: '#1A2744',
+    color: '#fff',
+    borderRadius: 99,
+    padding: '12px 24px',
+    fontSize: 14,
+    fontWeight: 600,
+    zIndex: 999,
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
   },
 }

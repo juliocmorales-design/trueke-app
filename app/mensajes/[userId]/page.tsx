@@ -22,6 +22,7 @@ export default function OfferChatPage() {
 
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
   const [offer, setOffer]             = useState<Offer | null>(null)
+  const [notFound, setNotFound]       = useState(false)
   const [myItem, setMyItem]           = useState<Item | null>(null)
   const [theirItem, setTheirItem]     = useState<Item | null>(null)
   const [otherUser, setOtherUser]     = useState<Profile | null>(null)
@@ -69,7 +70,7 @@ export default function OfferChatPage() {
       .eq('id', offerId)
       .single()
 
-    if (!offerData) return
+    if (!offerData) { setNotFound(true); return }
     setOffer(offerData)
 
     const iAmFrom    = offerData.from_user_id === user.id
@@ -97,7 +98,7 @@ export default function OfferChatPage() {
     setMessages(msgs || [])
     setTrustScore(Math.min(100, (itemsCount || 0) * 4 + 60))
 
-    supabase.from('messages')
+    await supabase.from('messages')
       .update({ is_read: true })
       .eq('offer_id', offerId)
       .eq('receiver', user.id)
@@ -125,6 +126,7 @@ export default function OfferChatPage() {
   const progress = offer ? (STEPS[offer.status] ?? STEPS.pending) : STEPS.pending
   const progressPct = `${(progress.step / 3) * 100}%`
 
+  if (notFound) return <div style={{ padding: 20, background: '#FDF8F3', minHeight: '100vh', color: '#1A2744' }}>Conversación no encontrada</div>
   if (!currentUser || !offer) return null
 
   return (
@@ -317,7 +319,7 @@ const s: any = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '0 12px',
-    background: '#fff',
+    background: '#FDF8F3',
     borderBottom: '1px solid #EDEDED',
     position: 'sticky',
     top: 0,

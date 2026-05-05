@@ -419,6 +419,16 @@
 }
 
 /* ── Error ───────────────────────────────────── */
+.shareErrorBanner {
+  margin: 0 16px 8px;
+  background: #FEE2E2;
+  color: #991B1B;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  text-align: center;
+}
+
 .errorWrap {
   flex: 1;
   display: flex;

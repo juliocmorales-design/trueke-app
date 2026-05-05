@@ -128,14 +128,17 @@ export default function ExchangeClient({
   chainId?: number | null
 }) {
   const router = useRouter()
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined)
+  const [loadingUser, setLoadingUser]     = useState(true)
   const [status, setStatus]               = useState<string>(data?.offer?.status ?? 'pending')
   const [acting, setActing]               = useState(false)
   const [completing, setCompleting]       = useState(false)
+  const [shareError, setShareError]       = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: s }) => {
-      setCurrentUserId(s.session?.user?.id ?? null)
+      setCurrentUserId(s.session?.user?.id ?? undefined)
+      setLoadingUser(false)
     })
   }, [])
 
@@ -307,8 +310,14 @@ export default function ExchangeClient({
 
       </div>
 
+      {shareError && (
+        <div className={s.shareErrorBanner}>{shareError}</div>
+      )}
+
       {/* FOOTER */}
-      {status === 'accepted' ? (
+      {loadingUser ? (
+        <div className={s.footer} style={{ visibility: 'hidden' }} />
+      ) : status === 'accepted' ? (
         <div className={s.footer}>
           <button className={s.btnPrimary} onClick={() => router.push(`/meeting/${offerId}`)}>
             Acordar punto de encuentro

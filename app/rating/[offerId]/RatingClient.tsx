@@ -89,6 +89,15 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
     setSaveError(false)
 
     try {
+      const { data: duplicate } = await supabase
+        .from('ratings')
+        .select('id')
+        .eq('offer_id', data.offer.id)
+        .eq('rater_id', raterId)
+        .maybeSingle()
+
+      if (duplicate) { router.replace('/intercambios'); return }
+
       await supabase.from('ratings').insert({
         offer_id: data.offer.id,
         rater_id: raterId,

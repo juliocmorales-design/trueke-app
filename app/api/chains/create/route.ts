@@ -10,10 +10,8 @@ function adminClient() {
 }
 
 export async function POST(req: NextRequest) {
-  console.log('[chains/create] *** ROUTE HIT ***')
   try {
     const { offerId, receivedItemId } = await req.json()
-    console.log('[chains/create] body:', { offerId, receivedItemId })
 
     if (!receivedItemId) {
       return NextResponse.json({ error: 'receivedItemId es requerido' }, { status: 400 })
@@ -27,10 +25,8 @@ export async function POST(req: NextRequest) {
     )
     const authHeader = req.headers.get('Authorization') ?? ''
     const token = authHeader.replace('Bearer ', '')
-    console.log('[chains/create] token:', token?.substring(0, 20) ?? 'null')
 
     const { data: { user }, error: authError } = await anonClient.auth.getUser(token)
-    console.log('[chains/create] auth userId:', user?.id ?? 'null', 'authError:', authError ?? 'null')
 
     if (authError || !user) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
@@ -48,7 +44,6 @@ export async function POST(req: NextRequest) {
         .select('id, from_user_id, to_user_id')
         .eq('id', offerId)
         .single()
-      console.log('[chains/create] offer result:', offer ?? offerError)
 
       if (offerError || !offer) {
         return NextResponse.json({ error: offerError?.message || 'Oferta no encontrada' }, { status: 404 })
@@ -68,14 +63,11 @@ export async function POST(req: NextRequest) {
       steps_count:      1,
       show_name:        false,
     }
-    console.log('[chains/create] inserting chain:', chainPayload)
-
     const { data: chain, error: chainError } = await supabase
       .from('chains')
       .insert(chainPayload)
       .select('id')
       .single()
-    console.log('[chains/create] chain result:', chain ?? chainError)
 
     if (chainError || !chain) {
       return NextResponse.json({ error: chainError?.message || 'No se pudo crear la cadena' }, { status: 500 })

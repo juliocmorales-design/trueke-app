@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 4 Mayo 2026 (sesión 2)
+> Última actualización: 4 Mayo 2026 (sesión 3)
 
 ---
 
@@ -98,6 +98,8 @@ Las tarjetas compartibles solo muestran:
 - Julio: julio.morales@elnorte.com → UUID: `93f2cc3e-0a5d-4ed6-9aff-07ac6f0bc7a1`
 - Armajulion: armajulion@hotmail.com → UUID: `3db90ec2-fdd6-4edd-97e9-7136d79b4be2`
 
+**Estado actual de la BD (post sesión 3):** offers limpia — se eliminaron 3 offers de prueba donde from_user_id = to_user_id (con sus 2 mensajes y 5 notificaciones asociadas). No hay offers activas.
+
 **Storage:** buckets `images` y `avatars` (ambos PUBLIC)
 **Twilio:** NO configurado aún — SMS no funciona, pendiente
 
@@ -135,7 +137,9 @@ trueke-app/app/
 ├── api/notifications/list/          ✅ GET — lista notificaciones del usuario
 ├── api/notifications/unread-count/  ✅ GET — conteo no leídas
 ├── buscar/page.tsx                  ✅ Pantalla de búsqueda con filtro ciudad + debounce
-├── api/chains/create/               ✅ POST — crea cadena de intercambio
+├── api/chains/create/               ✅ POST — crea cadena (offerId opcional desde sesión 3)
+├── api/chains/add-step/             ✅ POST — agrega paso a cadena existente
+├── mis-cadenas/page.tsx             ✅ Mis cadenas — como creador y como participante
 └── lib/
     ├── supabase.js                  ✅ Cliente Supabase (anon)
     └── notifications.ts             ✅ Helper createNotification con admin client
@@ -161,6 +165,8 @@ trueke-app/app/
 | Notificaciones | Empty state: SVG campana trazo fino #C4BAB1, texto mejorado. Cards con SVGs por tipo |
 | Onboarding step 0 | Título 38px en 2 líneas, imagen portada.png sin blob de fondo, fondo #FDF8F3 |
 | Perfil | Stats reales (ratings + items count), sin logros, con "Mis cadenas" y sub-páginas |
+| Mis cadenas | Lista como creador + participante, badge status, step count, CTA crear primera cadena |
+| Calificación (modal cadena) | Tras guardar rating: opciones continuar cadena existente / iniciar nueva / terminar |
 
 ---
 
@@ -193,20 +199,20 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Tabla:** `notifications` con admin client (SERVICE_ROLE_KEY) para bypassear RLS
 - **API routes:** `/api/notifications/create`, `/list`, `/unread-count`
 - **Autenticación:** Bearer token verificado con `anon.auth.getUser(token)` antes de cada operación
-- **Triggers actuales:** offer_accepted, offer_rejected, offer_completed
+- **Triggers actuales:** offer_received (offer/new), offer_accepted, offer_rejected, offer_completed (ExchangeClient), rating_received (RatingClient)
 - **Helper:** `app/lib/notifications.ts` → `createNotification({ user_id, type, title, body, offer_id })`
 
 ---
 
 ## ⏳ Pendiente MVP — en orden de prioridad
 
-1. **Conectar createNotification() a flujos reales** — llamar al helper en: oferta enviada (offer/new), oferta aceptada/rechazada (ExchangeClient ya lo hace), intercambio completado (ExchangeClient ya lo hace), calificación recibida (RatingClient pendiente)
-2. **Twilio** — configurar para SMS reales en onboarding/login
-3. **Cadenas** — flujo completo crear/seguir progreso, tarjeta compartible
-4. **Push notifications** — PWA o web push para notificaciones en tiempo real
-5. **Rating visible en perfil** — conectar promedio de ratings a la página de perfil público
-6. **Mis intercambios** — verificar que los tabs Activos/Completados/Cancelados filtren correctamente
-7. **Búsqueda** — agregar filtro por categoría además de ciudad
+1. **Twilio** — configurar para SMS reales en onboarding/login
+2. **Tarjeta compartible de cadena** — V1/V2/V3 aprobadas en diseño, pendiente implementar en chain/[id]
+3. **Push notifications** — PWA o web push para notificaciones en tiempo real
+4. **Rating visible en perfil** — conectar promedio de ratings a la página de perfil público
+5. **Mis intercambios** — verificar que los tabs Activos/Completados/Cancelados filtren correctamente con datos reales (no de prueba)
+6. **Búsqueda** — agregar filtro por categoría además de ciudad
+7. **Datos de prueba reales** — crear offers entre dos usuarios distintos para probar flujo completo (actualmente BD limpia, no hay offers)
 
 ---
 

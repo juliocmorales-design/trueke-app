@@ -26,29 +26,46 @@ export default function OfferNewPage() {
   }, [])
 
   const fetchData = async () => {
-    const { data: sessionData } = await supabase.auth.getSession()
-    const user = sessionData.session?.user
-    if (!user) return
-    setCurrentUser(user)
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const user = sessionData.session?.user
+      if (!user) return
+      setCurrentUser(user)
 
-    const [{ data: target }, { data: mine }] = await Promise.all([
-      supabase.from('items').select('*').eq('id', itemId).single(),
-      supabase.from('items').select('*').eq('user_id', user.id),
-    ])
+      const [{ data: target, error: targetError }, { data: mine }] = await Promise.all([
+        supabase.from('items').select('*').eq('id', itemId).single(),
+        supabase.from('items').select('*').eq('user_id', user.id),
+      ])
 
-    setTargetItem(target)
-    setMyItems(mine || [])
+      if (targetError || !target) {
+        console.error('Item no encontrado', targetError?.code)
+        router.replace('/')
+        return
+      }
 
-    if (target?.user_id) {
-      const { data: owner } = await supabase
-        .from('profiles')
-        .select('id, name, username, avatar_url')
-        .eq('id', target.user_id)
-        .single()
-      setTargetOwner(owner)
+      if (target.user_id === user.id) {
+        console.error('No puedes hacer una oferta sobre tu propio item')
+        router.replace('/')
+        return
+      }
+
+      setTargetItem(target)
+      setMyItems(mine || [])
+
+      if (target.user_id) {
+        const { data: owner } = await supabase
+          .from('profiles')
+          .select('id, name, username, avatar_url')
+          .eq('id', target.user_id)
+          .single()
+        setTargetOwner(owner)
+      }
+
+      setLoading(false)
+    } catch (e) {
+      console.error('fetchData error', e)
+      router.replace('/')
     }
-
-    setLoading(false)
   }
 
   const handleSend = async () => {

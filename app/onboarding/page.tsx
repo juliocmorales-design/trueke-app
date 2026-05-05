@@ -190,6 +190,19 @@ export default function Onboarding() {
 
     setSaving(true)
 
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', username)
+      .neq('id', userId)
+      .maybeSingle()
+
+    if (existing) {
+      setError('Este username ya está tomado, elige otro')
+      setSaving(false)
+      return
+    }
+
     const { error: err } = await supabase
       .from('profiles')
       .upsert({
@@ -523,7 +536,7 @@ export default function Onboarding() {
                   background: '#F97316',
                   color: '#FDF8F3',
                   padding: '0 18px',
-                  borderRadius: 10,
+                  borderRadius: 16,
                   fontWeight: 600,
                   fontSize: 14,
                   cursor: 'pointer',
@@ -578,7 +591,7 @@ const styles: any = {
     fontSize: 32,
     fontWeight: 700,
     marginBottom: 10,
-    color: '#1a1a2e',
+    color: '#1A2744',
   },
 
   accent: {
