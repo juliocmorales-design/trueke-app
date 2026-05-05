@@ -17,6 +17,11 @@ export default function PerfilPage() {
 
   useEffect(() => { loadData() }, [])
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.replace('/login')
+  }
+
   const loadData = async () => {
     const { data: sessionData } = await supabase.auth.getSession()
     const user = sessionData.session?.user
@@ -151,7 +156,22 @@ export default function PerfilPage() {
         <MenuItem label="Mis publicaciones" type="publicaciones" onClick={() => router.push('/perfil/publicaciones')} />
         <MenuItem label="Mis reseñas"       type="resenas"       onClick={() => router.push('/perfil/resenas')} />
         <MenuItem label="Ayuda y soporte"   type="ayuda"         onClick={() => setShowComingSoon(true)} />
-        <MenuItem label="Configuración"     type="config"        onClick={() => setShowComingSoon(true)} last />
+        <MenuItem label="Configuración"     type="config"        onClick={() => setShowComingSoon(true)} />
+        <div
+          style={{ ...styles.menuItem, borderBottom: 'none' }}
+          onClick={handleSignOut}
+        >
+          <div style={styles.menuLeft}>
+            <div style={styles.menuIcon}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+            </div>
+            <span style={{ ...styles.menuLabel, color: '#DC2626' }}>Cerrar sesión</span>
+          </div>
+        </div>
       </div>
 
     </div>
