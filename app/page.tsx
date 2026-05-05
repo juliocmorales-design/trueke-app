@@ -11,10 +11,13 @@ type Chain = { id: number; initial_item_id: number; created_at: string; initial_
 
 export default function Home() {
   const router = useRouter()
-  const [ready,    setReady]    = useState(false)
-  const [items,    setItems]    = useState<Item[]>([])
-  const [chains,   setChains]   = useState<Chain[]>([])
-  const [userCity, setUserCity] = useState('')
+  const [ready,         setReady]         = useState(false)
+  const [items,         setItems]         = useState<Item[]>([])
+  const [chains,        setChains]        = useState<Chain[]>([])
+  const [userCity,      setUserCity]      = useState('')
+  const [showCityModal, setShowCityModal] = useState(false)
+  const [cityInput,     setCityInput]     = useState('')
+  const [savingCity,    setSavingCity]    = useState(false)
 
   useEffect(() => { checkFlow() }, [])
 
@@ -115,6 +118,23 @@ export default function Home() {
     }
   }
 
+  const saveCity = async () => {
+    const trimmed = cityInput.trim()
+    if (!trimmed) return
+    setSavingCity(true)
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const user = sessionData.session?.user
+      if (user) {
+        await supabase.from('profiles').update({ city: trimmed }).eq('id', user.id)
+        setUserCity(trimmed)
+      }
+    } finally {
+      setSavingCity(false)
+      setShowCityModal(false)
+    }
+  }
+
   if (!ready) return <div style={styles.loading}>Cargando...</div>
 
   return (
@@ -122,17 +142,49 @@ export default function Home() {
 
       {/* HEADER */}
       <div style={styles.header}>
-        <div style={styles.location}>
+        <button
+          style={styles.locationBtn}
+          onClick={() => { setCityInput(userCity || ''); setShowCityModal(true) }}
+        >
           <svg viewBox="0 0 24 24" width={16} style={{ flexShrink: 0 }}>
             <path d="M12 21s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z" fill="#F97316"/>
             <circle cx="12" cy="11" r="2" fill="#fff"/>
           </svg>
           <span style={styles.city}>{userCity || 'Mi ciudad'}</span>
-        </div>
+          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
         <div style={styles.headerIcons}>
           <NotifBadge />
         </div>
       </div>
+
+      {/* MODAL CIUDAD */}
+      {showCityModal && (
+        <div style={styles.overlay} onClick={() => setShowCityModal(false)}>
+          <div style={styles.modalCard} onClick={e => e.stopPropagation()}>
+            <p style={styles.modalTitle}>¿En qué ciudad estás?</p>
+            <input
+              style={styles.modalInput}
+              placeholder="Ej: Monterrey, CDMX..."
+              value={cityInput}
+              onChange={e => setCityInput(e.target.value)}
+              autoFocus
+            />
+            <button
+              style={{ ...styles.modalSave, opacity: savingCity ? 0.6 : 1 }}
+              onClick={saveCity}
+              disabled={savingCity}
+            >
+              {savingCity ? 'Guardando...' : 'Guardar'}
+            </button>
+            <button style={styles.modalCancel} onClick={() => setShowCityModal(false)}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* SEARCH */}
       <div style={{ ...styles.search, cursor: 'pointer' }} onClick={() => router.push('/buscar')}>
@@ -238,6 +290,42 @@ const styles: any = {
 
   location: {
     display: 'flex', alignItems: 'center', gap: 6,
+  },
+
+  locationBtn: {
+    display: 'flex', alignItems: 'center', gap: 6,
+    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+  },
+
+  overlay: {
+    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+    zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+  },
+
+  modalCard: {
+    background: '#fff', borderRadius: '20px 20px 0 0',
+    padding: 24, width: '100%', maxWidth: 500,
+    display: 'flex', flexDirection: 'column', gap: 12,
+  },
+
+  modalTitle: {
+    margin: 0, fontSize: 18, fontWeight: 700, color: '#1A2744',
+  },
+
+  modalInput: {
+    background: '#F0EAE0', borderRadius: 12, border: 'none',
+    padding: 14, fontSize: 15, fontFamily: 'inherit', outline: 'none',
+  },
+
+  modalSave: {
+    background: '#F97316', color: '#fff', border: 'none',
+    borderRadius: 16, width: '100%', padding: 16,
+    fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+  },
+
+  modalCancel: {
+    background: 'none', border: 'none', color: '#6F7A82',
+    fontSize: 15, cursor: 'pointer', fontFamily: 'inherit', padding: '4px 0',
   },
 
   city: {
