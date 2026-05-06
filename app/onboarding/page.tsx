@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase'
 
@@ -8,6 +8,13 @@ const cities = [
   'Monterrey', 'CDMX', 'Guadalajara', 'Tijuana', 'Puebla',
   'León', 'Cancún', 'Mérida', 'San Luis Potosí', 'Chihuahua',
   'Toluca', 'Querétaro', 'Hermosillo', 'Saltillo', 'Aguascalientes'
+]
+
+const timelineItems = [
+  { emoji: '🎮', name: 'Consola',  sub: 'lo que tienes'  },
+  { emoji: '📷', name: 'Cámara',  sub: 'intercambio 1'  },
+  { emoji: '💻', name: 'Laptop',  sub: 'intercambio 2'  },
+  { emoji: '🛵', name: 'Moto',    sub: 'lo que quieres' },
 ]
 
 const interestsList = [
@@ -152,32 +159,109 @@ export default function Onboarding() {
 
       {/* ── STEP 0: Bienvenida ── */}
       {step === 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, paddingBottom: 80 }}>
-          <div style={{ textAlign: 'center' }}>
-            <img src="/images/logo.png" alt="Trueke.app" style={{ width: '200px', maxWidth: '100%', display: 'block', margin: '0 auto 16px' }} />
-            <p style={{ ...styles.subtitle, fontSize: 18, color: '#1A2744', fontWeight: 500, marginTop: 12 }}>
-              Intercambia, conecta y crea comunidad.
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, paddingTop: 24, paddingBottom: 24 }}>
+
+          {/* Logo */}
+          <img
+            src="/images/logo.png"
+            alt="Trueke.app"
+            style={{ width: 180, maxWidth: '100%', display: 'block' }}
+          />
+
+          {/* Tagline */}
+          <div style={{ textAlign: 'center', marginTop: 16, fontSize: 22, lineHeight: 1.35 }}>
+            <p style={{ margin: 0, fontWeight: 700, color: '#1A2744' }}>
+              Intercambia lo que tienes.
+            </p>
+            <p style={{ margin: '4px 0 0', fontWeight: 700, color: '#F97316' }}>
+              Consigue lo que quieres.
             </p>
           </div>
 
-          <div style={{ ...styles.illustrationWrapper, height: 'auto', maxHeight: 280, overflow: 'hidden' }}>
-            <img src="/images/portada.png" alt="Trueke" style={{ ...styles.image, maxHeight: 280, objectFit: 'contain' }} />
+          {/* Timeline */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            marginTop: 36,
+            marginLeft: -20,
+            marginRight: -20,
+            paddingLeft: 4,
+            paddingRight: 4,
+          }}>
+            {timelineItems.map((item, i) => (
+              <Fragment key={i}>
+                {i > 0 && (
+                  <span style={{
+                    flexShrink: 0,
+                    paddingTop: 26,
+                    marginLeft: 4,
+                    marginRight: 4,
+                    color: '#F97316',
+                    fontSize: 18,
+                    fontWeight: 700,
+                    lineHeight: 1,
+                  }}>→</span>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flexShrink: 1 }}>
+                  <div style={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: '50%',
+                    background: '#F0EAE0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 32,
+                    flexShrink: 0,
+                  }}>
+                    {item.emoji}
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#1A2744', textAlign: 'center', lineHeight: 1.2 }}>
+                    {item.name}
+                  </span>
+                  <span style={{ fontSize: 10, color: '#888', textAlign: 'center', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                    {item.sub}
+                  </span>
+                </div>
+              </Fragment>
+            ))}
           </div>
 
-          <div>
-            <button style={{ ...styles.button, marginTop: 16, border: 'none' }} onClick={() => setStep(1)}>
-              Comenzar
+          {/* spacer */}
+          <div style={{ flex: 1 }} />
+
+          {/* Botón */}
+          <button
+            style={{
+              background: '#F97316',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 16,
+              fontWeight: 700,
+              fontSize: 16,
+              padding: '16px 0',
+              width: '80%',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              marginTop: 32,
+            }}
+            onClick={() => setStep(1)}
+          >
+            Comenzar
+          </button>
+
+          {/* Link login */}
+          <div style={{ marginTop: 14, fontSize: 15, color: '#6B7280', textAlign: 'center' }}>
+            ¿Ya tienes cuenta?{' '}
+            <button
+              style={{ color: '#F97316', fontWeight: 600, cursor: 'pointer', fontSize: 15, border: 'none', background: 'none', padding: '4px 0', fontFamily: 'inherit' }}
+              onClick={() => router.push('/login')}
+            >
+              Iniciar sesión
             </button>
-            <div style={{ ...styles.login, fontSize: 16, color: '#6B7280' }}>
-              ¿Ya tienes cuenta?{' '}
-              <button
-                style={{ color: '#F97316', fontWeight: 600, cursor: 'pointer', fontSize: 16, border: 'none', background: 'none', padding: '8px', fontFamily: 'inherit' }}
-                onClick={() => router.push('/login')}
-              >
-                Iniciar sesión
-              </button>
-            </div>
           </div>
+
         </div>
       )}
 
