@@ -184,7 +184,7 @@ export default function Onboarding() {
 
       {/* ── STEP 0: Bienvenida ── */}
       {step === 0 && (
-        <>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, paddingBottom: 80 }}>
           <div style={{ textAlign: 'center' }}>
             <img src="/images/logo.png" alt="Trueke.app" style={{ width: '200px', maxWidth: '100%', display: 'block', margin: '0 auto 16px' }} />
 
@@ -193,8 +193,8 @@ export default function Onboarding() {
             </p>
           </div>
 
-          <div style={styles.illustrationWrapper}>
-            <img src="/images/portada.png" alt="Trueke" style={styles.image} />
+          <div style={{ ...styles.illustrationWrapper, height: 'auto', maxHeight: 280, overflow: 'hidden' }}>
+            <img src="/images/portada.png" alt="Trueke" style={{ ...styles.image, maxHeight: 280, objectFit: 'contain' }} />
           </div>
 
           <div>
@@ -212,7 +212,7 @@ export default function Onboarding() {
               </button>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* ── STEP 1: Verificación ── */}
