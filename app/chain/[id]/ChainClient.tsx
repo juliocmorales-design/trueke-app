@@ -112,7 +112,7 @@ function CardContent({
           <span style={{ color:'#fff', fontWeight:900, fontSize:logoFont }}>T</span>
         </div>
         <span style={{ color:'#1A2744', fontWeight:900, fontSize:nameSz, letterSpacing:-0.5 }}>
-          Trueke
+          Trueke.app
         </span>
       </div>
 
@@ -158,7 +158,7 @@ function CardContent({
       {/* CTA pill */}
       <div style={{ background:'#1A2744', borderRadius:999, padding:ctaPad }}>
         <span style={{ color:'#fff', fontWeight:700, fontSize:ctaSz }}>
-          Crea tu historia en Trueke
+          Crea tu historia en Trueke.app
         </span>
       </div>
     </div>
@@ -207,7 +207,10 @@ export default function ChainClient({ data }: { data: ChainData }) {
   )
   bubbles.push({ item: undefined, active: false, future: true })
 
-  const truncate = (t: string, max = 10) => t.length > max ? t.slice(0, max) + '…' : t
+  const truncateWords = (t: string, maxWords = 2) => {
+    const words = t.trim().split(/\s+/)
+    return words.length <= maxWords ? t : words.slice(0, maxWords).join(' ') + '…'
+  }
 
   /* ── Download helper (returns true on success) ─────────────────────── */
   const captureAndDownload = async (ref: React.RefObject<HTMLDivElement>, filename: string) => {
@@ -236,7 +239,7 @@ export default function ChainClient({ data }: { data: ChainData }) {
   const handleWhatsApp = async () => {
     await captureAndDownload(refWhatsapp, 'trueke-whatsapp.png')
     const texto = encodeURIComponent(
-      `¡Hice ${chain.steps_count} intercambio${chain.steps_count !== 1 ? 's' : ''} en Trueke! 🔄 ` +
+      `¡Hice ${chain.steps_count} intercambio${chain.steps_count !== 1 ? 's' : ''} en Trueke.app! 🔄 ` +
       `Empecé con "${initialItem?.title ?? '...'}" y terminé con "${lastItem?.title ?? '...'}". ` +
       `Crea tu historia en trueke.app`
     )
@@ -287,17 +290,27 @@ export default function ChainClient({ data }: { data: ChainData }) {
           <div className={s.progressTrack}>
             {bubbles.map((b, i) => (
               <div key={i} className={s.bubbleCol}>
-                {i > 0 && <div className={s.connector} />}
-                <div className={[
-                  s.bubble,
-                  b.active ? s.bubbleActive : '',
-                  b.future ? s.bubbleFuture : '',
-                  !b.active && !b.future ? s.bubbleDone : '',
-                ].join(' ')}>
-                  {b.future ? '?' : i + 1}
+                {i > 0 && (
+                  <div className={[s.connector, b.future ? s.connectorFuture : s.connectorDone].join(' ')} />
+                )}
+                <div className={s.nodeWrap}>
+                  {b.future ? (
+                    <div className={s.bubbleFuture}>?</div>
+                  ) : (
+                    <>
+                      {b.item?.images?.[0] ? (
+                        <img src={b.item.images[0]} alt={b.item.title} className={s.nodeImg} crossOrigin="anonymous" />
+                      ) : (
+                        <div className={s.nodeImgFallback}>
+                          {b.item?.title.charAt(0).toUpperCase() ?? '?'}
+                        </div>
+                      )}
+                      <span className={s.nodeBadge}>{i + 1}</span>
+                    </>
+                  )}
                 </div>
                 <div className={s.bubbleLabel}>
-                  {b.future ? '...' : truncate(b.item?.title ?? '')}
+                  {b.future ? '...' : truncateWords(b.item?.title ?? '')}
                 </div>
               </div>
             ))}
