@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 4 Mayo 2026 (sesión 3)
+> Última actualización: 6 Mayo 2026 (sesión 4)
 
 ---
 
@@ -76,6 +76,9 @@ Las tarjetas compartibles solo muestran:
 - **GitHub Codespaces** — repositorio: `juliocmorales-design/trueke-app`, branch: `ui/navbar-refactor`
 - **Remote URL corregida:** `git@github.com:juliocmorales-design/trueke-app.git` (era `juliomorales-design` sin la c)
 - **Claude Code v2.1.123** instalado y autenticado en Codespaces
+- **Vercel** — dominio `trueke.app` conectado ✅ | deploy automático desde `ui/navbar-refactor`
+- **Resend** — SMTP configurado para Supabase Auth (pendiente verificación de dominio trueke.app)
+- **Logo:** `public/images/logo.png` (500×301 px, 65 KB) — trackeado en repo ✅
 
 ---
 
@@ -84,7 +87,7 @@ Las tarjetas compartibles solo muestran:
 | Tabla | Columnas clave | Notas |
 |---|---|---|
 | `profiles` | id (uuid), username, avatar_url, city | id = auth.users.id |
-| `items` | id (bigint), title, description, wanted, city, user_id (uuid), images (jsonb) | user_id ya es uuid |
+| `items` | id (bigint), title, description, wanted, city, user_id (uuid), images (jsonb), active (bool) | active agregado sesión 4 |
 | `offers` | id (bigint), from_user_id (uuid), to_user_id (uuid), status, created_at, meeting_point, meeting_confirmed_at | meeting_point agregado |
 | `offer_items` | id (bigint), offer_id → offers | |
 | `messages` | id (bigint), sender_id (uuid), receiver (uuid), text, offer_id (uuid), is_read | |
@@ -101,7 +104,8 @@ Las tarjetas compartibles solo muestran:
 **Estado actual de la BD (post sesión 3):** offers limpia — se eliminaron 3 offers de prueba donde from_user_id = to_user_id (con sus 2 mensajes y 5 notificaciones asociadas). No hay offers activas.
 
 **Storage:** buckets `images` y `avatars` (ambos PUBLIC)
-**Twilio:** NO configurado aún — SMS no funciona, pendiente
+**Auth:** Email + contraseña como método principal. Magic link como secundario. SMS/Twilio eliminado del onboarding.
+**Supabase Auth:** Email templates personalizados ✅ | Redirect URLs de producción actualizados ✅ | SMTP via Resend (pendiente verificar dominio)
 
 ---
 
@@ -109,8 +113,10 @@ Las tarjetas compartibles solo muestran:
 
 ```
 trueke-app/app/
-├── onboarding/page.tsx              ✅ Registro OTP 5 pasos
-├── login/page.tsx                   ✅ Login OTP
+├── auth/callback/page.tsx           ✅ Callback de Supabase Auth
+├── auth/reset-password/page.tsx     ✅ Resetear contraseña
+├── onboarding/page.tsx              ✅ Registro email+contraseña — 6 pasos (SMS eliminado, Step 6: contraseña)
+├── login/page.tsx                   ✅ Email+contraseña (principal) + magic link (secundario)
 ├── page.tsx                         ✅ Inicio/Home
 ├── crear/page.tsx                   ✅ Crear publicación (hasta 5 fotos, botón "Publicar")
 ├── item/[id]/page.tsx               ✅ Detalle de item (carrusel con márgenes, owner stats con rating)
@@ -163,7 +169,8 @@ trueke-app/app/
 | Lista de mensajes | Empty state: SVG campana, 2 líneas, color #1A2744, fontWeight 500 |
 | Mis intercambios | Tabs Activos/Completados/Cancelados, fotos con borderRadius: 12 |
 | Notificaciones | Empty state: SVG campana trazo fino #C4BAB1, texto mejorado. Cards con SVGs por tipo |
-| Onboarding step 0 | Título 38px en 2 líneas, imagen portada.png sin blob de fondo, fondo #FDF8F3 |
+| Onboarding (6 pasos) | Logo en step 0, SMS eliminado, Step 6 de contraseña agregado. Email+contraseña como auth principal |
+| Login | Email+contraseña principal, magic link como secundario, reset de contraseña vía Supabase |
 | Perfil | Stats reales (ratings + items count), sin logros, con "Mis cadenas" y sub-páginas |
 | Mis cadenas | Lista como creador + participante, badge status, step count, CTA crear primera cadena |
 | Calificación (modal cadena) | Tras guardar rating: opciones continuar cadena existente / iniciar nueva / terminar |
@@ -206,8 +213,9 @@ rating/[offerId] → calificación 1-5 + comentario
 
 ## ⏳ Pendiente MVP — en orden de prioridad
 
-1. **Twilio** — configurar para SMS reales en onboarding/login
-2. **Tarjeta compartible de cadena** — V1/V2/V3 aprobadas en diseño, pendiente implementar en chain/[id]
+1. **Resend** — verificar dominio `trueke.app` para que los emails salgan desde `noreply@trueke.app`
+2. **Usuarios de prueba** — resetear contraseñas de Julio y Armajulion (migración de OTP a email+contraseña)
+3. **Tarjeta compartible de cadena** — V1/V2/V3 aprobadas en diseño, pendiente implementar en chain/[id]
 3. **Push notifications** — PWA o web push para notificaciones en tiempo real
 4. **Rating visible en perfil** — conectar promedio de ratings a la página de perfil público
 5. **Mis intercambios** — verificar que los tabs Activos/Completados/Cancelados filtren correctamente con datos reales (no de prueba)
