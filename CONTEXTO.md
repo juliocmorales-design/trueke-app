@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 6 Mayo 2026 (sesión 4)
+> Última actualización: 6 Mayo 2026 (sesión 5)
 
 ---
 
@@ -98,10 +98,10 @@ Las tarjetas compartibles solo muestran:
 | `notifications` | id, user_id, type, title, body, offer_id, is_read, created_at | NUEVA — usa admin client |
 
 **Usuarios de prueba:**
-- Julio: juliocmorales@gmail.com → UUID: `15a54455-6f8b-4fc0-be30-832960e8c080`
-- Armajulion: armajulion@hotmail.com → UUID: `93f2cc3e-0a5d-4ed6-9aff-07ac6f0bc7a1`
+- Julio: juliocmorales@gmail.com / `trueke123` → UUID: `15a54455-6f8b-4fc0-be30-832960e8c080`
+- Armajulion: armajulion@hotmail.com / `trueke123` → UUID: `93f2cc3e-0a5d-4ed6-9aff-07ac6f0bc7a1`
 
-**Estado actual de la BD (post sesión 3):** offers limpia — se eliminaron 3 offers de prueba donde from_user_id = to_user_id (con sus 2 mensajes y 5 notificaciones asociadas). No hay offers activas.
+**Estado actual de la BD (post sesión 5):** offers limpia — se eliminaron 3 offers de prueba donde from_user_id = to_user_id (con sus 2 mensajes y 5 notificaciones asociadas). No hay offers activas.
 
 **Storage:** buckets `images` y `avatars` (ambos PUBLIC)
 **Auth:** Email + contraseña como método principal. Magic link como secundario. SMS/Twilio eliminado del onboarding.
@@ -169,8 +169,8 @@ trueke-app/app/
 | Lista de mensajes | Empty state: SVG campana, 2 líneas, color #1A2744, fontWeight 500 |
 | Mis intercambios | Tabs Activos/Completados/Cancelados, fotos con borderRadius: 12 |
 | Notificaciones | Empty state: SVG campana trazo fino #C4BAB1, texto mejorado. Cards con SVGs por tipo |
-| Onboarding (6 pasos) | Logo en step 0, SMS eliminado, Step 6 de contraseña agregado. Email+contraseña como auth principal |
-| Login | Email+contraseña principal, magic link como secundario, reset de contraseña vía Supabase |
+| Onboarding (6 pasos) | Logo centrado step 0, step OTP/magic link eliminado, flujo: nombre→email→contraseña→ciudad→intereses → signUp al final |
+| Login | Email+contraseña principal, magic link como link de texto discreto (no botón), reset de contraseña vía Supabase |
 | Perfil | Stats reales (ratings + items count), sin logros, con "Mis cadenas" y sub-páginas |
 | Mis cadenas | Lista como creador + participante, badge status, step count, CTA crear primera cadena |
 | Calificación (modal cadena) | Tras guardar rating: opciones continuar cadena existente / iniciar nueva / terminar |
@@ -214,8 +214,7 @@ rating/[offerId] → calificación 1-5 + comentario
 ## ⏳ Pendiente MVP — en orden de prioridad
 
 1. **Resend** — verificar dominio `trueke.app` para que los emails salgan desde `noreply@trueke.app`
-2. **Usuarios de prueba** — resetear contraseñas de Julio y Armajulion (migración de OTP a email+contraseña)
-3. **Tarjeta compartible de cadena** — V1/V2/V3 aprobadas en diseño, pendiente implementar en chain/[id]
+2. **Tarjeta compartible de cadena** — V1/V2/V3 aprobadas en diseño, pendiente implementar en chain/[id]
 3. **Push notifications** — PWA o web push para notificaciones en tiempo real
 4. **Rating visible en perfil** — conectar promedio de ratings a la página de perfil público
 5. **Mis intercambios** — verificar que los tabs Activos/Completados/Cancelados filtren correctamente con datos reales (no de prueba)
