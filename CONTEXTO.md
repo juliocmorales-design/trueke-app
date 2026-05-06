@@ -98,7 +98,7 @@ Las tarjetas compartibles solo muestran:
 | `notifications` | id, user_id, type, title, body, offer_id, is_read, created_at | NUEVA — usa admin client |
 
 **Usuarios de prueba:**
-- Julio: julio.morales@elnorte.com → UUID: `93f2cc3e-0a5d-4ed6-9aff-07ac6f0bc7a1`
+- Julio: juliocmorales@gmail.com → UUID: `93f2cc3e-0a5d-4ed6-9aff-07ac6f0bc7a1`
 - Armajulion: armajulion@hotmail.com → UUID: `3db90ec2-fdd6-4edd-97e9-7136d79b4be2`
 
 **Estado actual de la BD (post sesión 3):** offers limpia — se eliminaron 3 offers de prueba donde from_user_id = to_user_id (con sus 2 mensajes y 5 notificaciones asociadas). No hay offers activas.
