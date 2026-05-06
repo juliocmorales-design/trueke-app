@@ -36,6 +36,9 @@ export default function Onboarding() {
   const [sendingEmail, setSendingEmail] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
 
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+
   useEffect(() => {
     const init = async () => {
       const { data } = await supabase.auth.getSession()
@@ -114,10 +117,10 @@ export default function Onboarding() {
     setOtroText('')
   }
 
-  const saveAll = async () => {
+  const saveProfile = async (): Promise<boolean> => {
     if (!username || !city) {
       setError('Completa los campos requeridos')
-      return
+      return false
     }
 
     setSaving(true)
@@ -132,26 +135,43 @@ export default function Onboarding() {
     if (existing) {
       setError('Este username ya está tomado, elige otro')
       setSaving(false)
-      return
+      return false
     }
 
     const { error: err } = await supabase
       .from('profiles')
-      .upsert({
-        id: userId,
-        username,
-        city,
-        interests,
-      })
+      .upsert({ id: userId, username, city, interests })
 
     setSaving(false)
 
     if (err) {
       setError(err.message)
-      return
+      return false
     }
 
     localStorage.setItem('onboarding_seen', 'true')
+    return true
+  }
+
+  const handleFinish = async () => {
+    if (password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden')
+      return
+    }
+
+    const ok = await saveProfile()
+    if (!ok) return
+
+    const { error: err } = await supabase.auth.updateUser({ password })
+    if (err) {
+      setError(err.message)
+      return
+    }
+
     router.push('/')
   }
 
@@ -165,10 +185,8 @@ export default function Onboarding() {
       {/* ── STEP 0: Bienvenida ── */}
       {step === 0 && (
         <>
-          <div>
-            <h1 style={{ ...styles.title, fontWeight: 800, whiteSpace: 'normal', fontSize: 38 }}>
-              Bienvenido a<br/><span style={styles.accent}>Trueke</span>
-            </h1>
+          <div style={{ textAlign: 'center' }}>
+            <img src="/images/logo.png" alt="Trueke.app" style={{ width: '200px', maxWidth: '100%', display: 'block', margin: '0 auto 16px' }} />
 
             <p style={{ ...styles.subtitle, fontSize: 18, color: '#1A2744', fontWeight: 500, marginTop: 12 }}>
               Intercambia, conecta y crea comunidad.
@@ -425,11 +443,48 @@ export default function Onboarding() {
 
           {error && <p style={styles.errorText}>{error}</p>}
 
-          <button style={{ ...styles.button, border: 'none' }} onClick={saveAll}>
-            {saving ? 'Guardando...' : '¡Todo listo! ✓'}
+          <button style={{ ...styles.button, border: 'none' }} onClick={() => setStep(6)}>
+            Siguiente →
           </button>
 
           <div style={styles.back} onClick={() => setStep(4)}>Atrás</div>
+        </div>
+      )}
+
+      {/* ── STEP 6: Contraseña ── */}
+      {step === 6 && (
+        <div style={styles.stepContainer}>
+          <div style={styles.progress}>
+            <div style={{ ...styles.bar, width: '100%' }} />
+          </div>
+
+          <h1 style={styles.title}>Crea tu contraseña</h1>
+          <p style={styles.subtitle}>Para entrar en tu próxima visita</p>
+
+          <input
+            style={styles.input}
+            placeholder="Crea una contraseña"
+            value={password}
+            onChange={e => { setPassword(e.target.value); setError('') }}
+            type="password"
+            autoComplete="new-password"
+          />
+          <input
+            style={styles.input}
+            placeholder="Confirma tu contraseña"
+            value={confirmPassword}
+            onChange={e => { setConfirmPassword(e.target.value); setError('') }}
+            type="password"
+            autoComplete="new-password"
+          />
+
+          {error && <p style={styles.errorText}>{error}</p>}
+
+          <button style={{ ...styles.button, border: 'none' }} onClick={handleFinish}>
+            {saving ? 'Guardando...' : '¡Todo listo! ✓'}
+          </button>
+
+          <div style={styles.back} onClick={() => { setError(''); setStep(5) }}>Atrás</div>
         </div>
       )}
 
