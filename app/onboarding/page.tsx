@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Fragment } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase'
 
@@ -8,13 +8,6 @@ const cities = [
   'Monterrey', 'CDMX', 'Guadalajara', 'Tijuana', 'Puebla',
   'León', 'Cancún', 'Mérida', 'San Luis Potosí', 'Chihuahua',
   'Toluca', 'Querétaro', 'Hermosillo', 'Saltillo', 'Aguascalientes'
-]
-
-const timelineItems = [
-  { emoji: '🎮', name: 'Consola',  sub: 'lo que tienes'  },
-  { emoji: '📷', name: 'Cámara',  sub: 'intercambio 1'  },
-  { emoji: '💻', name: 'Laptop',  sub: 'intercambio 2'  },
-  { emoji: '🛵', name: 'Moto',    sub: 'lo que quieres' },
 ]
 
 const interestsList = [
@@ -154,84 +147,19 @@ export default function Onboarding() {
     return <div style={{ padding: 20, color: '#6B7680' }}>Cargando...</div>
   }
 
-  return (
-    <div style={styles.container}>
-
-      {/* ── STEP 0: Bienvenida ── */}
-      {step === 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, paddingTop: 24, paddingBottom: 24 }}>
-
-          {/* Logo */}
-          <img
-            src="/images/logo.png"
-            alt="Trueke.app"
-            style={{ width: 180, maxWidth: '100%', display: 'block' }}
-          />
-
-          {/* Tagline */}
-          <div style={{ textAlign: 'center', marginTop: 16, fontSize: 22, lineHeight: 1.35 }}>
-            <p style={{ margin: 0, fontWeight: 700, color: '#1A2744' }}>
-              Intercambia lo que tienes.
-            </p>
-            <p style={{ margin: '4px 0 0', fontWeight: 700, color: '#F97316' }}>
-              Consigue lo que quieres.
-            </p>
-          </div>
-
-          {/* Timeline */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'center',
-            marginTop: 36,
-            marginLeft: -20,
-            marginRight: -20,
-            paddingLeft: 4,
-            paddingRight: 4,
-          }}>
-            {timelineItems.map((item, i) => (
-              <Fragment key={i}>
-                {i > 0 && (
-                  <span style={{
-                    flexShrink: 0,
-                    paddingTop: 26,
-                    marginLeft: 4,
-                    marginRight: 4,
-                    color: '#F97316',
-                    fontSize: 18,
-                    fontWeight: 700,
-                    lineHeight: 1,
-                  }}>→</span>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flexShrink: 1 }}>
-                  <div style={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: '50%',
-                    background: '#F0EAE0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 32,
-                    flexShrink: 0,
-                  }}>
-                    {item.emoji}
-                  </div>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#1A2744', textAlign: 'center', lineHeight: 1.2 }}>
-                    {item.name}
-                  </span>
-                  <span style={{ fontSize: 10, color: '#888', textAlign: 'center', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
-                    {item.sub}
-                  </span>
-                </div>
-              </Fragment>
-            ))}
-          </div>
-
-          {/* spacer */}
-          <div style={{ flex: 1 }} />
-
-          {/* Botón */}
+  if (step === 0) {
+    return (
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden' }}>
+        {/* Hero image */}
+        <img
+          src="/images/onboarding-hero.png"
+          alt=""
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+        />
+        {/* Overlay beige para ocultar la hora del iPhone */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 60, background: '#FDF8F3' }} />
+        {/* Controles al fondo */}
+        <div style={{ position: 'absolute', bottom: 40, left: 0, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <button
             style={{
               background: '#F97316',
@@ -244,15 +172,12 @@ export default function Onboarding() {
               width: '80%',
               cursor: 'pointer',
               fontFamily: 'inherit',
-              marginTop: 32,
             }}
             onClick={() => setStep(1)}
           >
             Comenzar
           </button>
-
-          {/* Link login */}
-          <div style={{ marginTop: 14, fontSize: 15, color: '#6B7280', textAlign: 'center' }}>
+          <div style={{ marginTop: 14, fontSize: 15, color: '#1A2744', textAlign: 'center' }}>
             ¿Ya tienes cuenta?{' '}
             <button
               style={{ color: '#F97316', fontWeight: 600, cursor: 'pointer', fontSize: 15, border: 'none', background: 'none', padding: '4px 0', fontFamily: 'inherit' }}
@@ -261,9 +186,13 @@ export default function Onboarding() {
               Iniciar sesión
             </button>
           </div>
-
         </div>
-      )}
+      </div>
+    )
+  }
+
+  return (
+    <div style={styles.container}>
 
       {/* ── STEP 1: Nombre ── */}
       {step === 1 && (
