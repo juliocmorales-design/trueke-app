@@ -149,44 +149,54 @@ export default function Onboarding() {
 
   if (step === 0) {
     const cards = [
-      { url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=200', h: 140 },
-      { url: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=200', h: 160 },
-      { url: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=200',    h: 180 },
+      { url: 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=200', h: 130 },
+      { url: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=200', h: 155 },
+      { url: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=200',    h: 175 },
       { url: 'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=200', h: 200 },
     ]
     return (
       <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', backgroundColor: '#FAF3ED', overflow: 'hidden', position: 'relative' }}>
 
-        {/* 1. Header */}
-        <div style={{ paddingTop: 48, textAlign: 'center' }}>
-          <img src="/images/logo.png" alt="Trueke" style={{ width: 160 }} />
+        {/* 1. Logo */}
+        <div style={{ textAlign: 'center', paddingTop: 40, paddingBottom: 8, zIndex: 2, position: 'relative' }}>
+          <img src="/images/logo.png" alt="Trueke" style={{ width: 180, margin: '0 auto', display: 'block' }} />
         </div>
 
-        {/* 2. Tarjetas en perspectiva */}
-        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-end', gap: 8, padding: '24px 16px 0', position: 'relative', zIndex: 1 }}>
+        {/* 2. Tarjetas SVG */}
+        <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 6, padding: '8px 12px 0' }}>
           {cards.map((card, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
-              <div style={{ backgroundColor: '#fff', borderRadius: 16, border: '1px solid rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '22vw', maxWidth: 100, height: card.h }}>
-                <img src={card.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <div style={{ width: '22vw', maxWidth: 95, height: card.h }}>
+                <svg width="100%" height={card.h} viewBox={`0 0 90 ${card.h}`} style={{ display: 'block' }}>
+                  <defs>
+                    <clipPath id={`card${i}`}>
+                      <rect x="0" y="0" width="90" height={card.h} rx="14" ry="14" />
+                    </clipPath>
+                  </defs>
+                  <rect x="0" y="0" width="90" height={card.h} rx="14" fill="white" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
+                  <image href={card.url} x="0" y="0" width="90" height={card.h} preserveAspectRatio="xMidYMid slice" clipPath={`url(#card${i})`} />
+                </svg>
               </div>
               {i < cards.length - 1 && (
-                <span style={{ fontSize: 16, color: '#F97316', margin: '0 2px', paddingBottom: card.h / 2 }}>⬡</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" style={{ flexShrink: 0, marginBottom: 8, marginLeft: 2, marginRight: 2 }}>
+                  <polygon points="8,1 15,4.5 15,11.5 8,15 1,11.5 1,4.5" fill="none" stroke="#F97316" strokeWidth="1.5" />
+                </svg>
               )}
             </div>
           ))}
         </div>
 
         {/* 3. Sección central */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, gap: 16, zIndex: 1 }}>
-          <p style={{ margin: 0, textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1A2744' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 24px', gap: '12px', position: 'relative', zIndex: 2 }}>
+          <p style={{ margin: 0, textAlign: 'center', fontSize: 'clamp(18px, 5vw, 24px)', fontWeight: 700, color: '#1A2744' }}>
             Empieza con algo pequeño,
           </p>
-          <p style={{ margin: 0, textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1A2744' }}>
+          <p style={{ margin: 0, textAlign: 'center', fontSize: 'clamp(18px, 5vw, 24px)', fontWeight: 700, color: '#1A2744' }}>
             termina con algo{' '}
             <span style={{ color: '#F97316' }}>increíble.</span>
           </p>
           <button
-            style={{ background: '#F97316', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 600, fontSize: 16, padding: 16, width: '100%', cursor: 'pointer', fontFamily: 'inherit' }}
+            style={{ background: '#F97316', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 600, fontSize: 16, padding: 16, width: '100%', maxWidth: 400, cursor: 'pointer', fontFamily: 'inherit' }}
             onClick={() => setStep(1)}
           >
             Comenzar
@@ -202,9 +212,9 @@ export default function Onboarding() {
           </div>
         </div>
 
-        {/* 4. Paisaje inferior */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', zIndex: 0 }}>
-          <img src="/images/onboarding-down.jpg" alt="" style={{ width: '100%', height: 'auto', display: 'block', opacity: 0.9 }} />
+        {/* 4. Paisaje de montaña */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', zIndex: 1 }}>
+          <img src="/images/onboarding-down.jpg" alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
         </div>
 
       </div>
