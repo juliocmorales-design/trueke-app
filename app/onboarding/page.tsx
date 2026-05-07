@@ -150,9 +150,9 @@ export default function Onboarding() {
   if (step === 0) {
     return (
       <div style={{
-        position: 'fixed', top: 0, left: 0,
-        width: '100vw', height: '100vh',
-        overflow: 'hidden', zIndex: 9999,
+        position: 'relative',
+        width: '100%', minHeight: '100dvh',
+        overflow: 'hidden',
         backgroundColor: '#FDF8F3',
         display: 'flex', flexDirection: 'column',
       }}>
@@ -167,7 +167,7 @@ export default function Onboarding() {
           flex: 1,
           backgroundColor: '#FDF8F3',
           paddingTop: 24, paddingLeft: 24, paddingRight: 24,
-          paddingBottom: 'env(safe-area-inset-bottom, 24px)',
+          paddingBottom: 'max(env(safe-area-inset-bottom), 24px)',
           display: 'flex', flexDirection: 'column', justifyContent: 'center',
         }}>
           <p style={{ margin: '0 0 2px', textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1A2744' }}>
