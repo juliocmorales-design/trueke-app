@@ -149,27 +149,44 @@ export default function Onboarding() {
 
   if (step === 0) {
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', zIndex: 9999 }}>
-        {/* Hero image */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0,
+        width: '100vw', height: '100vh',
+        overflow: 'hidden', zIndex: 9999,
+        backgroundColor: '#FDF8F3',
+        display: 'flex', flexDirection: 'column',
+      }}>
+        {/* 70% superior: imagen */}
         <img
           src="/images/onboarding-hero.png"
           alt=""
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', maxWidth: 'none' }}
+          style={{ width: '100%', height: '70%', objectFit: 'cover', objectPosition: 'top', display: 'block', maxWidth: 'none', flexShrink: 0 }}
         />
-        {/* Overlay beige para ocultar la hora del iPhone */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 60, background: '#FDF8F3' }} />
-        {/* Controles al fondo */}
-        <div style={{ position: 'absolute', bottom: 40, left: 0, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {/* 30% inferior: sección beige */}
+        <div style={{
+          flex: 1,
+          backgroundColor: '#FDF8F3',
+          padding: 24,
+          display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        }}>
+          <p style={{ margin: '0 0 2px', textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1A2744' }}>
+            Empieza con algo pequeño,
+          </p>
+          <p style={{ margin: '0 0 0', textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1A2744' }}>
+            termina con algo{' '}
+            <span style={{ color: '#F97316' }}>increíble.</span>
+          </p>
           <button
             style={{
+              marginTop: 16,
               background: '#F97316',
               color: '#fff',
               border: 'none',
               borderRadius: 16,
-              fontWeight: 700,
+              fontWeight: 600,
               fontSize: 16,
-              padding: '16px 0',
-              width: '80%',
+              padding: 16,
+              width: '100%',
               cursor: 'pointer',
               fontFamily: 'inherit',
             }}
@@ -177,10 +194,10 @@ export default function Onboarding() {
           >
             Comenzar
           </button>
-          <div style={{ marginTop: 14, fontSize: 15, color: '#1A2744', textAlign: 'center' }}>
+          <div style={{ marginTop: 12, textAlign: 'center', fontSize: 15, color: '#6B7280' }}>
             ¿Ya tienes cuenta?{' '}
             <button
-              style={{ color: '#F97316', fontWeight: 600, cursor: 'pointer', fontSize: 15, border: 'none', background: 'none', padding: '4px 0', fontFamily: 'inherit' }}
+              style={{ color: '#F97316', fontWeight: 600, fontSize: 15, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}
               onClick={() => router.push('/login')}
             >
               Iniciar sesión
