@@ -149,7 +149,7 @@ export default function Onboarding() {
 
   if (step === 0) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', backgroundColor: '#FDF8F3' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', backgroundColor: '#F5EFE8' }}>
         {/* Bloque superior con logo superpuesto */}
         <div style={{ position: 'relative' }}>
           <img
@@ -165,7 +165,7 @@ export default function Onboarding() {
         </div>
 
         {/* Sección central */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 24px', gap: '12px' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 24px', gap: '12px', backgroundColor: '#F5EFE8' }}>
           <p style={{ margin: 0, textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1A2744' }}>
             Empieza con algo pequeño,
           </p>
