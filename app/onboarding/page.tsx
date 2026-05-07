@@ -149,10 +149,10 @@ export default function Onboarding() {
 
   if (step === 0) {
     const cards = [
-      { url: 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=200', h: 130 },
-      { url: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=200', h: 155 },
-      { url: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=200',    h: 175 },
-      { url: 'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=200', h: 200 },
+      { url: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=200', h: 120, transform: 'rotate(-3deg) translateY(20px)' },
+      { url: 'https://images.unsplash.com/photo-1502920917128-1aa500764bed?w=200', h: 150, transform: 'rotate(-1deg) translateY(10px)' },
+      { url: 'https://images.unsplash.com/photo-1561154464-82e9adf32764?w=200',    h: 175, transform: 'rotate(1deg) translateY(4px)' },
+      { url: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=200', h: 200, transform: 'rotate(2deg) translateY(0px)' },
     ]
     return (
       <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', backgroundColor: '#FAF3ED', overflow: 'hidden', position: 'relative' }}>
@@ -166,7 +166,7 @@ export default function Onboarding() {
         <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 6, padding: '8px 12px 0' }}>
           {cards.map((card, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <div style={{ width: '22vw', maxWidth: 95, height: card.h }}>
+              <div style={{ width: '22vw', maxWidth: 95, height: card.h, transform: card.transform }}>
                 <svg width="100%" height={card.h} viewBox={`0 0 90 ${card.h}`} style={{ display: 'block' }}>
                   <defs>
                     <clipPath id={`card${i}`}>
@@ -178,8 +178,9 @@ export default function Onboarding() {
                 </svg>
               </div>
               {i < cards.length - 1 && (
-                <svg width="16" height="16" viewBox="0 0 16 16" style={{ flexShrink: 0, marginBottom: 8, marginLeft: 2, marginRight: 2 }}>
-                  <polygon points="8,1 15,4.5 15,11.5 8,15 1,11.5 1,4.5" fill="none" stroke="#F97316" strokeWidth="1.5" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginBottom: 8, marginLeft: 2, marginRight: 2 }}>
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
                 </svg>
               )}
             </div>
