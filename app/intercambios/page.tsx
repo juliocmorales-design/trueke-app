@@ -203,26 +203,30 @@ function StatusPill({ status }: { status: string }) {
 /* ---------- EMPTY STATE ---------- */
 
 function EmptyState({ tab, onChangeTab }: { tab: TabKey; onChangeTab: (i: number) => void }) {
-  const msg: Record<TabKey, string> = {
-    active:    'No tienes intercambios activos.',
-    completed: 'Aún no has completado ningún intercambio.',
-    cancelled: 'No tienes intercambios cancelados.',
+  const content: Record<TabKey, { emoji: string; title: string; subtitle: string }> = {
+    active:    { emoji: '🔄', title: 'Aún no tienes intercambios activos',       subtitle: 'Explora publicaciones y haz tu primera oferta.' },
+    completed: { emoji: '🏆', title: 'Aún no has completado ningún intercambio', subtitle: 'Cada intercambio completado construye tu reputación.' },
+    cancelled: { emoji: '😌', title: 'Todo limpio por aquí',                     subtitle: '¡No has cancelado ningún intercambio. ¡Sigue así!' },
   }
+  const { emoji, title, subtitle } = content[tab]
   const btnStyle: any = {
     background: '#F97316', color: '#fff', borderRadius: 16,
     padding: '12px 24px', border: 'none', fontSize: 14,
-    fontWeight: 600, marginTop: 12, cursor: 'pointer', fontFamily: 'inherit',
+    fontWeight: 600, marginTop: 4, cursor: 'pointer', fontFamily: 'inherit',
   }
   return (
-    <div style={{ textAlign: 'center', marginTop: 48 }}>
-      <p style={{ ...s.empty, marginTop: 0 }}>{msg[tab]}</p>
-      {tab === 'completed' ? (
-        <button style={btnStyle} onClick={() => onChangeTab(0)}>
-          Ver mis intercambios activos
-        </button>
-      ) : (
+    <div style={{ textAlign: 'center', marginTop: 48, padding: '0 16px' }}>
+      <div style={{ fontSize: 64, lineHeight: 1, marginBottom: 16 }}>{emoji}</div>
+      <p style={{ margin: '0 0 8px', fontSize: 17, fontWeight: 700, color: '#1A2744' }}>{title}</p>
+      <p style={{ margin: '0 0 16px', fontSize: 14, color: '#6F7A82' }}>{subtitle}</p>
+      {tab === 'active' && (
         <button style={btnStyle} onClick={() => window.location.href = '/'}>
           Explorar publicaciones
+        </button>
+      )}
+      {tab === 'completed' && (
+        <button style={btnStyle} onClick={() => onChangeTab(0)}>
+          Ver mis intercambios activos
         </button>
       )}
     </div>
