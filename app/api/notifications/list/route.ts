@@ -10,13 +10,8 @@ function adminClient() {
 }
 
 export async function GET(req: NextRequest) {
-  const anonClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { persistSession: false } },
-  )
   const token = (req.headers.get('Authorization') ?? '').replace('Bearer ', '')
-  const { data: { user }, error: authError } = await anonClient.auth.getUser(token)
+  const { data: { user }, error: authError } = await adminClient().auth.getUser(token)
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { data, error } = await adminClient()
@@ -31,13 +26,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const anonClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { persistSession: false } },
-  )
   const token = (req.headers.get('Authorization') ?? '').replace('Bearer ', '')
-  const { data: { user }, error: authError } = await anonClient.auth.getUser(token)
+  const { data: { user }, error: authError } = await adminClient().auth.getUser(token)
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { ids } = await req.json()
