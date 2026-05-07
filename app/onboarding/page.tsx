@@ -158,9 +158,9 @@ export default function Onboarding() {
       }}>
         {/* 70% superior: imagen */}
         <img
-          src="/images/onboarding-hero.png"
+          src="/images/onboarding-hero.jpg"
           alt=""
-          style={{ width: '100%', height: '70%', objectFit: 'cover', objectPosition: 'top', display: 'block', maxWidth: 'none', flexShrink: 0 }}
+          style={{ width: '100%', height: '70%', objectFit: 'cover', objectPosition: 'top center', display: 'block', maxWidth: 'none', flexShrink: 0 }}
         />
         {/* 30% inferior: sección beige */}
         <div style={{
