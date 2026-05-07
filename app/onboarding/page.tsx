@@ -149,21 +149,17 @@ export default function Onboarding() {
 
   if (step === 0) {
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999 }}>
-        {/* Imagen fondo completo */}
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', backgroundColor: '#FDF8F3' }}>
         <img
-          src="/images/onboarding-hero.jpg"
+          src="/images/Onboarding_up.jpg"
           alt=""
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', zIndex: 0, maxWidth: 'none' }}
+          style={{ width: '100%', height: 'auto', display: 'block', flexShrink: 0 }}
         />
-        {/* Overlay degradado */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '40%', background: 'linear-gradient(to bottom, transparent, #FDF8F3 60%)', zIndex: 1 }} />
-        {/* Contenido */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2, padding: '24px', paddingBottom: 'max(env(safe-area-inset-bottom), 40px)' }}>
-          <p style={{ margin: '0 0 4px', textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1A2744' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 24px', gap: '12px' }}>
+          <p style={{ margin: 0, textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1A2744' }}>
             Empieza con algo pequeño,
           </p>
-          <p style={{ margin: '0 0 16px', textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1A2744' }}>
+          <p style={{ margin: 0, textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1A2744' }}>
             termina con algo{' '}
             <span style={{ color: '#F97316' }}>increíble.</span>
           </p>
@@ -184,7 +180,7 @@ export default function Onboarding() {
           >
             Comenzar
           </button>
-          <div style={{ marginTop: 12, textAlign: 'center', fontSize: 15, color: '#6B7280' }}>
+          <div style={{ textAlign: 'center', fontSize: 15, color: '#6B7280' }}>
             ¿Ya tienes cuenta?{' '}
             <button
               style={{ color: '#F97316', fontWeight: 600, fontSize: 15, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}
@@ -194,6 +190,11 @@ export default function Onboarding() {
             </button>
           </div>
         </div>
+        <img
+          src="/images/Onboarding_down.jpg"
+          alt=""
+          style={{ width: '100%', height: 'auto', display: 'block', flexShrink: 0 }}
+        />
       </div>
     )
   }
