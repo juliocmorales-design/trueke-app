@@ -149,12 +149,12 @@ export default function Onboarding() {
 
   if (step === 0) {
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', zIndex: 9999 }}>
         {/* Hero image */}
         <img
           src="/images/onboarding-hero.png"
           alt=""
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', maxWidth: 'none' }}
         />
         {/* Overlay beige para ocultar la hora del iPhone */}
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 60, background: '#FDF8F3' }} />
