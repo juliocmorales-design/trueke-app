@@ -166,7 +166,8 @@ export default function Onboarding() {
         <div style={{
           flex: 1,
           backgroundColor: '#FDF8F3',
-          padding: 24,
+          paddingTop: 24, paddingLeft: 24, paddingRight: 24,
+          paddingBottom: 'env(safe-area-inset-bottom, 24px)',
           display: 'flex', flexDirection: 'column', justifyContent: 'center',
         }}>
           <p style={{ margin: '0 0 2px', textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1A2744' }}>
