@@ -150,11 +150,21 @@ export default function Onboarding() {
   if (step === 0) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', backgroundColor: '#FDF8F3' }}>
-        <img
-          src="/images/Onboarding_up.jpg"
-          alt=""
-          style={{ width: '100%', height: 'auto', display: 'block', flexShrink: 0 }}
-        />
+        {/* Bloque superior con logo superpuesto */}
+        <div style={{ position: 'relative' }}>
+          <img
+            src="/images/onboarding-up.jpg"
+            alt=""
+            style={{ width: '100%', height: 'auto', display: 'block' }}
+          />
+          <img
+            src="/images/logo.png"
+            alt="Trueke"
+            style={{ position: 'absolute', top: 24, left: '50%', transform: 'translateX(-50%)', width: 160 }}
+          />
+        </div>
+
+        {/* Sección central */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 24px', gap: '12px' }}>
           <p style={{ margin: 0, textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1A2744' }}>
             Empieza con algo pequeño,
@@ -190,10 +200,12 @@ export default function Onboarding() {
             </button>
           </div>
         </div>
+
+        {/* Imagen inferior */}
         <img
-          src="/images/Onboarding_down.jpg"
+          src="/images/onboarding-down.jpg"
           alt=""
-          style={{ width: '100%', height: 'auto', display: 'block', flexShrink: 0 }}
+          style={{ width: '100%', height: 'auto', display: 'block', marginTop: 'auto' }}
         />
       </div>
     )
