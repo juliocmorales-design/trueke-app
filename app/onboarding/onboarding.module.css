@@ -4,6 +4,8 @@
   min-height: 100svh;
   background: #FAF3ED;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .landscape {
@@ -11,7 +13,7 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 65%;
+  height: 60%;
   object-fit: cover;
   object-position: center top;
   z-index: 0;
@@ -19,18 +21,49 @@
 
 .cardsStage {
   position: relative;
-  width: 100%;
-  max-width: 380px;
-  height: 280px;
-  margin: 0 auto;
-  margin-top: -20px;
+  width: 380px;
+  height: 300px;
+  margin: 60px auto 0;
   z-index: 1;
+  transform-origin: top center;
 }
 
-.card1 { position: absolute; left: 0px;   top: 100px; width: 76px;  z-index: 2; }
-.card2 { position: absolute; left: 68px;  top: 72px;  width: 96px;  z-index: 3; }
-.card3 { position: absolute; left: 152px; top: 36px;  width: 118px; z-index: 4; }
-.card4 { position: absolute; left: 252px; top: 0px;   width: 140px; z-index: 5; }
+.card1 {
+  position: absolute;
+  left: 0px;
+  top: 100px;
+  width: 76px;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: 18px;
+}
+.card2 {
+  position: absolute;
+  left: 68px;
+  top: 72px;
+  width: 96px;
+  z-index: 3;
+  overflow: hidden;
+  border-radius: 18px;
+}
+.card3 {
+  position: absolute;
+  left: 152px;
+  top: 36px;
+  width: 118px;
+  z-index: 4;
+  overflow: hidden;
+  border-radius: 18px;
+}
+.card4 {
+  position: absolute;
+  left: 252px;
+  top: 0px;
+  width: 140px;
+  z-index: 5;
+  overflow: hidden;
+  border-radius: 18px;
+}
 
 .cardPhoto {
   position: absolute;
@@ -38,7 +71,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 18px;
   z-index: 1;
 }
 
@@ -56,14 +88,14 @@
   z-index: 10;
 }
 
-.link1 { left: 78px;  top: 200px; }
-.link2 { left: 168px; top: 170px; }
-.link3 { left: 268px; top: 140px; }
+.link1 { left: 68px;  top: 190px; }
+.link2 { left: 152px; top: 162px; }
+.link3 { left: 256px; top: 130px; }
 
 .heroContent {
   position: relative;
   z-index: 3;
-  margin-top: 32px;
+  margin-top: 24px;
   padding: 0 24px 40px;
   display: flex;
   flex-direction: column;
@@ -72,9 +104,17 @@
 }
 
 @media (max-width: 480px) {
-  .cardsStage { transform: scale(0.74); left: -4px; }
+  .cardsStage {
+    transform: scale(0.78);
+    transform-origin: top center;
+    margin-left: -11px;
+  }
 }
 
 @media (max-width: 390px) {
-  .cardsStage { transform: scale(0.67); left: -10px; }
+  .cardsStage {
+    transform: scale(0.70);
+    transform-origin: top center;
+    margin-left: -17px;
+  }
 }
