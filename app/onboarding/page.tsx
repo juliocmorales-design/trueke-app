@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase'
+import css from './onboarding.module.css'
 
 const cities = [
   'Monterrey', 'CDMX', 'Guadalajara', 'Tijuana', 'Puebla',
@@ -147,48 +148,56 @@ export default function Onboarding() {
     return <div style={{ padding: 20, color: '#6B7680' }}>Cargando...</div>
   }
 
+  const ChainLink = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
+    </svg>
+  )
+
   if (step === 0) {
-    const cards = [
-      { url: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=200', h: 120, transform: 'rotate(-3deg) translateY(20px)' },
-      { url: 'https://images.unsplash.com/photo-1502920917128-1aa500764bed?w=200', h: 150, transform: 'rotate(-1deg) translateY(10px)' },
-      { url: 'https://images.unsplash.com/photo-1561154464-82e9adf32764?w=200',    h: 175, transform: 'rotate(1deg) translateY(4px)' },
-      { url: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=200', h: 200, transform: 'rotate(2deg) translateY(0px)' },
-    ]
     return (
-      <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', backgroundColor: '#FAF3ED', overflow: 'hidden', position: 'relative' }}>
+      <div className={css.step0}>
 
-        {/* 1. Logo */}
-        <div style={{ textAlign: 'center', paddingTop: 40, paddingBottom: 8, zIndex: 2, position: 'relative' }}>
+        {/* Paisaje detrás de todo */}
+        <img src="/images/onboarding-down.jpg" className={css.landscape} alt="" />
+
+        {/* Tarjetas SVG */}
+        <div className={css.cardsStage}>
+
+          <div className={`${css.card} ${css.card1}`}>
+            <img src="/svg/marco1.svg" alt="" />
+          </div>
+
+          <div className={`${css.link} ${css.link1}`}>
+            <ChainLink />
+          </div>
+
+          <div className={`${css.card} ${css.card2}`}>
+            <img src="/svg/marco2.svg" alt="" />
+          </div>
+
+          <div className={`${css.link} ${css.link2}`}>
+            <ChainLink />
+          </div>
+
+          <div className={`${css.card} ${css.card3}`}>
+            <img src="/svg/marco3.svg" alt="" />
+          </div>
+
+          <div className={`${css.link} ${css.link3}`}>
+            <ChainLink />
+          </div>
+
+          <div className={`${css.card} ${css.card4}`}>
+            <img src="/svg/marco4.svg" alt="" />
+          </div>
+
+        </div>
+
+        {/* Logo + tagline + botones */}
+        <div className={css.heroContent}>
           <img src="/images/logo.png" alt="Trueke" style={{ width: 180, margin: '0 auto', display: 'block' }} />
-        </div>
-
-        {/* 2. Tarjetas SVG */}
-        <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 6, padding: '8px 12px 0' }}>
-          {cards.map((card, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <div style={{ width: '22vw', maxWidth: 95, height: card.h, transform: card.transform }}>
-                <svg width="100%" height={card.h} viewBox={`0 0 90 ${card.h}`} style={{ display: 'block' }}>
-                  <defs>
-                    <clipPath id={`card${i}`}>
-                      <rect x="0" y="0" width="90" height={card.h} rx="14" ry="14" />
-                    </clipPath>
-                  </defs>
-                  <rect x="0" y="0" width="90" height={card.h} rx="14" fill="white" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
-                  <image href={card.url} x="0" y="0" width="90" height={card.h} preserveAspectRatio="xMidYMid slice" clipPath={`url(#card${i})`} />
-                </svg>
-              </div>
-              {i < cards.length - 1 && (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginBottom: 8, marginLeft: 2, marginRight: 2 }}>
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
-                </svg>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* 3. Sección central */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 24px', gap: '12px', position: 'relative', zIndex: 2 }}>
           <p style={{ margin: 0, textAlign: 'center', fontSize: 'clamp(18px, 5vw, 24px)', fontWeight: 700, color: '#1A2744' }}>
             Empieza con algo pequeño,
           </p>
@@ -211,11 +220,6 @@ export default function Onboarding() {
               Iniciar sesión
             </button>
           </div>
-        </div>
-
-        {/* 4. Paisaje de montaña */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', zIndex: 1 }}>
-          <img src="/images/onboarding-down.jpg" alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
         </div>
 
       </div>
