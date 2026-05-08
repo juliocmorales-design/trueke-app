@@ -6,6 +6,9 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .landscape {
@@ -17,6 +20,7 @@
   object-fit: cover;
   object-position: center top;
   z-index: 0;
+  display: block;
 }
 
 .cardsStage {
