@@ -22,8 +22,8 @@
 .cardsStage {
   position: relative;
   width: 380px;
-  height: 300px;
-  margin: 60px auto 0;
+  height: 220px;
+  margin: 40px auto 0;
   z-index: 1;
   transform-origin: top center;
 }
@@ -95,7 +95,7 @@
 .heroContent {
   position: relative;
   z-index: 3;
-  margin-top: 24px;
+  margin-top: 0px;
   padding: 0 24px 40px;
   display: flex;
   flex-direction: column;
