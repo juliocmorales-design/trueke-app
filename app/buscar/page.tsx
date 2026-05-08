@@ -4,6 +4,17 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase'
 
+const CATEGORIAS = [
+  { id: 'electronica', label: '📱 Electrónica' },
+  { id: 'ropa', label: '👕 Ropa' },
+  { id: 'hogar', label: '🏠 Hogar' },
+  { id: 'deportes', label: '⚽ Deportes' },
+  { id: 'libros', label: '📚 Libros' },
+  { id: 'juguetes', label: '🧸 Juguetes' },
+  { id: 'musica', label: '🎸 Música' },
+  { id: 'otros', label: '📦 Otros' },
+]
+
 const CITIES = [
   'Todas', 'Monterrey', 'CDMX', 'Guadalajara', 'Tijuana', 'Puebla',
   'León', 'Cancún', 'Mérida', 'San Luis Potosí', 'Chihuahua',
@@ -13,6 +24,7 @@ export default function BuscarPage() {
   const router = useRouter()
   const [query, setQuery]   = useState('')
   const [city, setCity]     = useState('Todas')
+  const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null)
   const [items, setItems]   = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [searchError, setSearchError] = useState(false)
@@ -22,13 +34,13 @@ export default function BuscarPage() {
     if (debounceRef.current) clearTimeout(debounceRef.current)
 
     debounceRef.current = setTimeout(() => {
-      search(query, city)
+      search(query, city, categoriaActiva)
     }, query.length >= 2 ? 300 : 0)
 
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
-  }, [query, city])
+  }, [query, city, categoriaActiva])
 
-  const search = async (q: string, selectedCity: string) => {
+  const search = async (q: string, selectedCity: string, selectedCategoria: string | null) => {
     setLoading(true)
     setSearchError(false)
     try {
@@ -44,6 +56,10 @@ export default function BuscarPage() {
 
       if (selectedCity !== 'Todas') {
         req = req.eq('city', selectedCity)
+      }
+
+      if (selectedCategoria) {
+        req = req.eq('category', selectedCategoria)
       }
 
       const { data } = await req
@@ -103,6 +119,33 @@ export default function BuscarPage() {
             onClick={() => setCity(c)}
           >
             {c}
+          </div>
+        ))}
+      </div>
+
+      {/* CHIPS CATEGORÍA */}
+      <div style={s.chipsRow}>
+        <div
+          style={{
+            ...s.chip,
+            background: categoriaActiva === null ? '#F97316' : '#F0EAE0',
+            color: categoriaActiva === null ? '#fff' : '#1A2744',
+          }}
+          onClick={() => setCategoriaActiva(null)}
+        >
+          Todas
+        </div>
+        {CATEGORIAS.map(cat => (
+          <div
+            key={cat.id}
+            style={{
+              ...s.chip,
+              background: categoriaActiva === cat.id ? '#F97316' : '#F0EAE0',
+              color: categoriaActiva === cat.id ? '#fff' : '#1A2744',
+            }}
+            onClick={() => setCategoriaActiva(cat.id)}
+          >
+            {cat.label}
           </div>
         ))}
       </div>
