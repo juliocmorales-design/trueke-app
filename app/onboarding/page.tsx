@@ -193,20 +193,22 @@ export default function Onboarding() {
 
           <div className={css.card2}>
             <svg
-              viewBox="0 0 343 851"
+              viewBox="0 0 390 1099"
               style={{position:'absolute', inset:0, width:'100%', height:'100%'}}
               xmlns="http://www.w3.org/2000/svg"
               xmlnsXlink="http://www.w3.org/1999/xlink"
             >
               <defs>
                 <clipPath id="clip2">
-                  <path d="M210,23 L58,58 C10,61 4,113 4,116 L4,205 L5,360 L5,569 L4,762 C3,801 42,813 299,839 C333,838 337,794 337,592 L337,357 L337,49 L337,44 C330,5 295,4 210,23 Z" />
+                  <g transform="matrix(1.11209,0,0,1.30359,-714.795,-977.679)">
+                    <path d="M857.827,777.506L699.692,809.323C699.692,809.323 651.548,812.206 645.394,864.206L645.354,867.064L645.493,956.14L646.187,1111.163L645.723,1319.843L645.45,1512.813C645.45,1512.813 644.62,1552.473 683.487,1563.983L940.165,1589.803C940.165,1589.803 974.106,1588.693 978.399,1544.953L978.16,1343.483L978.176,1107.883L978.353,799.773L978.078,795.633C978.078,795.633 971.654,756.33 936.493,755.67L943.675,760.735L857.827,777.506Z" />
+                  </g>
                 </clipPath>
               </defs>
               <image
                 href="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=80"
                 clipPath="url(#clip2)"
-                x="0" y="0" width="343" height="851"
+                x="0" y="0" width="390" height="1099"
                 preserveAspectRatio="xMidYMid slice"
               />
             </svg>
@@ -219,20 +221,22 @@ export default function Onboarding() {
 
           <div className={css.card3}>
             <svg
-              viewBox="0 0 343 851"
+              viewBox="0 0 438 1359"
               style={{position:'absolute', inset:0, width:'100%', height:'100%'}}
               xmlns="http://www.w3.org/2000/svg"
               xmlnsXlink="http://www.w3.org/1999/xlink"
             >
               <defs>
                 <clipPath id="clip3">
-                  <path d="M210,23 L58,58 C10,61 4,113 4,116 L4,205 L5,360 L5,569 L4,762 C3,801 42,813 299,839 C333,838 337,794 337,592 L337,357 L337,49 L337,44 C330,5 295,4 210,23 Z" />
+                  <g transform="matrix(1.26115,0,0,1.632,-813.609,-1241.07)">
+                    <path d="M837.949,785.59L699.184,811.441C699.184,811.441 651.04,814.324 644.886,866.324L644.846,869.182L644.985,958.258L645.679,1113.281L645.215,1321.961L644.942,1514.931C644.942,1514.931 644.112,1554.591 682.979,1566.101L939.657,1591.921C939.657,1591.921 973.598,1590.811 977.891,1547.071L977.652,1345.601L977.668,1110.001L977.845,801.891L977.57,797.751C977.57,797.751 971.146,758.448 936.085,757.788L943.823,764.645L837.949,785.59Z" />
+                  </g>
                 </clipPath>
               </defs>
               <image
                 href="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400&q=80"
                 clipPath="url(#clip3)"
-                x="0" y="0" width="343" height="851"
+                x="0" y="0" width="438" height="1359"
                 preserveAspectRatio="xMidYMid slice"
               />
             </svg>
@@ -245,20 +249,22 @@ export default function Onboarding() {
 
           <div className={css.card4}>
             <svg
-              viewBox="0 0 343 851"
+              viewBox="0 0 485 1654"
               style={{position:'absolute', inset:0, width:'100%', height:'100%'}}
               xmlns="http://www.w3.org/2000/svg"
               xmlnsXlink="http://www.w3.org/1999/xlink"
             >
               <defs>
                 <clipPath id="clip4">
-                  <path d="M210,23 L58,58 C10,61 4,113 4,116 L4,205 L5,360 L5,569 L4,762 C3,801 42,813 299,839 C333,838 337,794 337,592 L337,357 L337,49 L337,44 C330,5 295,4 210,23 Z" />
+                  <g transform="matrix(1.42404,0,0,2.00334,-923.968,-1534.06)">
+                    <path d="M839.788,787.514L696.693,813.184C696.693,813.184 648.549,816.067 642.395,868.067L642.355,870.925L642.494,960.001L643.188,1115.024L642.724,1323.704L642.451,1516.674C642.451,1516.674 641.621,1556.334 680.488,1567.844L937.166,1593.664C937.166,1593.664 971.107,1592.554 975.4,1548.814L975.161,1347.344L975.177,1111.744L975.354,803.634L975.079,799.494C975.079,799.494 968.655,760.191 933.494,759.531L931.849,771.182L839.788,787.514Z" />
+                  </g>
                 </clipPath>
               </defs>
               <image
                 href="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80"
                 clipPath="url(#clip4)"
-                x="0" y="0" width="343" height="851"
+                x="0" y="0" width="485" height="1654"
                 preserveAspectRatio="xMidYMid slice"
               />
             </svg>
