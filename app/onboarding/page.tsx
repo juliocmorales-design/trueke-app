@@ -166,7 +166,24 @@ export default function Onboarding() {
         <div className={css.cardsStage}>
 
           <div className={css.card1}>
-            <img className={css.cardPhoto} src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80" alt="" />
+            <svg
+              viewBox="0 0 343 851"
+              style={{position:'absolute', inset:0, width:'100%', height:'100%'}}
+              xmlns="http://www.w3.org/2000/svg"
+              xmlnsXlink="http://www.w3.org/1999/xlink"
+            >
+              <defs>
+                <clipPath id="clip1">
+                  <path d="M210,23 L58,58 C10,61 4,113 4,116 L4,205 L5,360 L5,569 L4,762 C3,801 42,813 299,839 C333,838 337,794 337,592 L337,357 L337,49 L337,44 C330,5 295,4 210,23 Z" />
+                </clipPath>
+              </defs>
+              <image
+                href="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80"
+                clipPath="url(#clip1)"
+                x="0" y="0" width="343" height="851"
+                preserveAspectRatio="xMidYMid slice"
+              />
+            </svg>
             <img className={css.cardFrame} src="/svg/marco1.svg" alt="" />
           </div>
 
@@ -175,7 +192,24 @@ export default function Onboarding() {
           </div>
 
           <div className={css.card2}>
-            <img className={css.cardPhoto} src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&q=80" alt="" />
+            <svg
+              viewBox="0 0 343 851"
+              style={{position:'absolute', inset:0, width:'100%', height:'100%'}}
+              xmlns="http://www.w3.org/2000/svg"
+              xmlnsXlink="http://www.w3.org/1999/xlink"
+            >
+              <defs>
+                <clipPath id="clip2">
+                  <path d="M210,23 L58,58 C10,61 4,113 4,116 L4,205 L5,360 L5,569 L4,762 C3,801 42,813 299,839 C333,838 337,794 337,592 L337,357 L337,49 L337,44 C330,5 295,4 210,23 Z" />
+                </clipPath>
+              </defs>
+              <image
+                href="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=80"
+                clipPath="url(#clip2)"
+                x="0" y="0" width="343" height="851"
+                preserveAspectRatio="xMidYMid slice"
+              />
+            </svg>
             <img className={css.cardFrame} src="/svg/marco2.svg" alt="" />
           </div>
 
@@ -184,7 +218,24 @@ export default function Onboarding() {
           </div>
 
           <div className={css.card3}>
-            <img className={css.cardPhoto} src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&q=80" alt="" />
+            <svg
+              viewBox="0 0 343 851"
+              style={{position:'absolute', inset:0, width:'100%', height:'100%'}}
+              xmlns="http://www.w3.org/2000/svg"
+              xmlnsXlink="http://www.w3.org/1999/xlink"
+            >
+              <defs>
+                <clipPath id="clip3">
+                  <path d="M210,23 L58,58 C10,61 4,113 4,116 L4,205 L5,360 L5,569 L4,762 C3,801 42,813 299,839 C333,838 337,794 337,592 L337,357 L337,49 L337,44 C330,5 295,4 210,23 Z" />
+                </clipPath>
+              </defs>
+              <image
+                href="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400&q=80"
+                clipPath="url(#clip3)"
+                x="0" y="0" width="343" height="851"
+                preserveAspectRatio="xMidYMid slice"
+              />
+            </svg>
             <img className={css.cardFrame} src="/svg/marco3.svg" alt="" />
           </div>
 
@@ -193,7 +244,24 @@ export default function Onboarding() {
           </div>
 
           <div className={css.card4}>
-            <img className={css.cardPhoto} src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80" alt="" />
+            <svg
+              viewBox="0 0 343 851"
+              style={{position:'absolute', inset:0, width:'100%', height:'100%'}}
+              xmlns="http://www.w3.org/2000/svg"
+              xmlnsXlink="http://www.w3.org/1999/xlink"
+            >
+              <defs>
+                <clipPath id="clip4">
+                  <path d="M210,23 L58,58 C10,61 4,113 4,116 L4,205 L5,360 L5,569 L4,762 C3,801 42,813 299,839 C333,838 337,794 337,592 L337,357 L337,49 L337,44 C330,5 295,4 210,23 Z" />
+                </clipPath>
+              </defs>
+              <image
+                href="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80"
+                clipPath="url(#clip4)"
+                x="0" y="0" width="343" height="851"
+                preserveAspectRatio="xMidYMid slice"
+              />
+            </svg>
             <img className={css.cardFrame} src="/svg/marco4.svg" alt="" />
           </div>
 
