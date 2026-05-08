@@ -165,32 +165,36 @@ export default function Onboarding() {
         {/* Tarjetas SVG */}
         <div className={css.cardsStage}>
 
-          <div className={`${css.card} ${css.card1}`}>
-            <img src="/svg/marco1.svg" alt="" />
+          <div className={css.card1}>
+            <img className={css.cardPhoto} src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80" alt="" />
+            <img className={css.cardFrame} src="/svg/marco1.svg" alt="" />
           </div>
 
           <div className={`${css.link} ${css.link1}`}>
             <ChainLink />
           </div>
 
-          <div className={`${css.card} ${css.card2}`}>
-            <img src="/svg/marco2.svg" alt="" />
+          <div className={css.card2}>
+            <img className={css.cardPhoto} src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&q=80" alt="" />
+            <img className={css.cardFrame} src="/svg/marco2.svg" alt="" />
           </div>
 
           <div className={`${css.link} ${css.link2}`}>
             <ChainLink />
           </div>
 
-          <div className={`${css.card} ${css.card3}`}>
-            <img src="/svg/marco3.svg" alt="" />
+          <div className={css.card3}>
+            <img className={css.cardPhoto} src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&q=80" alt="" />
+            <img className={css.cardFrame} src="/svg/marco3.svg" alt="" />
           </div>
 
           <div className={`${css.link} ${css.link3}`}>
             <ChainLink />
           </div>
 
-          <div className={`${css.card} ${css.card4}`}>
-            <img src="/svg/marco4.svg" alt="" />
+          <div className={css.card4}>
+            <img className={css.cardPhoto} src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80" alt="" />
+            <img className={css.cardFrame} src="/svg/marco4.svg" alt="" />
           </div>
 
         </div>
