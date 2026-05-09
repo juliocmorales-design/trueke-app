@@ -30,25 +30,19 @@
 .progressionWrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
-  overflow-x: auto;
+  gap: 4px;
   width: 100%;
   padding: 8px 0;
-  scrollbar-width: none;
-}
-
-.progressionWrapper::-webkit-scrollbar {
-  display: none;
 }
 
 .progressCard {
-  flex-shrink: 0;
-  width: 140px;
+  flex: 1;
+  min-width: 0;
   aspect-ratio: 0.72;
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   border: 1px solid #F0EBE3;
