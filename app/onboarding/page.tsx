@@ -149,7 +149,7 @@ export default function Onboarding() {
   }
 
   const ChainLink = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+    <svg className={css.chainLink} width="18" height="18" viewBox="0 0 24 24" fill="none">
       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
     </svg>
@@ -214,7 +214,7 @@ export default function Onboarding() {
           <ChainLink />
 
           <div className={css.progressCard}>
-            <img className={css.cardImage} src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=300&q=80" alt="A eso que quieres" />
+            <img className={css.cardImage} src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80" alt="A eso que quieres" />
             <div className={css.cardFooter}>
               <div className={css.cardIcon}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

@@ -44,6 +44,9 @@
 .progressCard {
   flex-shrink: 0;
   width: 140px;
+  aspect-ratio: 0.72;
+  display: flex;
+  flex-direction: column;
   background: #fff;
   border-radius: 20px;
   overflow: hidden;
@@ -62,8 +65,9 @@
 .cardFooter {
   padding: 10px 12px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .cardIcon {
@@ -86,6 +90,8 @@
 
 .chainLink {
   flex-shrink: 0;
+  width: 18px;
+  margin-top: -34px;
 }
 
 .ctaButton {
