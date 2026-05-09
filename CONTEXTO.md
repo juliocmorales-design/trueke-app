@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 6 Mayo 2026 (sesión 6)
+> Última actualización: 8 Mayo 2026 (sesión 8)
 
 ---
 
@@ -101,7 +101,10 @@ Las tarjetas compartibles solo muestran:
 - Julio: juliocmorales@gmail.com / `trueke123` → UUID: `15a54455-6f8b-4fc0-be30-832960e8c080`
 - Armajulion: armajulion@hotmail.com / `trueke123` → UUID: `93f2cc3e-0a5d-4ed6-9aff-07ac6f0bc7a1`
 
-**Estado actual de la BD (post sesión 6):** offers limpia. 10 items demo con fotos Unsplash. Cadenas con items diferentes. RLS activado en `notifications`. Avatar de Julio (zorro) en Storage. No hay offers activas.
+**Estado actual de la BD (post sesión 8):**
+- **Offer activa id=23:** Julio ofrece Nintendo Switch (item 87) → Armajulion por Cámara Sony (item 78). Status: `pending`. `from_item_id=87`, `to_item_id=78`. También en `offer_items` (ids 20 y 21).
+- **11 items demo con categorías asignadas:** `electronica`: 78, 80, 87, 88, 89, 90, 91 | `musica`: 79 | `deportes`: 81 | `libros`: 82 | `otros`: 92
+- RLS activado en `notifications`. Avatar de Julio (zorro) en Storage.
 
 **Storage:** buckets `images` y `avatars` (ambos PUBLIC)
 **Auth:** Email + contraseña como método principal. Magic link como secundario. SMS/Twilio eliminado del onboarding.
@@ -142,7 +145,8 @@ trueke-app/app/
 ├── api/notifications/create/        ✅ POST — inserta notificación con admin client
 ├── api/notifications/list/          ✅ GET — lista notificaciones del usuario
 ├── api/notifications/unread-count/  ✅ GET — conteo no leídas
-├── buscar/page.tsx                  ✅ Pantalla de búsqueda con filtro ciudad + debounce
+├── buscar/page.tsx                  ✅ Pantalla de búsqueda con filtro ciudad + categoría + debounce
+├── perfil/[userId]/page.tsx         ✅ Perfil público
 ├── api/chains/create/               ✅ POST — crea cadena (offerId opcional desde sesión 3)
 ├── api/chains/add-step/             ✅ POST — agrega paso a cadena existente
 ├── mis-cadenas/page.tsx             ✅ Mis cadenas — como creador y como participante
@@ -167,11 +171,12 @@ trueke-app/app/
 | Calificación post-intercambio | Se activa tras marcar "Ya hicimos el intercambio" desde ExchangeClient |
 | Chat por oferta | Vinculado a offer_id, ícono "..." vertical SVG, reportar usuario |
 | Lista de mensajes | Empty state: SVG campana, 2 líneas, color #1A2744, fontWeight 500 |
-| Mis intercambios | Tabs Activos/Completados/Cancelados, fotos con borderRadius: 12 |
+| Mis intercambios | Tabs Activos/Completados/Cancelados, fotos con borderRadius: 12, empty states con emojis ✅ |
 | Notificaciones | Empty state: SVG campana trazo fino #C4BAB1, texto mejorado. Cards con SVGs por tipo |
-| Onboarding (6 pasos) | Step 0: imagen hero full-screen con overlay degradado + botones pegados abajo (en progreso — layout ajustándose). Flujo: nombre→email→contraseña→ciudad→intereses → signUp al final |
+| Onboarding (6 pasos) | Step 0: fondo #FAF3ED ✅, 4 marcos SVG de Affinity con clipPath + stroke ✅ (pendiente verificar en dispositivo), paisaje de montaña decorativo abajo ✅. Flujo: nombre→email→contraseña→ciudad→intereses → signUp al final |
 | Login | Email+contraseña principal, magic link como link de texto discreto (no botón), reset de contraseña vía Supabase |
 | Perfil | Stats reales (ratings + items count), sin logros, con "Mis cadenas" y sub-páginas |
+| Perfil público | /perfil/[userId] — Server Component, admin client, avatar + stats reales + items activos grid 2col + score de confianza |
 | Mis cadenas | Lista como creador + participante, badge status, step count, CTA crear primera cadena |
 | Calificación (modal cadena) | Tras guardar rating: opciones continuar cadena existente / iniciar nueva / terminar |
 
@@ -213,13 +218,10 @@ rating/[offerId] → calificación 1-5 + comentario
 
 ## ⏳ Pendiente MVP — en orden de prioridad
 
-1. **Onboarding Step 0** — ~~imagen hero subida~~ ✅, pendiente ajuste final de layout (imagen full-screen + overlay degradado + botones pegados abajo)
-2. **Tarjeta compartible de cadena** — V1/V2/V3 aprobadas en diseño, pendiente implementar en chain/[id]
+1. **Onboarding Step 0** — rediseño en proceso con ChatGPT (CSS simple, sin SVG). 4 cards con fotos Unsplash placeholder, eslabones entre cards. Pendiente verificar en dispositivo.
+2. **Tarjetas compartibles de cadena** — mockup actualizado aprobado, pendiente implementar en chain/[id]
 3. **Push notifications** — PWA o web push para notificaciones en tiempo real
-4. **Rating visible en perfil** — conectar promedio de ratings a la página de perfil público
-5. **Mis intercambios** — verificar que los tabs Activos/Completados/Cancelados filtren correctamente con datos reales (no de prueba)
-6. **Búsqueda** — agregar filtro por categoría además de ciudad
-7. **Datos de prueba reales** — crear offers entre dos usuarios distintos para probar flujo completo (actualmente BD limpia, no hay offers)
+4. **Búsqueda — filtro por categoría** ✅ completado sesión 8
 
 ---
 
