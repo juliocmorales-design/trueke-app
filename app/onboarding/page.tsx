@@ -168,7 +168,7 @@ export default function Onboarding() {
         <div className={css.progressionWrapper}>
 
           <div className={css.progressCard}>
-            <img className={css.cardImage} src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80" alt="Sube algo" />
+            <img className={css.cardImage} src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&q=80" alt="Sube algo" />
             <div className={css.cardFooter}>
               <div className={css.cardIcon}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -183,7 +183,7 @@ export default function Onboarding() {
           <ChainLink />
 
           <div className={css.progressCard}>
-            <img className={css.cardImage} src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&q=80" alt="Intercambia" />
+            <img className={css.cardImage} src="https://images.unsplash.com/photo-1504148455328-c376907d081c?w=300&q=80" alt="Intercambia" />
             <div className={css.cardFooter}>
               <div className={css.cardIcon}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -199,7 +199,7 @@ export default function Onboarding() {
           <ChainLink />
 
           <div className={css.progressCard}>
-            <img className={css.cardImage} src="https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=300&q=80" alt="Un paso más cerca" />
+            <img className={css.cardImage} src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&q=80" alt="Un paso más cerca" />
             <div className={css.cardFooter}>
               <div className={css.cardIcon}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -214,7 +214,7 @@ export default function Onboarding() {
           <ChainLink />
 
           <div className={css.progressCard}>
-            <img className={css.cardImage} src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80" alt="A eso que quieres" />
+            <img className={css.cardImage} src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=300&q=80" alt="A eso que quieres" />
             <div className={css.cardFooter}>
               <div className={css.cardIcon}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
