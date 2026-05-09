@@ -1,111 +1,120 @@
-.step0 {
-  position: relative;
-  width: 100%;
+.onboarding {
   min-height: 100svh;
-  background: #FAF3ED;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-}
-
-.landscape {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 60%;
-  object-fit: cover;
-  object-position: center top;
-  z-index: 0;
-  display: block;
-}
-
-.cardsStage {
-  position: relative;
-  width: 380px;
-  height: 220px;
-  margin: 40px auto 0;
-  z-index: 1;
-  transform-origin: top center;
-}
-
-.card1 {
-  position: absolute;
-  left: 0px;
-  top: 100px;
-  width: 76px;
-  z-index: 2;
-  overflow: visible;
-}
-.card2 {
-  position: absolute;
-  left: 68px;
-  top: 72px;
-  width: 96px;
-  z-index: 3;
-  overflow: visible;
-}
-.card3 {
-  position: absolute;
-  left: 152px;
-  top: 36px;
-  width: 118px;
-  z-index: 4;
-  overflow: visible;
-}
-.card4 {
-  position: absolute;
-  left: 252px;
-  top: 0px;
-  width: 140px;
-  z-index: 5;
-  overflow: visible;
-}
-
-.cardFrame {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.link {
-  position: absolute;
-  width: 18px;
-  z-index: 10;
-}
-
-.link1 { left: 68px;  top: 190px; }
-.link2 { left: 152px; top: 162px; }
-.link3 { left: 256px; top: 130px; }
-
-.heroContent {
-  position: relative;
-  z-index: 3;
-  margin-top: 0px;
-  padding: 0 24px 40px;
+  background: #FDF8F3;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  padding: 48px 24px 40px;
+  box-sizing: border-box;
+  gap: 28px;
 }
 
-@media (max-width: 480px) {
-  .cardsStage {
-    transform: scale(0.78);
-    transform-origin: top center;
-    margin-left: -11px;
-  }
+.logo {
+  width: 160px;
+  display: block;
 }
 
-@media (max-width: 390px) {
-  .cardsStage {
-    transform: scale(0.70);
-    transform-origin: top center;
-    margin-left: -17px;
-  }
+.headline {
+  font-size: clamp(22px, 6vw, 28px);
+  font-weight: 700;
+  color: #1A2744;
+  text-align: center;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.headline span {
+  color: #F97316;
+}
+
+.progressionWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  width: 100%;
+  padding: 8px 0;
+  scrollbar-width: none;
+}
+
+.progressionWrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.progressCard {
+  flex-shrink: 0;
+  width: 140px;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid #F0EBE3;
+}
+
+.cardImage {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  background: #F5F0EB;
+}
+
+.cardFooter {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardIcon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: #FFF3EA;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1A2744;
+  line-height: 1.2;
+}
+
+.chainLink {
+  flex-shrink: 0;
+}
+
+.ctaButton {
+  width: 100%;
+  max-width: 400px;
+  background: #F97316;
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 16px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.loginRow {
+  text-align: center;
+  font-size: 15px;
+  color: #6B7280;
+}
+
+.loginRow button {
+  color: #F97316;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
 }
