@@ -4,6 +4,17 @@ import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import supabase from '../lib/supabase'
 
+const CATEGORIAS = [
+  { id: 'electronica', label: '📱 Electrónica' },
+  { id: 'ropa',        label: '👕 Ropa' },
+  { id: 'hogar',       label: '🏠 Hogar' },
+  { id: 'deportes',    label: '⚽ Deportes' },
+  { id: 'libros',      label: '📚 Libros' },
+  { id: 'juguetes',    label: '🧸 Juguetes' },
+  { id: 'musica',      label: '🎸 Música' },
+  { id: 'otros',       label: '📦 Otros' },
+]
+
 export default function CrearPage() {
   return (
     <Suspense fallback={null}>
@@ -21,6 +32,7 @@ function CrearForm() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [wanted, setWanted] = useState('')
+  const [category, setCategory] = useState('')
   const [city, setCity] = useState('')
 
   const [files, setFiles] = useState<File[]>([])
@@ -95,7 +107,7 @@ function CrearForm() {
 
       const { data: newItem, error } = await supabase
         .from('items')
-        .insert([{ title, description, wanted, city, user_id: user.id, images: uploadedUrls }])
+        .insert([{ title, description, wanted, city, category, user_id: user.id, images: uploadedUrls }])
         .select('id')
         .single()
 
@@ -142,7 +154,7 @@ function CrearForm() {
     setLoading(false)
   }
 
-  const canSubmit = title.trim().length > 0 && files.length > 0 && city.trim().length > 0 && !loading
+  const canSubmit = title.trim().length > 0 && files.length > 0 && city.trim().length > 0 && category !== '' && !loading
 
   return (
     <div style={styles.container}>
@@ -223,6 +235,35 @@ function CrearForm() {
           onChange={(e) => setWanted(e.target.value)}
           style={styles.input}
         />
+      </div>
+
+      {/* CATEGORÍA */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={styles.label}>Categoría</div>
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+          {CATEGORIAS.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => setCategory(cat.id)}
+              style={{
+                padding: '8px 14px',
+                borderRadius: 20,
+                border: '1.5px solid',
+                borderColor: category === cat.id ? '#F97316' : '#E5DDD5',
+                background: category === cat.id ? '#FFF5F0' : '#FFFFFF',
+                color: category === cat.id ? '#F97316' : '#6B7280',
+                fontWeight: category === cat.id ? 700 : 400,
+                fontSize: 13,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                fontFamily: 'inherit',
+                flexShrink: 0,
+              }}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* CIUDAD */}

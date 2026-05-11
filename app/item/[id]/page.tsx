@@ -265,7 +265,7 @@ export default function ItemDetail() {
           <div style={styles.divider} />
 
           {owner && (
-            <div style={styles.userRow}>
+            <div style={styles.userRow} onClick={() => router.push(`/perfil/${owner.id}`)}>
               <div style={styles.userLeft}>
                 <img
                   src={owner.avatar_url || '/images/avatar.png'}
@@ -537,6 +537,7 @@ const styles: any = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    cursor: 'pointer',
   },
 
   userLeft: {
