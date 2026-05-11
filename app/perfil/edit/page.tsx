@@ -1,40 +1,38 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import supabase from '@/app/lib/supabase'
 import { useRouter } from 'next/navigation'
 
 export default function EditProfile() {
   const router = useRouter()
 
-  const [profile, setProfile] = useState<any>(null)
-  const [name, setName] = useState('')
-  const [username, setUsername] = useState('')
+  const [profile,    setProfile]    = useState<any>(null)
+  const [name,       setName]       = useState('')
+  const [username,   setUsername]   = useState('')
+  const [city,       setCity]       = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
-  const [saving,   setSaving]   = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
+  const [preview,    setPreview]    = useState<string | null>(null)
+  const [saving,     setSaving]     = useState(false)
+  const [saveError,  setSaveError]  = useState<string | null>(null)
 
-  useEffect(() => {
-    loadProfile()
-  }, [])
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => { loadProfile() }, [])
 
   const loadProfile = async () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession()
       const user = sessionData.session?.user
-
       if (!user) return router.push('/login')
 
       const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+        .from('profiles').select('*').eq('id', user.id).single()
 
       setProfile(data)
       setName(data?.name || '')
       setUsername(data?.username || '')
+      setCity(data?.city || '')
       setPreview(data?.avatar_url || null)
     } catch {
       router.replace('/')
@@ -44,7 +42,6 @@ export default function EditProfile() {
   const handleFile = (e: any) => {
     const file = e.target.files[0]
     if (!file) return
-
     setAvatarFile(file)
     setPreview(URL.createObjectURL(file))
   }
@@ -57,19 +54,11 @@ export default function EditProfile() {
 
     const { error } = await supabase.storage
       .from('avatars')
-      .upload(fileName, avatarFile, {
-        upsert: true,
-      })
+      .upload(fileName, avatarFile, { upsert: true })
 
-    if (error) {
-      console.error(error)
-      return null
-    }
+    if (error) { console.error(error); return null }
 
-    const { data } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(fileName)
-
+    const { data } = supabase.storage.from('avatars').getPublicUrl(fileName)
     return data.publicUrl
   }
 
@@ -79,18 +68,16 @@ export default function EditProfile() {
     try {
       const { data: sessionData } = await supabase.auth.getSession()
       const user = sessionData.session?.user
-
       if (!user) return
 
       const avatar_url = await uploadAvatar(user.id)
 
       const { error } = await supabase
         .from('profiles')
-        .update({ name, username, avatar_url })
+        .update({ name, username, city, avatar_url })
         .eq('id', user.id)
 
       if (error) throw error
-
       router.push('/perfil')
     } catch {
       setSaveError('Error al guardar, intenta de nuevo')
@@ -100,83 +87,214 @@ export default function EditProfile() {
   }
 
   return (
-    <div style={styles.container}>
-      <h2>Editar perfil</h2>
+    <div style={s.container}>
 
-      {/* AVATAR */}
-      <div style={styles.avatarBox}>
-        <img
-          src={
-            preview ||
-            'https://via.placeholder.com/100?text=User'
-          }
-          style={styles.avatar}
-        />
-
-        <input type="file" onChange={handleFile} />
+      {/* HEADER */}
+      <div style={s.header}>
+        <button style={s.backBtn} onClick={() => router.back()}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+        <span style={s.headerTitle}>Editar perfil</span>
+        <div style={{ width: 40 }} />
       </div>
 
-      {/* NAME */}
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Nombre"
-        style={styles.input}
-      />
+      {/* AVATAR */}
+      <div style={s.avatarSection}>
+        <div style={s.avatarWrap}>
+          <img
+            src={preview || '/images/avatar.svg'}
+            style={s.avatar}
+            alt="avatar"
+          />
+        </div>
+        <button style={s.changePhotoBtn} onClick={() => fileInputRef.current?.click()}>
+          Cambiar foto
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFile}
+          style={{ display: 'none' }}
+        />
+      </div>
 
-      {/* USERNAME */}
-      <input
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        placeholder="Username"
-        style={styles.input}
-      />
+      {/* FORMULARIO */}
+      <div style={s.card}>
+
+        <div style={s.field}>
+          <div style={s.label}>Nombre</div>
+          <input
+            style={s.input}
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Tu nombre"
+          />
+        </div>
+
+        <div style={s.field}>
+          <div style={s.label}>Username</div>
+          <input
+            style={s.input}
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            placeholder="tunombre"
+            autoCapitalize="none"
+          />
+        </div>
+
+        <div style={{ ...s.field, marginBottom: 0 }}>
+          <div style={s.label}>Ciudad</div>
+          <input
+            style={s.input}
+            value={city}
+            onChange={e => setCity(e.target.value)}
+            placeholder="Ej: Monterrey, CDMX..."
+          />
+        </div>
+
+      </div>
 
       {saveError && (
-        <div style={{ background: '#FEE2E2', color: '#991B1B', borderRadius: 12, padding: 12, fontSize: 14, marginBottom: 10 }}>
-          {saveError}
-        </div>
+        <div style={s.errorBox}>{saveError}</div>
       )}
 
-      <button onClick={handleSave} style={styles.button}>
-        {saving ? 'Guardando...' : 'Guardar'}
+      <button
+        style={{ ...s.saveBtn, opacity: saving ? 0.6 : 1 }}
+        onClick={handleSave}
+        disabled={saving}
+      >
+        {saving ? 'Guardando...' : 'Guardar cambios'}
       </button>
+
     </div>
   )
 }
 
-const styles: any = {
+const s: any = {
   container: {
-    padding: 20,
+    background: '#FDF8F3',
+    minHeight: '100vh',
+    paddingBottom: 48,
   },
 
-  avatarBox: {
-    marginBottom: 20,
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '16px 16px 12px',
+  },
+
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
+    background: '#F0EAE0',
+    border: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    flexShrink: 0,
+  },
+
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 700,
+    color: '#1A2744',
+  },
+
+  avatarSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 12,
+    padding: '24px 16px 8px',
+  },
+
+  avatarWrap: {
+    width: 96,
+    height: 96,
+    borderRadius: '50%',
+    overflow: 'hidden',
+    background: '#EDE7DF',
+    flexShrink: 0,
   },
 
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: '50%',
+    width: '100%',
+    height: '100%',
     objectFit: 'cover',
-    marginBottom: 10,
+    display: 'block',
+  },
+
+  changePhotoBtn: {
+    background: '#F97316',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 20,
+    padding: '8px 20px',
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+  },
+
+  card: {
+    background: '#FFFFFF',
+    borderRadius: 20,
+    padding: '8px 16px 16px',
+    margin: '16px 16px 0',
+    boxShadow: '0 1px 6px rgba(0,0,0,0.05)',
+  },
+
+  field: {
+    paddingTop: 14,
+    marginBottom: 14,
+  },
+
+  label: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: '#1A2744',
+    marginBottom: 6,
   },
 
   input: {
-    display: 'block',
     width: '100%',
-    marginBottom: 10,
-    padding: 10,
-    borderRadius: 8,
-    border: '1px solid #ddd',
+    padding: 14,
+    borderRadius: 12,
+    border: 'none',
+    background: '#F0EAE0',
+    fontSize: 15,
+    fontFamily: 'inherit',
+    boxSizing: 'border-box',
+    outline: 'none',
   },
 
-  button: {
+  errorBox: {
+    background: '#FEE2E2',
+    color: '#991B1B',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 14,
+    margin: '12px 16px 0',
+  },
+
+  saveBtn: {
+    display: 'block',
+    width: 'calc(100% - 32px)',
+    margin: '20px 16px 0',
     background: '#F97316',
     color: '#fff',
-    padding: 12,
-    borderRadius: 16,
     border: 'none',
-    width: '100%',
+    borderRadius: 16,
+    padding: 16,
+    fontSize: 16,
+    fontWeight: 600,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
   },
 }
