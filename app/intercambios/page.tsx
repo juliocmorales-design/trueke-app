@@ -8,9 +8,9 @@ type Item     = { id: number; title: string; images: string[] | null; wanted: st
 type Profile  = { id: string; name: string; username: string | null; avatar_url: string | null }
 type OfferRow = { id: number; from_user_id: string; to_user_id: string; from_item_id: number | null; to_item_id: number | null; status: string; created_at: string; myItem: Item | null; theirItem: Item | null; otherUser: Profile | null }
 
-const TABS = ['Activos', 'Completados', 'Cancelados'] as const
-type TabKey = 'active' | 'completed' | 'cancelled'
-const TAB_KEYS: TabKey[] = ['active', 'completed', 'cancelled']
+const TABS = ['Activos', 'Completados', 'Rechazados'] as const
+type TabKey = 'active' | 'completed' | 'rejected'
+const TAB_KEYS: TabKey[] = ['active', 'completed', 'rejected']
 
 export default function IntercambiosPage() {
   const router = useRouter()
@@ -117,7 +117,7 @@ export default function IntercambiosPage() {
   const filtered = offers.filter(o => {
     if (currentKey === 'active')    return o.status === 'pending' || o.status === 'accepted'
     if (currentKey === 'completed') return o.status === 'completed'
-    if (currentKey === 'cancelled') return o.status === 'rejected'
+    if (currentKey === 'rejected') return o.status === 'rejected'
     return false
   })
 
@@ -206,7 +206,7 @@ function EmptyState({ tab, onChangeTab }: { tab: TabKey; onChangeTab: (i: number
   const content: Record<TabKey, { emoji: string; title: string; subtitle: string }> = {
     active:    { emoji: '🔄', title: 'Aún no tienes intercambios activos',       subtitle: 'Explora publicaciones y haz tu primera oferta.' },
     completed: { emoji: '🏆', title: 'Aún no has completado ningún intercambio', subtitle: 'Cada intercambio completado construye tu reputación.' },
-    cancelled: { emoji: '😌', title: 'Todo limpio por aquí',                     subtitle: '¡No has cancelado ningún intercambio. ¡Sigue así!' },
+    rejected:  { emoji: '😌', title: 'Todo limpio por aquí',                     subtitle: '¡No has tenido ofertas rechazadas. ¡Sigue así!' },
   }
   const { emoji, title, subtitle } = content[tab]
   const btnStyle: any = {
