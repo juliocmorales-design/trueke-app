@@ -1,137 +1,21 @@
-'use client'
-
+import type { Metadata } from 'next'
 import './globals.css'
-import { useEffect } from 'react'
-import { usePathname } from 'next/navigation'
-import BottomNav from './components/layout/BottomNav'
-import supabase from './lib/supabase'
+import ClientLayout from './components/layout/ClientLayout'
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const pathname = usePathname()
+export const metadata: Metadata = {
+  title: 'Trueke.app',
+  description: 'Intercambia objetos y crea tu historia',
+}
 
-  const isItemPage =
-    pathname.startsWith('/item') ||
-    pathname.startsWith('/offer') ||
-    pathname.startsWith('/mensajes/') ||
-    pathname.startsWith('/exchange/') ||
-    pathname.startsWith('/onboarding') ||
-    pathname.startsWith('/login')
-
-  const hideNav =
-    pathname.startsWith('/onboarding') ||
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/perfil/setup') ||
-    isItemPage ||
-    pathname.startsWith('/offer') ||
-    pathname.startsWith('/mensajes/')
-
-  useEffect(() => {
-    const init = async () => {
-      const { data } = await supabase.auth.getSession()
-
-      if (data.session?.user) {
-        const user = data.session.user
-
-        const { data: existing } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', user.id)
-          .single()
-
-        if (!existing) {
-          await supabase
-            .from('profiles')
-            .insert({
-              id: user.id,
-              name: 'Usuario',
-              username: `user_${Math.floor(Math.random() * 10000)}`,
-            })
-            .select()
-        }
-      }
-    }
-
-    init()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {})
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
       <head>
-        <title>Trueke.app</title>
         <link rel="icon" href="/images/logo.png" type="image/png" />
       </head>
-      <body style={styles.body}>
-
-        {/* 🔥 CONTENEDOR GLOBAL CENTRADO */}
-        <div style={styles.app}>
-
-          {/* 🔥 CONTENIDO */}
-          <div style={isItemPage ? styles.full : styles.centered}>
-            {children}
-          </div>
-
-          {/* 🔥 NAVBAR DENTRO DEL MISMO CONTENEDOR */}
-          {!hideNav && (
-            <div style={styles.navWrapper}>
-              <BottomNav />
-            </div>
-          )}
-
-        </div>
-
+      <body style={{ margin: 0, background: '#FDF8F3', display: 'flex', justifyContent: 'center' }}>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   )
-}
-
-const styles: any = {
-  body: {
-    margin: 0,
-    background: '#FDF8F3',
-    display: 'flex',
-    justifyContent: 'center',
-  },
-
-  // 🔥 CONTENEDOR PRINCIPAL (ESTILO APP)
-  app: {
-    width: '100%',
-    maxWidth: 500,
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    background: '#FDF8F3',
-  },
-
-  // 🔥 CONTENIDO NORMAL
-  centered: {
-    flex: 1,
-    padding: 16,
-    paddingBottom: 100, // espacio para navbar
-  },
-
-  // 🔥 PANTALLA ITEM FULL
-  full: {
-    flex: 1,
-    background: '#FDF8F3',
-  },
-
-  // 🔥 NAVBAR FIJO ABAJO PERO DENTRO DEL WIDTH
-  navWrapper: {
-    position: 'sticky',
-    bottom: 0,
-    padding: '10px 16px',
-    background: 'transparent',
-  },
 }
