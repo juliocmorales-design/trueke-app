@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 11 Mayo 2026 (sesión 9)
+> Última actualización: 11 Mayo 2026 (sesión 9 — completa)
 
 ---
 
@@ -101,9 +101,9 @@ Las tarjetas compartibles solo muestran:
 - Julio: juliocmorales@gmail.com / `trueke123` → UUID: `15a54455-6f8b-4fc0-be30-832960e8c080`
 - Armajulion: armajulion@hotmail.com / `trueke123` → UUID: `93f2cc3e-0a5d-4ed6-9aff-07ac6f0bc7a1`
 
-**Estado actual de la BD (post sesión 9):**
+**Estado actual de la BD (post sesión 9 completa):**
 - **Offer activa id=23:** Julio ofrece Nintendo Switch (item 87) → Armajulion por Cámara Sony (item 78). Status: `pending`. `from_item_id=87`, `to_item_id=78`. También en `offer_items` (ids 20 y 21). Flujo end-to-end verificado.
-- **11 items demo con categorías asignadas:** `electronica`: 78, 80, 87, 88, 89, 90, 91 | `musica`: 79 | `deportes`: 81 | `libros`: 82 | `otros`: 92
+- **20 items demo (IDs 78–101) con categorías asignadas:** `electronica`: 78, 80, 87–91 | `musica`: 79 | `deportes`: 81 | `libros`: 82 | `otros`: 92–101
 - RLS activado en `notifications`. Avatar de Julio (zorro) en Storage.
 
 **Storage:** buckets `images` y `avatars` (ambos PUBLIC)
@@ -151,8 +151,12 @@ trueke-app/app/
 ├── api/chains/add-step/             ✅ POST — agrega paso a cadena existente
 ├── mis-cadenas/page.tsx             ✅ Mis cadenas — como creador y como participante
 └── lib/
-    ├── supabase.js                  ✅ Cliente Supabase (anon)
+    ├── supabase.js                  ✅ Cliente Supabase (anon, con fallback ?? '' para build)
     └── notifications.ts             ✅ Helper createNotification con admin client
+├── layout.tsx                       ✅ Server Component — exporta metadata, importa ClientLayout
+└── components/layout/
+    ├── ClientLayout.tsx             ✅ 'use client' — usePathname, auth init, hideNav, BottomNav
+    └── BottomNav.tsx                ✅ Migrado de .js, centrado en desktop con maxWidth 500px
 ```
 
 ---
@@ -171,7 +175,7 @@ trueke-app/app/
 | Calificación post-intercambio | Se activa tras marcar "Ya hicimos el intercambio" desde ExchangeClient |
 | Chat por oferta | Vinculado a offer_id, ícono "..." vertical SVG, reportar usuario |
 | Lista de mensajes | Empty state: SVG campana, 2 líneas, color #1A2744, fontWeight 500 |
-| Mis intercambios | Tabs Activos/Completados/Cancelados, fotos con borderRadius: 12, empty states con emojis ✅ |
+| Mis intercambios | Tabs Activos/Completados/**Rechazados**, fotos con borderRadius: 12, empty states con emojis ✅ |
 | Notificaciones | Empty state: SVG campana trazo fino #C4BAB1, texto mejorado. Cards con SVGs por tipo |
 | Onboarding (6 pasos) | Step 0: fondo #FAF3ED ✅, 4 marcos SVG de Affinity con clipPath + stroke ✅ (pendiente verificar en dispositivo), paisaje de montaña decorativo abajo ✅. Flujo: nombre→email→contraseña→ciudad→intereses → signUp al final |
 | Login | Email+contraseña principal, magic link como link de texto discreto (no botón), reset de contraseña vía Supabase |
@@ -225,6 +229,13 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Perfil público `/perfil/[userId]`** — adminClient movido dentro de la función (Server Component correcto)
 - **Build Vercel corregido** — repo apuntado a `trueke-app.git`, `supabase.js` con fallback `?? ''`
 - **Item detail → perfil** — userRow con `onClick` y `cursor: pointer`
+- **Ciudad pre-llenada en /crear** — useEffect carga `profile.city` al montar el formulario
+- **Fecha relativa en cards del home** — helper `timeAgo()` muestra "hace X días/horas/min"
+- **Perfil edit rediseñado** — sistema visual Trueke: header con back, avatar centrado, card inputs, campo ciudad agregado
+- **BottomNav migrado a .tsx** — centrado en desktop con `position: fixed`, `left: 50%`, `maxWidth: 500`, `translateX(-50%)`
+- **Código muerto eliminado** — `Header.tsx`, `Feed.tsx`, `FeedGrid.tsx`, `ItemCard.tsx` (components/feed/) + función `Achievement` de perfil/page.tsx
+- **layout.tsx → Server Component** — exporta `metadata` de Next.js; lógica client separada en `ClientLayout.tsx`
+- **20 items demo** en BD (IDs 78–101) con categorías, imágenes y datos realistas
 
 ## ⏳ Pendiente MVP — en orden de prioridad
 
