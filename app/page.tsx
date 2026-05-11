@@ -6,7 +6,7 @@ import supabase from './lib/supabase'
 import FeaturedChains from './components/feed/FeaturedChains'
 import NotifBadge from './components/feed/NotifBadge'
 
-type Item  = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string }
+type Item  = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string; created_at: string }
 type Chain = { id: number; initial_item_id: number; created_at: string; initial_item_title: string | null; initial_item_image: string | null; final_item_title: string | null; final_item_image: string | null; creator_username: string | null; creator_avatar: string | null; steps_count: number }
 
 export default function Home() {
@@ -247,6 +247,17 @@ export default function Home() {
 
 /* ── Componentes ── */
 
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days = Math.floor(diff / 86400000)
+  if (mins < 60) return `hace ${mins}m`
+  if (hours < 24) return `hace ${hours}h`
+  if (days < 7) return `hace ${days}d`
+  return `hace ${Math.floor(days / 7)}sem`
+}
+
 function Section({ title }: { title: string }) {
   return (
     <div style={styles.section}>
@@ -272,6 +283,7 @@ function Card({ router, item, small = false }: any) {
       <div style={styles.cardBody}>
         <div style={styles.name}>{item.title}</div>
         <div style={styles.exchange}>por {item.wanted || 'algo'}</div>
+        <div style={styles.timeAgo}>{timeAgo(item.created_at)}</div>
       </div>
     </div>
   )
@@ -422,6 +434,8 @@ const styles: any = {
   },
 
   exchange: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+
+  timeAgo: { fontSize: 11, color: '#C4BAB1', marginTop: 2 },
 
   emptyFeed: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
