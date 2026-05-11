@@ -191,39 +191,6 @@ function Stat({ label, value }: { label: string; value: string | number }) {
   )
 }
 
-function Achievement({ type, title }: { type: string; title: string }) {
-  const icons: Record<string, React.ReactElement> = {
-    'primer-intercambio': (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M7 7h10M17 7l-3-3M17 7l-3 3"/>
-        <path d="M17 17H7M7 17l3-3M7 17l3 3"/>
-      </svg>
-    ),
-    'comunidad-activa': (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-    ),
-    'confiable': (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        <polyline points="9 12 11 14 15 10"/>
-      </svg>
-    ),
-  }
-
-  return (
-    <div style={styles.achievement}>
-      <div style={styles.achievementCircle}>
-        {icons[type]}
-      </div>
-      <div style={styles.achievementText}>{title}</div>
-    </div>
-  )
-}
 
 function MenuItem({ label, type, onClick, last = false }: {
   label: string; type: string; onClick: () => void; last?: boolean
@@ -443,36 +410,6 @@ const styles: any = {
     fontSize: 14,
     cursor: 'pointer',
     fontWeight: 500,
-  },
-
-  achievements: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginBottom: 28,
-  },
-
-  achievement: {
-    alignItems: 'center',
-    textAlign: 'center',
-    flex: 1,
-  },
-
-  achievementCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: '50%',
-    background: '#FDE8DC',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto 8px',
-  },
-
-  achievementText: {
-    fontSize: 13,
-    color: '#1A2744',
-    lineHeight: 1.3,
-    marginTop: 2,
   },
 
   /* Mis cadenas */
