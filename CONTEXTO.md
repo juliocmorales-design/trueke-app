@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 8 Mayo 2026 (sesión 8)
+> Última actualización: 11 Mayo 2026 (sesión 9)
 
 ---
 
@@ -101,8 +101,8 @@ Las tarjetas compartibles solo muestran:
 - Julio: juliocmorales@gmail.com / `trueke123` → UUID: `15a54455-6f8b-4fc0-be30-832960e8c080`
 - Armajulion: armajulion@hotmail.com / `trueke123` → UUID: `93f2cc3e-0a5d-4ed6-9aff-07ac6f0bc7a1`
 
-**Estado actual de la BD (post sesión 8):**
-- **Offer activa id=23:** Julio ofrece Nintendo Switch (item 87) → Armajulion por Cámara Sony (item 78). Status: `pending`. `from_item_id=87`, `to_item_id=78`. También en `offer_items` (ids 20 y 21).
+**Estado actual de la BD (post sesión 9):**
+- **Offer activa id=23:** Julio ofrece Nintendo Switch (item 87) → Armajulion por Cámara Sony (item 78). Status: `pending`. `from_item_id=87`, `to_item_id=78`. También en `offer_items` (ids 20 y 21). Flujo end-to-end verificado.
 - **11 items demo con categorías asignadas:** `electronica`: 78, 80, 87, 88, 89, 90, 91 | `musica`: 79 | `deportes`: 81 | `libros`: 82 | `otros`: 92
 - RLS activado en `notifications`. Avatar de Julio (zorro) en Storage.
 
@@ -216,12 +216,21 @@ rating/[offerId] → calificación 1-5 + comentario
 
 ---
 
+## ✅ Completado sesión 9
+
+- **Score de confianza real** — reemplazado cálculo inventado por promedio de `ratings` en `perfil/page.tsx` y `exchange/[id]/page.tsx`
+- **"Cerca de ti" filtra por ciudad** — query de items ahora usa `profile.city` del usuario; título dinámico
+- **Tab "Rechazados"** — renombrado desde "Cancelados" en Mis intercambios; key y tipo actualizados
+- **Categoría en crear item** — selector de chips, guardado en BD, vinculado al filtro de búsqueda
+- **Perfil público `/perfil/[userId]`** — adminClient movido dentro de la función (Server Component correcto)
+- **Build Vercel corregido** — repo apuntado a `trueke-app.git`, `supabase.js` con fallback `?? ''`
+- **Item detail → perfil** — userRow con `onClick` y `cursor: pointer`
+
 ## ⏳ Pendiente MVP — en orden de prioridad
 
 1. **Onboarding Step 0** — rediseño en proceso con ChatGPT (CSS simple, sin SVG). 4 cards con fotos Unsplash placeholder, eslabones entre cards. Pendiente verificar en dispositivo.
 2. **Tarjetas compartibles de cadena** — mockup actualizado aprobado, pendiente implementar en chain/[id]
 3. **Push notifications** — PWA o web push para notificaciones en tiempo real
-4. **Búsqueda — filtro por categoría** ✅ completado sesión 8
 
 ---
 
