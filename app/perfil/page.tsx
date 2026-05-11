@@ -73,8 +73,6 @@ export default function PerfilPage() {
 
   if (loading) return <div style={{ padding: 20, background: '#FDF8F3', minHeight: '100vh' }}>Cargando...</div>
 
-  const score = Math.min(100, items.length * 4 + 60)
-
   return (
     <div style={styles.container}>
 
@@ -112,8 +110,12 @@ export default function PerfilPage() {
         </div>
 
         <div style={styles.scoreBox}>
-          <div style={styles.score}>{score}</div>
-          <div style={styles.scoreLabel}>Confiable</div>
+          <div style={styles.score}>
+            {avgRating ? `${avgRating.toFixed(1)}★` : '—'}
+          </div>
+          <div style={styles.scoreLabel}>
+            {reviewCount > 0 ? `${reviewCount} reseña${reviewCount !== 1 ? 's' : ''}` : 'Sin reseñas'}
+          </div>
         </div>
       </div>
 
@@ -367,24 +369,24 @@ const styles: any = {
   },
 
   scoreBox: {
-    background: '#DCFCE7',
+    background: '#FFF5F0',
     padding: '10px 16px',
     borderRadius: 14,
     textAlign: 'center',
-    minWidth: 76,
+    minWidth: 80,
     flexShrink: 0,
   },
 
   score: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 700,
-    color: '#16A34A',
+    color: '#F97316',
     lineHeight: 1,
   },
 
   scoreLabel: {
     fontSize: 11,
-    color: '#16A34A',
+    color: '#F97316',
     marginTop: 3,
     fontWeight: 500,
   },
