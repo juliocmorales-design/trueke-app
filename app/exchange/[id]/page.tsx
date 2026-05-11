@@ -72,10 +72,15 @@ export default async function ExchangeDetail({ params }: { params: Promise<{ id:
   const toProfile   = (profiles as any[])?.find(p => p.id === offer.to_user_id)   ?? null
 
   /* 4 — Trust scores */
-  const [{ count: fc }, { count: tc }] = await Promise.all([
-    supabase.from('items').select('id', { count: 'exact', head: true }).eq('user_id', offer.from_user_id),
-    supabase.from('items').select('id', { count: 'exact', head: true }).eq('user_id', offer.to_user_id),
+  const [{ data: fromRatings }, { data: toRatings }] = await Promise.all([
+    supabase.from('ratings').select('score').eq('rated_id', offer.from_user_id),
+    supabase.from('ratings').select('score').eq('rated_id', offer.to_user_id),
   ])
+
+  const calcAvg = (ratings: any[]) => {
+    if (!ratings || ratings.length === 0) return null
+    return ratings.reduce((sum: number, r: any) => sum + r.score, 0) / ratings.length
+  }
 
   /* 5 — Chain step (if this offer is part of a chain) */
   const { data: chainStep } = await supabase
@@ -92,8 +97,8 @@ export default async function ExchangeDetail({ params }: { params: Promise<{ id:
     requestedItem,
     fromProfile,
     toProfile,
-    fromScore: Math.min(100, (fc ?? 0) * 4 + 60),
-    toScore:   Math.min(100, (tc ?? 0) * 4 + 60),
+    fromScore: calcAvg(fromRatings ?? []),
+    toScore:   calcAvg(toRatings ?? []),
   }
 
   return (

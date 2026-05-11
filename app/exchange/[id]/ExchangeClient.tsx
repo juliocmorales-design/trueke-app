@@ -21,8 +21,8 @@ export interface ExchangeData {
   requestedItem: { id: string; title: string; images: string[] | null; user_id: string } | null
   fromProfile:   { id: string; name: string; username: string | null; avatar_url: string | null } | null
   toProfile:     { id: string; name: string; username: string | null; avatar_url: string | null } | null
-  fromScore: number
-  toScore:   number
+  fromScore: number | null
+  toScore:   number | null
 }
 
 /* ── Status helpers ─────────────────────────────────────────────── */
@@ -254,7 +254,9 @@ export default function ExchangeClient({
               <AvatarOrInitials profile={profile} />
               <div className={s.scoreInfo}>
                 <div className={s.scoreName}>{profile?.name ?? 'Usuario'}</div>
-                <div className={s.scorePill}>🛡️ {score} pts</div>
+                <div className={s.scorePill}>
+                  {score !== null ? `⭐ ${(score as number).toFixed(1)}` : '⭐ Nuevo'}
+                </div>
               </div>
               <span className={s.chevron}>›</span>
             </div>
