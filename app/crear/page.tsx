@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import supabase from '../lib/supabase'
 
@@ -37,6 +37,21 @@ function CrearForm() {
 
   const [files, setFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
+
+  useEffect(() => {
+    const loadUserCity = async () => {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const user = sessionData.session?.user
+      if (!user) return
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('city')
+        .eq('id', user.id)
+        .single()
+      if (profile?.city) setCity(profile.city)
+    }
+    loadUserCity()
+  }, [])
 
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
