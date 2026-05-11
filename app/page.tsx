@@ -38,8 +38,18 @@ export default function Home() {
 
       // Items — independent, failure shows empty feed
       try {
-        const { data: itemsData } = await supabase
-          .from('items').select('*').order('created_at', { ascending: false }).limit(12)
+        let itemsQuery = supabase
+          .from('items')
+          .select('*')
+          .eq('active', true)
+          .order('created_at', { ascending: false })
+          .limit(12)
+
+        if (profile.city) {
+          itemsQuery = itemsQuery.eq('city', profile.city)
+        }
+
+        const { data: itemsData } = await itemsQuery
         setItems(itemsData || [])
       } catch { setItems([]) }
 
@@ -214,7 +224,7 @@ export default function Home() {
         </div>
       ) : (
         <>
-          <Section title="Cerca de ti" />
+          <Section title={userCity ? `Cerca de ti en ${userCity}` : 'Publicaciones recientes'} />
           <div style={styles.grid2}>
             {items.slice(0, 6).map(item => (
               <Card key={item.id} router={router} item={item} />
