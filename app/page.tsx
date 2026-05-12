@@ -181,6 +181,15 @@ export default function Home() {
           </svg>
         </button>
         <div style={styles.headerIcons}>
+          <div
+            style={{ cursor: 'pointer', padding: 4 }}
+            onClick={() => router.push('/mensajes')}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+              stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
           <NotifBadge />
         </div>
       </div>
@@ -247,7 +256,7 @@ export default function Home() {
           </div>
 
           {/* RECOMENDADOS — scroll horizontal compacto */}
-          <Section title="Recomendados" href="/buscar" />
+          <Section title="Recomendados" href="/buscar" badge="Nuevo" />
           <div style={styles.scrollRow}>
             {items.slice(6, 12).map(item => (
               <Card key={item.id} router={router} item={item} small />
@@ -273,10 +282,24 @@ function timeAgo(dateStr: string) {
   return `hace ${Math.floor(days / 7)}sem`
 }
 
-function Section({ title, href }: { title: string; href?: string }) {
+function Section({ title, href, badge }: { title: string; href?: string; badge?: string }) {
   return (
     <div style={styles.section}>
-      <strong style={{ fontSize: 17, color: '#1A2744' }}>{title}</strong>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <strong style={{ fontSize: 17, color: '#1A2744' }}>{title}</strong>
+        {badge && (
+          <span style={{
+            background: '#F97316',
+            color: '#fff',
+            fontSize: 11,
+            fontWeight: 700,
+            padding: '2px 8px',
+            borderRadius: 20,
+          }}>
+            {badge}
+          </span>
+        )}
+      </div>
       {href && (
         <span
           style={{ fontSize: 14, color: '#F97316', cursor: 'pointer', fontWeight: 500 }}
