@@ -52,25 +52,21 @@ export default function Home() {
         const { data: itemsData } = await itemsQuery
 
         const userIds = [...new Set((itemsData || []).map((i: any) => i.user_id))]
-        if (userIds.length === 0) {
+        if (userIds.length > 0) {
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, username, avatar_url')
+            .in('id', userIds)
+          const profileMap: Record<string, any> = {}
+          profilesData?.forEach((p: any) => { profileMap[p.id] = p })
+          const itemsWithProfiles = (itemsData || []).map((item: any) => ({
+            ...item,
+            profile: profileMap[item.user_id] ?? null,
+          }))
+          setItems(itemsWithProfiles)
+        } else {
           setItems(itemsData || [])
-          return
         }
-
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('id, username, avatar_url')
-          .in('id', userIds)
-
-        const profileMap: Record<string, any> = {}
-        profilesData?.forEach((p: any) => { profileMap[p.id] = p })
-
-        const itemsWithProfiles = (itemsData || []).map((item: any) => ({
-          ...item,
-          profile: profileMap[item.user_id] ?? null,
-        }))
-
-        setItems(itemsWithProfiles)
       } catch { setItems([]) }
 
       // Chains — independent, failure shows empty chains section
