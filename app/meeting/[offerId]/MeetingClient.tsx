@@ -26,12 +26,6 @@ export default function MeetingClient({ offerId, data }: { offerId: string; data
   const [meetingError,  setMeetingError]  = useState<string | null>(null)
 
   useEffect(() => {
-    const nav = document.getElementById('bottom-nav')
-    if (nav) nav.style.display = 'none'
-    return () => { if (nav) nav.style.display = '' }
-  }, [])
-
-  useEffect(() => {
     supabase.auth.getSession().then(({ data: s }) => {
       setCurrentUserId(s.session?.user?.id ?? null)
     })
@@ -60,7 +54,7 @@ export default function MeetingClient({ offerId, data }: { offerId: string; data
           sender_id: currentUserId,
           sender:    currentUserId,
           receiver,
-          text:      `📍 Propuesta de encuentro: ${place.trim()}. ¿Te queda bien? Responde aquí si quieres cambiar el lugar.`,
+          text:      `Propuesta de encuentro: ${place.trim()}. ¿Te queda bien? Responde aquí si quieres cambiar el lugar.`,
           is_read:   false,
         }),
       ])

@@ -20,9 +20,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     pathname.startsWith('/onboarding') ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/perfil/setup') ||
-    isItemPage ||
-    pathname.startsWith('/offer') ||
-    pathname.startsWith('/mensajes/')
+    isItemPage
 
   useEffect(() => {
     const init = async () => {
@@ -52,13 +50,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
     init()
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {})
-
-    return () => {
-      subscription.unsubscribe()
-    }
   }, [])
 
   return (

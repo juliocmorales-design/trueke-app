@@ -77,6 +77,10 @@ export default function EditProfile() {
         .update({ name, username, city, avatar_url })
         .eq('id', user.id)
 
+      if (error?.code === '23505') {
+        setSaveError('Ese nombre de usuario ya está tomado. Elige otro.')
+        return
+      }
       if (error) throw error
       router.push('/perfil')
     } catch {
