@@ -399,15 +399,16 @@ const styles: any = {
 
   search: {
     marginTop: 14,
-    background: '#F0EAE0',
+    background: '#FFFFFF',
     border: 'none',
-    borderRadius: 12,
-    padding: '11px 14px',
+    borderRadius: 16,
+    padding: '12px 16px',
     color: '#9CA3AF',
     fontSize: 14,
     display: 'flex',
     alignItems: 'center',
     gap: 8,
+    boxShadow: '0 2px 8px rgba(26,39,68,0.08)',
   },
 
   section: {
