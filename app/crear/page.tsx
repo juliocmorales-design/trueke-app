@@ -194,8 +194,8 @@ function CrearForm() {
       {(chainId || newChain) && (
         <div style={styles.chainBanner}>
           {chainId
-            ? '🔗 Continuando cadena — publica lo que vas a intercambiar'
-            : '✨ Nueva cadena — publica el primer objeto'}
+            ? 'Continuando cadena — publica lo que vas a intercambiar'
+            : 'Nueva cadena — publica el primer objeto'}
         </div>
       )}
 
