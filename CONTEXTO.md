@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 12 Mayo 2026 (sesión 9 — emojis y tarjetas)
+> Última actualización: 12 Mayo 2026 (sesión 9 — barrida general)
 
 ---
 
@@ -96,6 +96,7 @@ Las tarjetas compartibles solo muestran:
 | `chains` | id (bigint), creator_id, initial_item_id, goal_description, status, steps_count, show_name | |
 | `chain_steps` | id (bigint), chain_id, step_number, item_id, from_user_id, to_user_id, offer_id | |
 | `notifications` | id, user_id, type, title, body, offer_id, is_read, created_at | NUEVA — usa admin client |
+| `reports` | id, reporter_id (uuid), reported_id (uuid), offer_id (bigint), reason (text), created_at | NUEVA — RLS activado |
 
 **Usuarios de prueba:**
 - Julio: juliocmorales@gmail.com / `trueke123` → UUID: `15a54455-6f8b-4fc0-be30-832960e8c080`
@@ -222,7 +223,7 @@ rating/[offerId] → calificación 1-5 + comentario
 
 ## ✅ Completado sesión 9
 
-- **Score de confianza real** — reemplazado cálculo inventado por promedio de `ratings` en `perfil/page.tsx` y `exchange/[id]/page.tsx`
+- **Score de confianza real** — reemplazado cálculo inventado por promedio de `ratings` en `perfil/page.tsx`, `exchange/[id]/page.tsx` y `mensajes/[userId]/page.tsx`
 - **"Cerca de ti" filtra por ciudad** — query de items ahora usa `profile.city` del usuario; título dinámico
 - **Tab "Rechazados"** — renombrado desde "Cancelados" en Mis intercambios; key y tipo actualizados
 - **Categoría en crear item** — selector de chips, guardado en BD, vinculado al filtro de búsqueda
@@ -248,6 +249,19 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Home: badge "Nuevo"** — pill naranja en cards de la sección Recomendados para items recientes
 - **Home: ícono mensajes en header** — SVG de sobre/chat reemplaza texto; navega a /mensajes
 - **Botón "Compartir" unificado en chain/[id]** — un solo CTA que abre el modal con las 3 tarjetas compartibles
+
+### Barrida general de bugs y calidad (sesión 9 — cierre)
+
+- **Guards `.in()` con array vacío** — `page.tsx`, `intercambios/page.tsx`, `mensajes/page.tsx`: guard explícito antes de cada query `.in('id', [])` para evitar retorno de todos los registros
+- **Score de confianza en chat** — `mensajes/[userId]/page.tsx`: reemplazado cálculo inventado (`items × 4 + 60`) por promedio real de tabla `ratings`; muestra "Nuevo" si no hay calificaciones
+- **Reportar usuario guarda en BD** — `mensajes/[userId]/page.tsx` y `mensajes/oferta/[offerId]/page.tsx`: `handleReport` ahora inserta en tabla `reports` (`reporter_id`, `reported_id`, `offer_id`, `reason`). **Tabla `reports` creada en Supabase con RLS activado**
+- **Empty states estandarizados** — `mensajes/page.tsx`: `<p>` plano reemplazado por SVG burbuja de chat + título + subtítulo, igual al patrón del resto de la app
+- **SVGs reemplazando Unicode** — `⇄` y `✓` eliminados en `ExchangeClient.tsx` y `mensajes/page.tsx`; sustituidos por SVGs consistentes con el sistema de diseño
+- **Toast auto-dismiss** — `perfil/page.tsx`: "Próximamente disponible" se cierra automáticamente a los 3 segundos
+- **`router.push` en lugar de `window.location.href`** — `page.tsx` componente `Section`: navegación client-side sin recarga
+- **StatusPill consistente** — `intercambios/page.tsx`: pill "Cancelado" → "Rechazado", igual que el tab
+- **Sección "Recomendados" condicional** — `page.tsx`: se oculta si hay ≤6 items (evita header huérfano)
+- **Username en lista de mensajes** — `mensajes/page.tsx`: select de profiles incluye `username`; fallback `name || username || 'Usuario'`
 
 ## ⏳ Pendiente MVP — en orden de prioridad
 
