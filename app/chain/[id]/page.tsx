@@ -16,7 +16,7 @@ export default async function ChainPage({ params }: { params: Promise<{ id: stri
   /* 1 — Chain */
   const { data: chain, error } = await supabase
     .from('chains')
-    .select('id, creator_id, initial_item_id, status, steps_count, created_at')
+    .select('id, creator_id, initial_item_id, status, steps_count, created_at, personal_quote')
     .eq('id', id)
     .single()
 

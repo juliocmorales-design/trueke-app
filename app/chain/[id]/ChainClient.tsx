@@ -26,6 +26,7 @@ export type ChainData = {
     status: string
     steps_count: number
     created_at: string
+    personal_quote?: string
   }
   steps: Step[]
   itemMap: Record<number, Item>
@@ -176,6 +177,129 @@ function CardPreview({ W, H, scale, ...rest }: { W:number; H:number; scale:numbe
   )
 }
 
+/* ── ShareCardV1 — 400×600 para WhatsApp/Telegram ───────────────────── */
+function ShareCardV1({
+  initialItem,
+  lastItem,
+  stepsCount,
+  days,
+  personalQuote,
+}: {
+  initialItem:    Item | undefined
+  lastItem:       Item | undefined
+  stepsCount:     number
+  days:           number
+  personalQuote?: string
+}) {
+  const circleSize = 80
+  const circleStyle: React.CSSProperties = {
+    width: circleSize, height: circleSize, borderRadius: '50%',
+    background: '#F0EAE0', display: 'flex', alignItems: 'center',
+    justifyContent: 'center', overflow: 'hidden', flexShrink: 0,
+  }
+  const imgStyle: React.CSSProperties = { width: '100%', height: '100%', objectFit: 'cover' }
+
+  return (
+    <div style={{
+      width: 400, height: 600, background: '#FAF3ED',
+      borderRadius: 20, padding: 28, boxSizing: 'border-box',
+      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+    }}>
+      {/* A) Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{
+          width: 28, height: 28, background: '#F97316', borderRadius: 7,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15 }}>T</span>
+        </div>
+        <span style={{ color: '#1A2744', fontWeight: 900, fontSize: 18 }}>
+          Trueke<span style={{ color: '#F97316' }}>.app</span>
+        </span>
+      </div>
+
+      {/* B) Headline */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ fontSize: 20, fontWeight: 800, color: '#1A2744', lineHeight: 1.3 }}>
+          De{' '}
+          <span style={{ color: '#F97316' }}>{initialItem?.title ?? '—'}</span>
+          {' '}a{' '}
+          <span style={{ color: '#F97316' }}>{lastItem?.title ?? '—'}</span>
+        </div>
+        <div style={{ fontSize: 15, fontWeight: 600, color: '#1A2744' }}>
+          en {stepsCount} intercambio{stepsCount !== 1 ? 's' : ''}
+        </div>
+        <div style={{ fontSize: 12, color: '#6B7680' }}>Todo es posible en Trueke.app</div>
+      </div>
+
+      {/* C) Progresión */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <div style={circleStyle}>
+            {initialItem?.images?.[0]
+              ? <img src={initialItem.images[0]} crossOrigin="anonymous" style={imgStyle} alt="" />
+              : <span style={{ fontWeight: 700, fontSize: 28, color: '#F97316' }}>
+                  {initialItem?.title?.charAt(0).toUpperCase() ?? '?'}
+                </span>}
+          </div>
+          <div style={{ fontSize: 11, color: '#6B7680', textAlign: 'center', maxWidth: 90, lineHeight: 1.3 }}>
+            <span style={{ color: '#1A2744', fontWeight: 700 }}>Inicio</span><br />
+            {initialItem?.title ?? '—'}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          <span style={{ fontSize: 38, fontWeight: 900, color: '#F97316', lineHeight: 1 }}>{stepsCount}</span>
+          <span style={{ fontSize: 10, color: '#6B7680', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+            pasos
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <div style={circleStyle}>
+            {lastItem?.images?.[0]
+              ? <img src={lastItem.images[0]} crossOrigin="anonymous" style={imgStyle} alt="" />
+              : <span style={{ fontWeight: 700, fontSize: 28, color: '#F97316' }}>
+                  {lastItem?.title?.charAt(0).toUpperCase() ?? '?'}
+                </span>}
+          </div>
+          <div style={{ fontSize: 11, color: '#6B7680', textAlign: 'center', maxWidth: 90, lineHeight: 1.3 }}>
+            <span style={{ color: '#1A2744', fontWeight: 700 }}>Objetivo</span><br />
+            {lastItem?.title ?? '—'}
+          </div>
+        </div>
+      </div>
+
+      {/* D) Stats pills */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ background: '#F0EAE0', borderRadius: 999, padding: '8px 14px', fontSize: 13, color: '#1A2744', fontWeight: 600 }}>
+          📅 {days} día{days !== 1 ? 's' : ''} duración
+        </div>
+        <div style={{ background: '#F0EAE0', borderRadius: 999, padding: '8px 14px', fontSize: 13, color: '#1A2744', fontWeight: 600 }}>
+          🎯 Objetivo alcanzado
+        </div>
+      </div>
+
+      {/* E) Frase personal */}
+      {personalQuote
+        ? (
+          <div style={{ padding: '12px 16px', background: '#F0EAE0', borderRadius: 12, borderLeft: '3px solid #F97316' }}>
+            <p style={{ margin: 0, fontSize: 13, color: '#6B7680', fontStyle: 'italic', lineHeight: 1.5 }}>
+              "{personalQuote}"
+            </p>
+          </div>
+        )
+        : <div />}
+
+      {/* F) Footer naranja */}
+      <div style={{ background: '#F97316', borderRadius: 12, padding: '14px 20px', textAlign: 'center' }}>
+        <span style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>🔗 Crea tu historia en Trueke.app</span>
+      </div>
+    </div>
+  )
+}
+
 /* ── Main component ─────────────────────────────────────────────────── */
 export default function ChainClient({ data }: { data: ChainData }) {
   const router = useRouter()
@@ -185,11 +309,14 @@ export default function ChainClient({ data }: { data: ChainData }) {
   const [downloading, setDownloading]       = useState<string | null>(null)
   const [igTooltip,    setIgTooltip]        = useState(false)
   const [storyTooltip, setStoryTooltip]     = useState(false)
+  const [showV1Modal,  setShowV1Modal]       = useState(false)
+  const [downloadingV1, setDownloadingV1]   = useState(false)
 
   /* Refs point ONLY to the off-screen capture divs */
   const refWhatsapp  = useRef<HTMLDivElement>(null!)
   const refInstagram = useRef<HTMLDivElement>(null!)
   const refStory     = useRef<HTMLDivElement>(null!)
+  const refV1        = useRef<HTMLDivElement>(null!)
 
   const initialItem = itemMap[chain.initial_item_id]
   const lastStep    = steps[steps.length - 1]
@@ -199,7 +326,8 @@ export default function ChainClient({ data }: { data: ChainData }) {
     (Date.now() - new Date(chain.created_at).getTime()) / 86_400_000,
   ))
 
-  const cardProps = { initialItem, lastItem, stepsCount: chain.steps_count, days }
+  const cardProps   = { initialItem, lastItem, stepsCount: chain.steps_count, days }
+  const v1CardProps = { ...cardProps, personalQuote: chain.personal_quote }
 
   /* Bubbles */
   const bubbles: Array<{ item: Item | undefined; active: boolean; future: boolean }> = steps.map(
@@ -259,6 +387,48 @@ export default function ChainClient({ data }: { data: ChainData }) {
     if (ok) {
       setStoryTooltip(true)
       setTimeout(() => setStoryTooltip(false), 3000)
+    }
+  }
+
+  const handleV1Download = async () => {
+    await captureAndDownload(refV1, 'trueke-historia.png')
+  }
+
+  const handleV1Share = async () => {
+    if (downloadingV1) return
+    setDownloadingV1(true)
+    try {
+      const html2canvas = (await import('html2canvas')).default
+      const canvas = await html2canvas(refV1.current, {
+        useCORS: true, allowTaint: false, scale: 2, backgroundColor: '#FAF3ED',
+      })
+      const dataUrl = canvas.toDataURL('image/png')
+      if (navigator.share) {
+        const res  = await fetch(dataUrl)
+        const blob = await res.blob()
+        const file = new File([blob], 'trueke-historia.png', { type: 'image/png' })
+        try {
+          if (navigator.canShare?.({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'Mi historia en Trueke',
+              text: `Hice ${chain.steps_count} intercambio${chain.steps_count !== 1 ? 's' : ''} en Trueke.app`,
+            })
+          } else {
+            await navigator.share({ title: 'Mi historia en Trueke', url: 'https://trueke.app' })
+          }
+        } catch { /* usuario canceló */ }
+      } else {
+        const link = document.createElement('a')
+        link.download = 'trueke-historia.png'
+        link.href = dataUrl
+        link.click()
+      }
+    } catch (e) {
+      console.error('html2canvas error:', e)
+      alert('No se pudo generar la imagen')
+    } finally {
+      setDownloadingV1(false)
     }
   }
 
@@ -369,6 +539,11 @@ export default function ChainClient({ data }: { data: ChainData }) {
             Compartir mi cadena
           </button>
         )}
+        {chain.status === 'completed' && (
+          <button className={s.shareBtn} onClick={() => setShowV1Modal(true)}>
+            Compartir mi historia
+          </button>
+        )}
       </div>
 
       {/* SHARE MODAL */}
@@ -446,6 +621,71 @@ export default function ChainClient({ data }: { data: ChainData }) {
         </div>
       )}
 
+      {/* MODAL V1 — tarjeta compartible WhatsApp/Telegram */}
+      {showV1Modal && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000, padding: 20,
+          }}
+          onClick={() => setShowV1Modal(false)}
+        >
+          <div
+            style={{
+              background: '#fff', borderRadius: 20, padding: 24,
+              width: '100%', maxWidth: 380, display: 'flex', flexDirection: 'column', gap: 16,
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 700, fontSize: 18, color: '#1A2744' }}>Comparte tu historia</span>
+              <button
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: '#6B7680' }}
+                onClick={() => setShowV1Modal(false)}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Preview */}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <div style={{ width: 400 * 0.6, height: 600 * 0.6, overflow: 'hidden', borderRadius: 12, flexShrink: 0 }}>
+                <div style={{ width: 400, height: 600, transform: 'scale(0.6)', transformOrigin: 'top left' }}>
+                  <ShareCardV1 {...v1CardProps} />
+                </div>
+              </div>
+            </div>
+
+            {/* Botones */}
+            <button
+              style={{
+                background: '#F97316', color: '#fff', border: 'none', borderRadius: 12,
+                padding: '14px 20px', fontWeight: 700, fontSize: 16, cursor: 'pointer', width: '100%',
+              }}
+              onClick={handleV1Download}
+              disabled={downloadingV1}
+            >
+              {downloadingV1 ? 'Generando…' : '⬇ Descargar PNG'}
+            </button>
+            <button
+              style={{
+                background: '#F0EAE0', color: '#1A2744', border: 'none', borderRadius: 12,
+                padding: '14px 20px', fontWeight: 700, fontSize: 16, cursor: 'pointer', width: '100%',
+              }}
+              onClick={handleV1Share}
+              disabled={downloadingV1}
+            >
+              ↗ Compartir
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Off-screen capture targets — html2canvas reads these */}
       <div style={{ position:'fixed', top:-9999, left:-9999, pointerEvents:'none', zIndex:-1 }}>
         <div ref={refWhatsapp}>
@@ -456,6 +696,9 @@ export default function ChainClient({ data }: { data: ChainData }) {
         </div>
         <div ref={refStory}>
           <CardContent W={600} H={1067} {...cardProps} />
+        </div>
+        <div ref={refV1}>
+          <ShareCardV1 {...v1CardProps} />
         </div>
       </div>
 
