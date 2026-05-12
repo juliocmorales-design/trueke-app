@@ -63,7 +63,20 @@ export default function BuscarPage() {
       }
 
       const { data } = await req
-      setItems(data || [])
+
+      const userIds = [...new Set((data || []).map((i: any) => i.user_id))]
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .in('id', userIds)
+
+      const profileMap: Record<string, any> = {}
+      profilesData?.forEach((p: any) => { profileMap[p.id] = p })
+
+      setItems((data || []).map((item: any) => ({
+        ...item,
+        profile: profileMap[item.user_id] ?? null,
+      })))
     } catch {
       setSearchError(true)
       setItems([])
@@ -191,6 +204,16 @@ function ItemCard({ item, router }: any) {
       <div style={s.cardBody}>
         <div style={s.cardTitle}>{item.title}</div>
         <div style={s.cardWanted}>por {item.wanted || 'algo'}</div>
+        <div style={s.ownerRow}>
+          {item.profile?.avatar_url ? (
+            <img src={item.profile.avatar_url} style={s.ownerAvatar} alt="" />
+          ) : (
+            <div style={s.ownerAvatarFallback}>
+              {(item.profile?.username || 'U').charAt(0).toUpperCase()}
+            </div>
+          )}
+          <span style={s.ownerName}>@{item.profile?.username || 'usuario'}</span>
+        </div>
         {item.city && <div style={s.cardCity}>{item.city}</div>}
       </div>
     </div>
@@ -360,6 +383,38 @@ const s: any = {
   },
 
   cardWanted: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+
+  ownerRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
+  },
+
+  ownerAvatar: {
+    width: 20,
+    height: 20,
+    borderRadius: '50%',
+    objectFit: 'cover',
+  },
+
+  ownerAvatarFallback: {
+    width: 20,
+    height: 20,
+    borderRadius: '50%',
+    background: '#F0EAE0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 10,
+    fontWeight: 700,
+    color: '#1A2744',
+  },
+
+  ownerName: {
+    fontSize: 11,
+    color: '#9CA3AF',
+  },
 
   cardCity: { fontSize: 11, color: '#C4BAB1', marginTop: 4 },
 
