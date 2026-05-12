@@ -239,15 +239,15 @@ export default function Home() {
         </div>
       ) : (
         <>
-          <Section title={userCity ? `Cerca de ti en ${userCity}` : 'Publicaciones recientes'} />
-          <div style={styles.grid2}>
+          <Section title={userCity ? `Cerca de ti en ${userCity}` : 'Publicaciones recientes'} href="/buscar" />
+<div style={styles.grid2}>
             {items.slice(0, 6).map(item => (
               <Card key={item.id} router={router} item={item} />
             ))}
           </div>
 
           {/* RECOMENDADOS — scroll horizontal compacto */}
-          <Section title="Recomendados" />
+          <Section title="Recomendados" href="/buscar" />
           <div style={styles.scrollRow}>
             {items.slice(6, 12).map(item => (
               <Card key={item.id} router={router} item={item} small />
@@ -273,10 +273,18 @@ function timeAgo(dateStr: string) {
   return `hace ${Math.floor(days / 7)}sem`
 }
 
-function Section({ title }: { title: string }) {
+function Section({ title, href }: { title: string; href?: string }) {
   return (
     <div style={styles.section}>
       <strong style={{ fontSize: 17, color: '#1A2744' }}>{title}</strong>
+      {href && (
+        <span
+          style={{ fontSize: 14, color: '#F97316', cursor: 'pointer', fontWeight: 500 }}
+          onClick={() => window.location.href = href}
+        >
+          Ver todo ›
+        </span>
+      )}
     </div>
   )
 }
@@ -402,7 +410,13 @@ const styles: any = {
     gap: 8,
   },
 
-  section: { marginTop: 24, marginBottom: 12 },
+  section: {
+    marginTop: 24,
+    marginBottom: 12,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
 
   /* Cerca de ti: 2 columnas */
   grid2: {
