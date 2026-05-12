@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 12 Mayo 2026 (sesión 9 — segundo análisis y fixes técnicos)
+> Última actualización: 12 Mayo 2026 (sesión 9 — cierre completo)
 
 ---
 
@@ -51,7 +51,7 @@ Las tarjetas compartibles solo muestran:
 - El CTA principal SIEMPRE es naranja — nunca navy, nunca gris
 - Pills de estado por color: amber=pendiente, verde=aceptado/completado, rojo=rechazado
 - **`border-radius` de botones CTA: 16px** — no usar 999px ni valores diferentes
-- **BottomNav** se oculta en pantallas de flujo (meeting point) usando `id="bottom-nav"` + `display: none` en useEffect
+- **BottomNav** se oculta en pantallas de flujo (meeting point) vía `hideNav` en `ClientLayout` — NO usar DOM hack `getElementById`
 - **Flujo post-aceptación completo:** Exchange → Meeting point → Completado → Rating
 - **Notificaciones** usan SVGs consistentes con routing por tipo: offer_received/accepted/completed → /mensajes/, offer_rejected → /intercambios, rating_received → /perfil/resenas
 - **Mensaje de meeting point** es propuesta con confirmación por chat, no confirmación unilateral
@@ -270,6 +270,10 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Dead code DOM hack eliminado de MeetingClient** — `useEffect` con `document.getElementById('bottom-nav')` eliminado; el elemento no tenía ese ID y el nav ya se oculta via `hideNav` en ClientLayout
 - **`hideNav` simplificado en ClientLayout** — condiciones redundantes (`/offer` y `/mensajes/`) ya cubiertas por `isItemPage`; eliminadas del bloque `hideNav`
 - **Validación username duplicado en `perfil/edit`** — `handleSave` ahora detecta error Postgres `23505` (unique constraint) y muestra mensaje amigable "Ese nombre de usuario ya está tomado. Elige otro." en lugar del error genérico
+- **Aspect ratio cards home** — `cardImg` cambiado de `1/1` a `3/2` en `page.tsx`; cards más anchas, mejor para fotos horizontales
+- **Sintaxis onClick toast corregida** — `perfil/page.tsx`: arrow functions en "Ayuda y soporte" y "Configuración" tenían `}}}` triple; corregido a `}}`
+- **3 cadenas demo agregadas en BD** — IDs 21 (Armajulion, item 93, bicicleta eléctrica, 2 pasos), 22 (Julio, item 100, guitarra eléctrica, 1 paso), 23 (Armajulion, item 94, audio premium, 3 pasos)
+- **Modal compartir chain** — botones `.downloadBtn` cambiados de `#1A2744` a `#F97316`; label "WHATSAPP / PNG" → "PNG PARA COMPARTIR"
 
 ## ⏳ Pendiente MVP — en orden de prioridad
 
