@@ -203,12 +203,43 @@ function StatusPill({ status }: { status: string }) {
 /* ---------- EMPTY STATE ---------- */
 
 function EmptyState({ tab, onChangeTab }: { tab: TabKey; onChangeTab: (i: number) => void }) {
-  const content: Record<TabKey, { emoji: string; title: string; subtitle: string }> = {
-    active:    { emoji: '🔄', title: 'Aún no tienes intercambios activos',       subtitle: 'Explora publicaciones y haz tu primera oferta.' },
-    completed: { emoji: '🏆', title: 'Aún no has completado ningún intercambio', subtitle: 'Cada intercambio completado construye tu reputación.' },
-    rejected:  { emoji: '😌', title: 'Todo limpio por aquí',                     subtitle: '¡No has tenido ofertas rechazadas. ¡Sigue así!' },
+  const content: Record<TabKey, { icon: React.ReactNode; title: string; subtitle: string }> = {
+    active: {
+      icon: (
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+          stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M7 7h10M17 7l-3-3M17 7l-3 3"/>
+          <path d="M17 17H7M7 17l3-3M7 17l3 3"/>
+        </svg>
+      ),
+      title: 'Aún no tienes intercambios activos',
+      subtitle: 'Explora publicaciones y haz tu primera oferta.',
+    },
+    completed: {
+      icon: (
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+          stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      ),
+      title: 'Aún no has completado ningún intercambio',
+      subtitle: 'Cada intercambio completado construye tu reputación.',
+    },
+    rejected: {
+      icon: (
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+          stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="8" y1="15" x2="16" y2="15"/>
+          <line x1="9" y1="9" x2="9.01" y2="9"/>
+          <line x1="15" y1="9" x2="15.01" y2="9"/>
+        </svg>
+      ),
+      title: 'Todo limpio por aquí',
+      subtitle: '¡No has tenido ofertas rechazadas. ¡Sigue así!',
+    },
   }
-  const { emoji, title, subtitle } = content[tab]
+  const { icon, title, subtitle } = content[tab]
   const btnStyle: any = {
     background: '#F97316', color: '#fff', borderRadius: 16,
     padding: '12px 24px', border: 'none', fontSize: 14,
@@ -216,7 +247,7 @@ function EmptyState({ tab, onChangeTab }: { tab: TabKey; onChangeTab: (i: number
   }
   return (
     <div style={{ textAlign: 'center', marginTop: 48, padding: '0 16px' }}>
-      <div style={{ fontSize: 64, lineHeight: 1, marginBottom: 16 }}>{emoji}</div>
+      <div style={{ marginBottom: 16 }}>{icon}</div>
       <p style={{ margin: '0 0 8px', fontSize: 17, fontWeight: 700, color: '#1A2744' }}>{title}</p>
       <p style={{ margin: '0 0 16px', fontSize: 14, color: '#6F7A82' }}>{subtitle}</p>
       {tab === 'active' && (

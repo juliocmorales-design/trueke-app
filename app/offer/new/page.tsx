@@ -151,7 +151,7 @@ function OfferNewForm() {
               {targetImage ? (
                 <img src={targetImage} style={s.contextImg} />
               ) : (
-                <div style={s.contextImgFallback}>📦</div>
+                <div style={{ ...s.contextImgFallback, background: '#F0EAE0' }} />
               )}
               <div style={s.contextText}>
                 <span style={s.contextLabel}>Quieres:</span>
@@ -183,7 +183,13 @@ function OfferNewForm() {
           <div style={s.loadingText}>Cargando tus items...</div>
         ) : myItems.length === 0 ? (
           <div style={s.emptyState}>
-            <div style={s.emptyIcon}>📭</div>
+            <div style={s.emptyIcon}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+                stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+                <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+              </svg>
+            </div>
             <p style={s.emptyText}>
               Primero publica algo para poder hacer un intercambio
             </p>
@@ -205,7 +211,7 @@ function OfferNewForm() {
                   {img ? (
                     <img src={img} style={s.cardImg} />
                   ) : (
-                    <div style={s.cardImgFallback}>📦</div>
+                    <div style={{ ...s.cardImgFallback, background: '#F0EAE0' }} />
                   )}
                   <div style={s.cardInfo}>
                     <span style={s.cardTitle}>{item.title}</span>

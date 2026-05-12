@@ -168,7 +168,7 @@ export default function OfferChatPage() {
                 style={s.menuItem}
                 onClick={() => { setShowMenu(false); setReported(true) }}
               >
-                🚩 Reportar usuario
+                Reportar
               </div>
             </div>
           )}
@@ -232,7 +232,7 @@ export default function OfferChatPage() {
         {/* AVISO REPORTE */}
         {reported && (
           <div style={s.reportedBanner}>
-            ✅ Reporte enviado. Revisaremos el caso pronto.
+            Reportado
           </div>
         )}
 
