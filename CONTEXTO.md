@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 12 Mayo 2026 (sesión 9 — barrida general)
+> Última actualización: 12 Mayo 2026 (sesión 9 — segundo análisis y fixes técnicos)
 
 ---
 
@@ -262,6 +262,14 @@ rating/[offerId] → calificación 1-5 + comentario
 - **StatusPill consistente** — `intercambios/page.tsx`: pill "Cancelado" → "Rechazado", igual que el tab
 - **Sección "Recomendados" condicional** — `page.tsx`: se oculta si hay ≤6 items (evita header huérfano)
 - **Username en lista de mensajes** — `mensajes/page.tsx`: select de profiles incluye `username`; fallback `name || username || 'Usuario'`
+
+### Segundo análisis y fixes técnicos (sesión 9 — cierre)
+
+- **Emoji 📍 eliminado de MeetingClient** — mensaje de propuesta de encuentro ya no contiene emoji; texto plano consistente con el resto de la app
+- **`onAuthStateChange(() => {})` eliminado de ClientLayout** — suscripción vacía que no hacía nada; eliminada para no ocupar recursos innecesariamente
+- **Dead code DOM hack eliminado de MeetingClient** — `useEffect` con `document.getElementById('bottom-nav')` eliminado; el elemento no tenía ese ID y el nav ya se oculta via `hideNav` en ClientLayout
+- **`hideNav` simplificado en ClientLayout** — condiciones redundantes (`/offer` y `/mensajes/`) ya cubiertas por `isItemPage`; eliminadas del bloque `hideNav`
+- **Validación username duplicado en `perfil/edit`** — `handleSave` ahora detecta error Postgres `23505` (unique constraint) y muestra mensaje amigable "Ese nombre de usuario ya está tomado. Elige otro." en lugar del error genérico
 
 ## ⏳ Pendiente MVP — en orden de prioridad
 
