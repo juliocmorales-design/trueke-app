@@ -130,8 +130,14 @@ export default function FeaturedChains({ chains }: { chains: Chain[] }) {
   return (
     <div style={{ marginTop: 24 }}>
 
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <strong style={{ fontSize: 17, color: '#1A2744' }}>Cadenas destacadas</strong>
+        <span
+          style={{ fontSize: 14, color: '#F97316', cursor: 'pointer', fontWeight: 500 }}
+          onClick={() => router.push('/cadenas')}
+        >
+          Ver todas ›
+        </span>
       </div>
 
       {chains.length === 0 ? (
