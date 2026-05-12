@@ -6,7 +6,7 @@ import supabase from './lib/supabase'
 import FeaturedChains from './components/feed/FeaturedChains'
 import NotifBadge from './components/feed/NotifBadge'
 
-type Item  = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string; created_at: string }
+type Item  = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string; created_at: string; profile?: { username: string; avatar_url: string | null } }
 type Chain = { id: number; initial_item_id: number; created_at: string; initial_item_title: string | null; initial_item_image: string | null; final_item_title: string | null; final_item_image: string | null; creator_username: string | null; creator_avatar: string | null; steps_count: number }
 
 export default function Home() {
@@ -50,7 +50,22 @@ export default function Home() {
         }
 
         const { data: itemsData } = await itemsQuery
-        setItems(itemsData || [])
+
+        const userIds = [...new Set((itemsData || []).map((i: any) => i.user_id))]
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, username, avatar_url')
+          .in('id', userIds)
+
+        const profileMap: Record<string, any> = {}
+        profilesData?.forEach((p: any) => { profileMap[p.id] = p })
+
+        const itemsWithProfiles = (itemsData || []).map((item: any) => ({
+          ...item,
+          profile: profileMap[item.user_id] ?? null,
+        }))
+
+        setItems(itemsWithProfiles)
       } catch { setItems([]) }
 
       // Chains — independent, failure shows empty chains section
@@ -283,6 +298,22 @@ function Card({ router, item, small = false }: any) {
       <div style={styles.cardBody}>
         <div style={styles.name}>{item.title}</div>
         <div style={styles.exchange}>por {item.wanted || 'algo'}</div>
+        <div style={styles.ownerRow}>
+          {item.profile?.avatar_url ? (
+            <img
+              src={item.profile.avatar_url}
+              style={styles.ownerAvatar}
+              alt=""
+            />
+          ) : (
+            <div style={styles.ownerAvatarFallback}>
+              {(item.profile?.username || 'U').charAt(0).toUpperCase()}
+            </div>
+          )}
+          <span style={styles.ownerName}>
+            @{item.profile?.username || 'usuario'}
+          </span>
+        </div>
         <div style={styles.timeAgo}>{timeAgo(item.created_at)}</div>
       </div>
     </div>
@@ -434,6 +465,38 @@ const styles: any = {
   },
 
   exchange: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+
+  ownerRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
+  },
+
+  ownerAvatar: {
+    width: 20,
+    height: 20,
+    borderRadius: '50%',
+    objectFit: 'cover',
+  },
+
+  ownerAvatarFallback: {
+    width: 20,
+    height: 20,
+    borderRadius: '50%',
+    background: '#F0EAE0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 10,
+    fontWeight: 700,
+    color: '#1A2744',
+  },
+
+  ownerName: {
+    fontSize: 11,
+    color: '#9CA3AF',
+  },
 
   timeAgo: { fontSize: 11, color: '#C4BAB1', marginTop: 2 },
 
