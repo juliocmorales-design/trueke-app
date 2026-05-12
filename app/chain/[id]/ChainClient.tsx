@@ -516,7 +516,7 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
 
               {/* WHATSAPP / PNG — tarjeta V1 */}
               <div className={s.cardVariant}>
-                <div className={s.cardVariantLabel}>WHATSAPP / PNG</div>
+                <div className={s.cardVariantLabel}>PNG PARA COMPARTIR</div>
                 <div className={s.cardPreviewWrap}>
                   <div style={{ width: 400 * 0.55, height: 600 * 0.55, overflow: 'hidden', borderRadius: 12, flexShrink: 0 }}>
                     <div style={{ width: 400, height: 600, transform: 'scale(0.55)', transformOrigin: 'top left' }}>
