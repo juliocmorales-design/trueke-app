@@ -184,12 +184,14 @@ function ShareCardV1({
   stepsCount,
   days,
   personalQuote,
+  logoSrc,
 }: {
   initialItem:    Item | undefined
   lastItem:       Item | undefined
   stepsCount:     number
   days:           number
   personalQuote?: string
+  logoSrc?:       string
 }) {
   const circleSize = 80
   const circleStyle: React.CSSProperties = {
@@ -208,12 +210,15 @@ function ShareCardV1({
     }}>
       {/* A) Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{
-          width: 28, height: 28, background: '#F97316', borderRadius: 7,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15 }}>T</span>
-        </div>
+        {logoSrc
+          ? <img src={logoSrc} alt="Trueke" style={{ width: 28, height: 28, borderRadius: 7, display: 'block' }} />
+          : <div style={{
+              width: 28, height: 28, background: '#F97316', borderRadius: 7,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{ color: '#fff', fontWeight: 900, fontSize: 15 }}>T</span>
+            </div>
+        }
         <span style={{ color: '#1A2744', fontWeight: 900, fontSize: 18 }}>
           Trueke<span style={{ color: '#F97316' }}>.app</span>
         </span>
@@ -301,7 +306,7 @@ function ShareCardV1({
 }
 
 /* ── Main component ─────────────────────────────────────────────────── */
-export default function ChainClient({ data }: { data: ChainData }) {
+export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSrc: string }) {
   const router = useRouter()
   const { chain, steps, itemMap } = data
 
@@ -309,8 +314,6 @@ export default function ChainClient({ data }: { data: ChainData }) {
   const [downloading, setDownloading]       = useState<string | null>(null)
   const [igTooltip,    setIgTooltip]        = useState(false)
   const [storyTooltip, setStoryTooltip]     = useState(false)
-  const [showV1Modal,  setShowV1Modal]       = useState(false)
-  const [downloadingV1, setDownloadingV1]   = useState(false)
 
   /* Refs point ONLY to the off-screen capture divs */
   const refWhatsapp  = useRef<HTMLDivElement>(null!)
@@ -327,7 +330,7 @@ export default function ChainClient({ data }: { data: ChainData }) {
   ))
 
   const cardProps   = { initialItem, lastItem, stepsCount: chain.steps_count, days }
-  const v1CardProps = { ...cardProps, personalQuote: chain.personal_quote }
+  const v1CardProps = { ...cardProps, personalQuote: chain.personal_quote, logoSrc }
 
   /* Bubbles */
   const bubbles: Array<{ item: Item | undefined; active: boolean; future: boolean }> = steps.map(
@@ -392,44 +395,6 @@ export default function ChainClient({ data }: { data: ChainData }) {
 
   const handleV1Download = async () => {
     await captureAndDownload(refV1, 'trueke-historia.png')
-  }
-
-  const handleV1Share = async () => {
-    if (downloadingV1) return
-    setDownloadingV1(true)
-    try {
-      const html2canvas = (await import('html2canvas')).default
-      const canvas = await html2canvas(refV1.current, {
-        useCORS: true, allowTaint: false, scale: 2, backgroundColor: '#FAF3ED',
-      })
-      const dataUrl = canvas.toDataURL('image/png')
-      if (navigator.share) {
-        const res  = await fetch(dataUrl)
-        const blob = await res.blob()
-        const file = new File([blob], 'trueke-historia.png', { type: 'image/png' })
-        try {
-          if (navigator.canShare?.({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: 'Mi historia en Trueke',
-              text: `Hice ${chain.steps_count} intercambio${chain.steps_count !== 1 ? 's' : ''} en Trueke.app`,
-            })
-          } else {
-            await navigator.share({ title: 'Mi historia en Trueke', url: 'https://trueke.app' })
-          }
-        } catch { /* usuario canceló */ }
-      } else {
-        const link = document.createElement('a')
-        link.download = 'trueke-historia.png'
-        link.href = dataUrl
-        link.click()
-      }
-    } catch (e) {
-      console.error('html2canvas error:', e)
-      alert('No se pudo generar la imagen')
-    } finally {
-      setDownloadingV1(false)
-    }
   }
 
   const handleFacebook = () => {
@@ -536,12 +501,7 @@ export default function ChainClient({ data }: { data: ChainData }) {
         </button>
         {chain.steps_count >= 2 && (
           <button className={s.shareBtn} onClick={() => setShowShareModal(true)}>
-            Compartir mi cadena
-          </button>
-        )}
-        {chain.status === 'completed' && (
-          <button className={s.shareBtn} onClick={() => setShowV1Modal(true)}>
-            Compartir mi historia
+            📤 Compartir
           </button>
         )}
       </div>
@@ -562,6 +522,23 @@ export default function ChainClient({ data }: { data: ChainData }) {
             </div>
 
             <div className={s.shareScroll}>
+
+              {/* WHATSAPP / PNG — tarjeta V1 */}
+              <div className={s.cardVariant}>
+                <div className={s.cardVariantLabel}>WHATSAPP / PNG</div>
+                <div className={s.cardPreviewWrap}>
+                  <div style={{ width: 400 * 0.55, height: 600 * 0.55, overflow: 'hidden', borderRadius: 12, flexShrink: 0 }}>
+                    <div style={{ width: 400, height: 600, transform: 'scale(0.55)', transformOrigin: 'top left' }}>
+                      <ShareCardV1 {...v1CardProps} />
+                    </div>
+                  </div>
+                </div>
+                <button className={s.downloadBtn}
+                  onClick={handleV1Download}
+                  disabled={!!downloading}>
+                  {downloading === 'trueke-historia.png' ? 'Generando…' : '⬇ Descargar PNG'}
+                </button>
+              </div>
 
               {/* WhatsApp */}
               <div className={s.cardVariant}>
@@ -617,71 +594,6 @@ export default function ChainClient({ data }: { data: ChainData }) {
               </div>
 
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL V1 — tarjeta compartible WhatsApp/Telegram */}
-      {showV1Modal && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1000, padding: 20,
-          }}
-          onClick={() => setShowV1Modal(false)}
-        >
-          <div
-            style={{
-              background: '#fff', borderRadius: 20, padding: 24,
-              width: '100%', maxWidth: 380, display: 'flex', flexDirection: 'column', gap: 16,
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 700, fontSize: 18, color: '#1A2744' }}>Comparte tu historia</span>
-              <button
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: '#6B7680' }}
-                onClick={() => setShowV1Modal(false)}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Preview */}
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div style={{ width: 400 * 0.6, height: 600 * 0.6, overflow: 'hidden', borderRadius: 12, flexShrink: 0 }}>
-                <div style={{ width: 400, height: 600, transform: 'scale(0.6)', transformOrigin: 'top left' }}>
-                  <ShareCardV1 {...v1CardProps} />
-                </div>
-              </div>
-            </div>
-
-            {/* Botones */}
-            <button
-              style={{
-                background: '#F97316', color: '#fff', border: 'none', borderRadius: 12,
-                padding: '14px 20px', fontWeight: 700, fontSize: 16, cursor: 'pointer', width: '100%',
-              }}
-              onClick={handleV1Download}
-              disabled={downloadingV1}
-            >
-              {downloadingV1 ? 'Generando…' : '⬇ Descargar PNG'}
-            </button>
-            <button
-              style={{
-                background: '#F0EAE0', color: '#1A2744', border: 'none', borderRadius: 12,
-                padding: '14px 20px', fontWeight: 700, fontSize: 16, cursor: 'pointer', width: '100%',
-              }}
-              onClick={handleV1Share}
-              disabled={downloadingV1}
-            >
-              ↗ Compartir
-            </button>
           </div>
         </div>
       )}

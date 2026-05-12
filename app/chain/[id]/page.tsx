@@ -1,3 +1,5 @@
+import fs from 'fs'
+import path from 'path'
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import ChainClient from './ChainClient'
@@ -48,5 +50,9 @@ export default async function ChainPage({ params }: { params: Promise<{ id: stri
 
   const data: ChainData = { chain, steps: stepsData, itemMap }
 
-  return <ChainClient data={data} />
+  const logoPath   = path.join(process.cwd(), 'public/images/logo.png')
+  const logoBase64 = fs.readFileSync(logoPath).toString('base64')
+  const logoSrc    = `data:image/png;base64,${logoBase64}`
+
+  return <ChainClient data={data} logoSrc={logoSrc} />
 }
