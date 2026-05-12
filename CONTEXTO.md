@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 11 Mayo 2026 (sesión 9 — completa)
+> Última actualización: 12 Mayo 2026 (sesión 9 — emojis y tarjetas)
 
 ---
 
@@ -175,7 +175,7 @@ trueke-app/app/
 | Calificación post-intercambio | Se activa tras marcar "Ya hicimos el intercambio" desde ExchangeClient |
 | Chat por oferta | Vinculado a offer_id, ícono "..." vertical SVG, reportar usuario |
 | Lista de mensajes | Empty state: SVG campana, 2 líneas, color #1A2744, fontWeight 500 |
-| Mis intercambios | Tabs Activos/Completados/**Rechazados**, fotos con borderRadius: 12, empty states con emojis ✅ |
+| Mis intercambios | Tabs Activos/Completados/**Rechazados**, fotos con borderRadius: 12, empty states con SVGs ✅ |
 | Notificaciones | Empty state: SVG campana trazo fino #C4BAB1, texto mejorado. Cards con SVGs por tipo |
 | Onboarding (6 pasos) | Step 0: fondo #FAF3ED ✅, 4 marcos SVG de Affinity con clipPath + stroke ✅ (pendiente verificar en dispositivo), paisaje de montaña decorativo abajo ✅. Flujo: nombre→email→contraseña→ciudad→intereses → signUp al final |
 | Login | Email+contraseña principal, magic link como link de texto discreto (no botón), reset de contraseña vía Supabase |
@@ -242,8 +242,12 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Home afinado** — avatar del dueño en cards (home y búsqueda), "Ver todo ›" en secciones, buscador fondo blanco con sombra, pin ubicación más prominente
 - **Botones back estandarizados** — `polyline points="15 18 9 12 15 6"` 18×18 en toda la app (item, rating, perfil/edit, publicaciones, reseñas, buscar)
 - **Tarjeta compartible V1 unificada** — botón "Compartir mi historia" eliminado; V1 integrada al inicio del modal "📤 Compartir"
-- **Logo base64 en tarjeta compartible** — `logo.png` leído en Server Component y pasado como prop para que html2canvas lo capture
+- **Logo base64 en tarjeta compartible** — `logo.png` leído en Server Component y pasado como prop; funciona en las 3 versiones (V1/V2/V3) para que html2canvas lo capture
 - **Botones circulares estandarizados** — exchange (chat SVG) y crear (back SVG) usan estilo circular `#F0EAE0` estándar
+- **Emojis → SVGs en toda la app** — reemplazados en: exchange, intercambios, offer/new, mensajes/[userId], mensajes/oferta/[offerId], crear, perfil/publicaciones, item/[id], chain. Las categorías en chips de búsqueda/crear **conservan emojis** (decisión intencional de UX)
+- **Home: badge "Nuevo"** — pill naranja en cards de la sección Recomendados para items recientes
+- **Home: ícono mensajes en header** — SVG de sobre/chat reemplaza texto; navega a /mensajes
+- **Botón "Compartir" unificado en chain/[id]** — un solo CTA que abre el modal con las 3 tarjetas compartibles
 
 ## ⏳ Pendiente MVP — en orden de prioridad
 
