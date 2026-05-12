@@ -294,6 +294,7 @@ function timeAgo(dateStr: string) {
 }
 
 function Section({ title, href, badge }: { title: string; href?: string; badge?: string }) {
+  const router = useRouter()
   return (
     <div style={styles.section}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -314,7 +315,7 @@ function Section({ title, href, badge }: { title: string; href?: string; badge?:
       {href && (
         <span
           style={{ fontSize: 14, color: '#F97316', cursor: 'pointer', fontWeight: 500 }}
-          onClick={() => window.location.href = href}
+          onClick={() => router.push(href)}
         >
           Ver todo ›
         </span>
