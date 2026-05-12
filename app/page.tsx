@@ -171,9 +171,9 @@ export default function Home() {
           style={styles.locationBtn}
           onClick={() => { setCityInput(userCity || ''); setShowCityModal(true) }}
         >
-          <svg viewBox="0 0 24 24" width={16} style={{ flexShrink: 0 }}>
+          <svg viewBox="0 0 24 24" width={20} height={20} style={{ flexShrink: 0 }}>
             <path d="M12 21s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z" fill="#F97316"/>
-            <circle cx="12" cy="11" r="2" fill="#fff"/>
+            <circle cx="12" cy="11" r="2.5" fill="#fff"/>
           </svg>
           <span style={styles.city}>{userCity || 'Mi ciudad'}</span>
           <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -390,7 +390,9 @@ const styles: any = {
   },
 
   city: {
-    fontWeight: 700, fontSize: 15, color: '#1A2744',
+    fontWeight: 700,
+    fontSize: 16,
+    color: '#1A2744',
   },
 
   headerIcons: {
