@@ -194,7 +194,7 @@ function StatusPill({ status }: { status: string }) {
     pending:   { label: 'Pendiente',  bg: '#FEF3C7', color: '#B45309' },
     accepted:  { label: 'Aceptado',   bg: '#DCFCE7', color: '#166534' },
     completed: { label: 'Completado', bg: '#DBEAFE', color: '#1E40AF' },
-    rejected:  { label: 'Cancelado',  bg: '#FEE2E2', color: '#991B1B' },
+    rejected:  { label: 'Rechazado',  bg: '#FEE2E2', color: '#991B1B' },
   }
   const pill = map[status]
   if (!pill) return null
