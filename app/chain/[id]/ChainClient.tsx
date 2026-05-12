@@ -209,17 +209,9 @@ function ShareCardV1({
       fontFamily: 'system-ui, -apple-system, sans-serif',
     }}>
       {/* A) Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        {logoSrc
-          ? <img src={logoSrc} alt="Trueke" style={{ width: 28, height: 28, borderRadius: 7, display: 'block' }} />
-          : <div style={{
-              width: 28, height: 28, background: '#F97316', borderRadius: 7,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span style={{ color: '#fff', fontWeight: 900, fontSize: 15 }}>T</span>
-            </div>
-        }
-        <span style={{ color: '#1A2744', fontWeight: 900, fontSize: 18 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+        <img src={logoSrc} style={{ width: 36, height: 36, objectFit: 'contain' }} alt="Trueke" />
+        <span style={{ fontSize: 20, fontWeight: 800, color: '#1A2744' }}>
           Trueke<span style={{ color: '#F97316' }}>.app</span>
         </span>
       </div>
@@ -501,7 +493,7 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
         </button>
         {chain.steps_count >= 2 && (
           <button className={s.shareBtn} onClick={() => setShowShareModal(true)}>
-            📤 Compartir
+            Compartir
           </button>
         )}
       </div>
@@ -536,7 +528,7 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
                 <button className={s.downloadBtn}
                   onClick={handleV1Download}
                   disabled={!!downloading}>
-                  {downloading === 'trueke-historia.png' ? 'Generando…' : '⬇ Descargar PNG'}
+                  {downloading === 'trueke-historia.png' ? 'Generando…' : 'Descargar PNG'}
                 </button>
               </div>
 
@@ -549,7 +541,7 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
                 <button className={s.downloadBtn}
                   onClick={handleWhatsApp}
                   disabled={!!downloading}>
-                  {downloading === 'trueke-whatsapp.png' ? 'Generando…' : '💬 Compartir en WhatsApp'}
+                  {downloading === 'trueke-whatsapp.png' ? 'Generando…' : 'Descargar para WhatsApp'}
                 </button>
               </div>
 
@@ -562,7 +554,7 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
                 <button className={s.downloadBtn}
                   onClick={handleInstagram}
                   disabled={!!downloading}>
-                  {downloading === 'trueke-instagram.png' ? 'Descargando…' : '📸 Descargar para Instagram'}
+                  {downloading === 'trueke-instagram.png' ? 'Descargando…' : 'Descargar para Instagram'}
                 </button>
                 {igTooltip && (
                   <p className={s.tooltip}>Imagen descargada — ábrela desde tu galería en Instagram</p>
@@ -578,7 +570,7 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
                 <button className={s.downloadBtn}
                   onClick={handleStory}
                   disabled={!!downloading}>
-                  {downloading === 'trueke-story.png' ? 'Descargando…' : '📱 Descargar para Stories'}
+                  {downloading === 'trueke-story.png' ? 'Descargando…' : 'Descargar para Stories'}
                 </button>
                 {storyTooltip && (
                   <p className={s.tooltip}>Imagen descargada — ábrela desde tu galería en Instagram</p>
@@ -589,7 +581,7 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
               <div className={s.cardVariant}>
                 <div className={s.cardVariantLabel}>Facebook</div>
                 <button className={s.downloadBtn} onClick={handleFacebook}>
-                  👥 Compartir en Facebook
+                  Compartir en Facebook
                 </button>
               </div>
 
