@@ -145,8 +145,8 @@ export default function ItemDetail() {
         {/* HEADER */}
         <div style={styles.header}>
           <button onClick={() => router.back()} style={styles.backBtn}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M15 18l-6-6 6-6" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
             </svg>
           </button>
 
@@ -313,7 +313,11 @@ const styles: any = {
   header: {
     display: 'flex',
     justifyContent: 'space-between',
-    padding: 20,
+    padding: '12px 16px',
+    position: 'sticky',
+    top: 0,
+    background: '#FDF8F3',
+    zIndex: 10,
   },
 
   headerRight: {

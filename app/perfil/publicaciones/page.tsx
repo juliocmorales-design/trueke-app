@@ -83,8 +83,8 @@ export default function MisPublicacionesPage() {
       {/* HEADER */}
       <div style={styles.header}>
         <button style={styles.backBtn} onClick={() => router.back()}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
           </svg>
         </button>
         <h1 style={styles.title}>Mis publicaciones</h1>

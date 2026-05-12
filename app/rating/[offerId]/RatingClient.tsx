@@ -158,11 +158,11 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
       {/* HEADER */}
       <div className={s.header}>
         <button className={s.backBtn} onClick={() => router.back()} aria-label="Volver">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" strokeWidth="2"
             strokeLinecap="round" strokeLinejoin="round"
           >
-            <path d="M15 18l-6-6 6-6" />
+            <polyline points="15 18 9 12 15 6"/>
           </svg>
         </button>
         <span className={s.headerTitle}>Califica el intercambio</span>
