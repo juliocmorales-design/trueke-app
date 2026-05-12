@@ -58,6 +58,7 @@ function CardContent({
   lastItem,
   stepsCount,
   days,
+  logoSrc,
 }: {
   W: number
   H: number
@@ -65,6 +66,7 @@ function CardContent({
   lastItem:    Item | undefined
   stepsCount:  number
   days:        number
+  logoSrc?:    string
 }) {
   const isStory  = H > W
   const thumbSz  = isStory ? 200 : 160
@@ -108,10 +110,7 @@ function CardContent({
 
       {/* Logo */}
       <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-        <div style={{ width:logoSz, height:logoSz, background:'#F97316',
-          borderRadius: logoSz*0.27, display:'flex', alignItems:'center', justifyContent:'center' }}>
-          <span style={{ color:'#fff', fontWeight:900, fontSize:logoFont }}>T</span>
-        </div>
+        <img src={logoSrc} style={{ width:logoSz, height:logoSz, objectFit:'contain' }} alt="Trueke" />
         <span style={{ color:'#1A2744', fontWeight:900, fontSize:nameSz, letterSpacing:-0.5 }}>
           Trueke.app
         </span>
@@ -321,7 +320,7 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
     (Date.now() - new Date(chain.created_at).getTime()) / 86_400_000,
   ))
 
-  const cardProps   = { initialItem, lastItem, stepsCount: chain.steps_count, days }
+  const cardProps   = { initialItem, lastItem, stepsCount: chain.steps_count, days, logoSrc }
   const v1CardProps = { ...cardProps, personalQuote: chain.personal_quote, logoSrc }
 
   /* Bubbles */
