@@ -136,7 +136,11 @@ export default function Onboarding() {
     setSaving(false)
 
     if (profileErr) {
-      setError(profileErr.message)
+      if (profileErr.code === '23505') {
+        setError('Ese nombre de usuario ya está tomado. Elige otro.')
+      } else {
+        setError('Ocurrió un error. Intenta de nuevo.')
+      }
       return
     }
 
