@@ -26,7 +26,7 @@ export default function OfferChatPage() {
   const [myItem, setMyItem]           = useState<Item | null>(null)
   const [theirItem, setTheirItem]     = useState<Item | null>(null)
   const [otherUser, setOtherUser]     = useState<Profile | null>(null)
-  const [trustScore, setTrustScore]   = useState(0)
+  const [trustScore, setTrustScore]   = useState<number | null>(null)
   const [messages, setMessages]       = useState<Message[]>([])
   const [text, setText]               = useState('')
   const [showMenu, setShowMenu]       = useState(false)
@@ -83,20 +83,25 @@ export default function OfferChatPage() {
       { data: theirItemData },
       { data: otherUserData },
       { data: msgs },
-      { count: itemsCount },
+      { data: ratingsData },
     ] = await Promise.all([
       supabase.from('items').select('*').eq('id', myItemId).single(),
       supabase.from('items').select('*').eq('id', theirItemId).single(),
       supabase.from('profiles').select('*').eq('id', otherUserId).single(),
       supabase.from('messages').select('*').eq('offer_id', offerId).order('created_at', { ascending: true }),
-      supabase.from('items').select('*', { count: 'exact', head: true }).eq('user_id', otherUserId),
+      supabase.from('ratings').select('score').eq('rated_id', otherUserId),
     ])
 
     setMyItem(myItemData)
     setTheirItem(theirItemData)
     setOtherUser(otherUserData)
     setMessages(msgs || [])
-    setTrustScore(Math.min(100, (itemsCount || 0) * 4 + 60))
+    if (ratingsData && ratingsData.length > 0) {
+      const avg = ratingsData.reduce((sum: number, r: any) => sum + r.score, 0) / ratingsData.length
+      setTrustScore(avg)
+    } else {
+      setTrustScore(null)
+    }
 
     await supabase.from('messages')
       .update({ is_read: true })
@@ -246,8 +251,16 @@ export default function OfferChatPage() {
             <span style={s.scoreLabel}>Score de confianza</span>
           </div>
           <div style={s.scoreBadge}>
-            <span style={s.scoreNum}>{trustScore}</span>
-            <span style={s.scoreTag}>Confiable</span>
+            {trustScore !== null ? (
+              <>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="#2E7D55" style={{ flexShrink: 0 }}>
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                <span style={s.scoreNum}>{trustScore.toFixed(1)}</span>
+              </>
+            ) : (
+              <span style={s.scoreNum}>Nuevo</span>
+            )}
           </div>
         </div>
 
