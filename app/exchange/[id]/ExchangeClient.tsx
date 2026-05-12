@@ -256,7 +256,13 @@ export default function ExchangeClient({
           <div className={s.itemsRow}>
             <ItemDisplay item={offeredItem}   profile={fromProfile} />
             <div className={s.swapWrap}>
-              <div className={s.swapCircle}>⇄</div>
+              <div className={s.swapCircle}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 7h10M17 7l-3-3M17 7l-3 3"/>
+                  <path d="M17 17H7M7 17l3-3M7 17l3 3"/>
+                </svg>
+              </div>
             </div>
             <ItemDisplay item={requestedItem} profile={toProfile} />
           </div>
@@ -401,7 +407,15 @@ export default function ExchangeClient({
               onClick={handleComplete}
               disabled={completing}
             >
-              {completing ? 'Guardando...' : '✓ Ya hicimos el intercambio'}
+              {completing ? 'Guardando...' : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  {' '}Ya hicimos el intercambio
+                </>
+              )}
             </button>
           )}
         </div>

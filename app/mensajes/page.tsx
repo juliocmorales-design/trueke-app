@@ -203,7 +203,14 @@ export default function MessagesPage() {
 
             {c.myItem && c.theirItem && (
               <div style={styles.offerContext}>
-                {c.myItem.title} ⇄ {c.theirItem.title}
+                {c.myItem.title}{' '}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ display: 'inline', verticalAlign: 'middle' }}>
+                  <path d="M7 7h10M17 7l-3-3M17 7l-3 3"/>
+                  <path d="M17 17H7M7 17l3-3M7 17l3 3"/>
+                </svg>
+                {' '}{c.theirItem.title}
               </div>
             )}
 
