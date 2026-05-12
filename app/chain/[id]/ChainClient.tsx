@@ -270,10 +270,10 @@ function ShareCardV1({
       {/* D) Stats pills */}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         <div style={{ background: '#F0EAE0', borderRadius: 999, padding: '8px 14px', fontSize: 13, color: '#1A2744', fontWeight: 600 }}>
-          📅 {days} día{days !== 1 ? 's' : ''} duración
+          {days} día{days !== 1 ? 's' : ''} duración
         </div>
         <div style={{ background: '#F0EAE0', borderRadius: 999, padding: '8px 14px', fontSize: 13, color: '#1A2744', fontWeight: 600 }}>
-          🎯 Objetivo alcanzado
+          Objetivo alcanzado
         </div>
       </div>
 
@@ -290,7 +290,7 @@ function ShareCardV1({
 
       {/* F) Footer naranja */}
       <div style={{ background: '#F97316', borderRadius: 12, padding: '14px 20px', textAlign: 'center' }}>
-        <span style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>🔗 Crea tu historia en Trueke.app</span>
+        <span style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>Crea tu historia en Trueke.app</span>
       </div>
     </div>
   )
