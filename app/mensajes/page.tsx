@@ -172,9 +172,21 @@ export default function MessagesPage() {
           ))}
         </>
       ) : conversations.length === 0 ? (
-        <p style={styles.empty}>
-          Aún no tienes conversaciones.<br/>Envía una oferta desde la ficha de un objeto.
-        </p>
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center', padding: '64px 32px', gap: 12, textAlign: 'center',
+        }}>
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none"
+            stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1A2744' }}>
+            No tienes mensajes aún
+          </p>
+          <p style={{ margin: 0, fontSize: 14, color: '#9CA3AF' }}>
+            Cuando hagas una oferta podrás chatear aquí
+          </p>
+        </div>
       ) : null}
 
       {conversations.map(c => (
