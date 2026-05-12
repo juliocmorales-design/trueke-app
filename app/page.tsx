@@ -490,7 +490,7 @@ const styles: any = {
 
   cardImg: {
     width: '100%',
-    aspectRatio: '1 / 1',
+    aspectRatio: '3 / 2',
     overflow: 'hidden',
     background: '#EDE7DF',
   },
