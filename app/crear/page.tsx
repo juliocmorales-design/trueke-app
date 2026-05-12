@@ -181,8 +181,9 @@ function CrearForm() {
       {/* HEADER */}
       <div style={styles.header}>
         <button onClick={() => router.back()} style={styles.backBtn}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12.5 16L7 10L12.5 4" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
           </svg>
         </button>
         <span style={styles.headerTitle}>Crear publicación</span>
@@ -345,10 +346,11 @@ const styles: any = {
     height: 40,
     borderRadius: '50%',
     background: '#F0EAE0',
+    border: 'none',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    textDecoration: 'none',
+    cursor: 'pointer',
   },
 
   headerTitle: {

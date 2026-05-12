@@ -93,7 +93,9 @@ function ErrorView({ msg, onRetry }: { msg: string; onRetry: () => void }) {
     <div className={s.page}>
       <div className={s.header}>
         <button className={s.iconBtn} onClick={() => router.back()}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
         </button>
         <span className={s.headerCenter}>Detalle del intercambio</span>
         <div style={{ width: 40 }} />
@@ -206,10 +208,17 @@ export default function ExchangeClient({
       {/* HEADER */}
       <div className={s.header}>
         <button className={s.iconBtn} onClick={() => router.back()}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
         </button>
         <span className={s.headerCenter}>Detalle del intercambio</span>
-        <button className={s.iconBtn} onClick={() => router.push(`/mensajes/${offerId}`)}>💬</button>
+        <button className={s.iconBtn} onClick={() => router.push(`/mensajes/${offerId}`)}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </button>
       </div>
 
       <div className={s.content}>
