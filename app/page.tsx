@@ -52,6 +52,11 @@ export default function Home() {
         const { data: itemsData } = await itemsQuery
 
         const userIds = [...new Set((itemsData || []).map((i: any) => i.user_id))]
+        if (userIds.length === 0) {
+          setItems(itemsData || [])
+          return
+        }
+
         const { data: profilesData } = await supabase
           .from('profiles')
           .select('id, username, avatar_url')
@@ -82,6 +87,12 @@ export default function Home() {
           const chainIds   = rawChains.map((c: any) => c.id)
           const itemIds    = rawChains.map((c: any) => c.initial_item_id).filter(Boolean)
           const creatorIds = rawChains.map((c: any) => c.creator_id).filter(Boolean)
+
+          if (itemIds.length === 0 || creatorIds.length === 0 || chainIds.length === 0) {
+            setChains([])
+            setReady(true)
+            return
+          }
 
           const [{ data: initItems }, { data: profileData }, { data: stepsData }] = await Promise.all([
             supabase.from('items').select('id, title, images').in('id', itemIds),

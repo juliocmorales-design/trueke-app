@@ -79,13 +79,21 @@ export default function MessagesPage() {
       ),
     ]
     const allItemIds = [
-      ...new Set(offersData.flatMap(o => [o.from_item_id, o.to_item_id])),
+      ...new Set(offersData.flatMap(o => [o.from_item_id, o.to_item_id]).filter(Boolean)),
     ]
+
+    if (offerIds.length === 0) {
+      setConversations([])
+      setLoading(false)
+      return
+    }
 
     const [{ data: msgs }, { data: profiles }, { data: items }] = await Promise.all([
       supabase.from('messages').select('*').in('offer_id', offerIds).order('created_at', { ascending: false }),
       supabase.from('profiles').select('id, name, avatar_url').in('id', otherUserIds),
-      supabase.from('items').select('id, title').in('id', allItemIds),
+      allItemIds.length > 0
+        ? supabase.from('items').select('id, title').in('id', allItemIds)
+        : { data: [] },
     ])
 
     const profilesMap: any = {}

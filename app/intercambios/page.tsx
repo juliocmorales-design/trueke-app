@@ -80,11 +80,16 @@ export default function IntercambiosPage() {
     const userIds = [
       ...new Set(offersData.flatMap((o: any) => [o.from_user_id, o.to_user_id])),
     ]
+    const profileMap: Record<string, any> = {}
+    if (userIds.length === 0) {
+      setOffers([])
+      setLoading(false)
+      return
+    }
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, name, username, avatar_url')
       .in('id', userIds)
-    const profileMap: Record<string, any> = {}
     profiles?.forEach((p: any) => { profileMap[p.id] = p })
 
     /* 5 — Combine from current user's perspective */
