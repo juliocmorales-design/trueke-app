@@ -14,6 +14,7 @@ type Chain = {
   status: string
   steps_count: number
   created_at: string
+  steps:       Array<{ step_number: number; item_id: number }>
   initialItem: ChainItem | null
   finalItem:   ChainItem | null
   middleItem:  ChainItem | null
@@ -84,6 +85,7 @@ export default function CadenasPage() {
 
       return {
         ...c,
+        steps,
         initialItem: itemMap[c.initial_item_id] ?? null,
         finalItem:   last ? (itemMap[last.item_id]   ?? null) : null,
         middleItem:  mid  ? (itemMap[mid.item_id]    ?? null) : null,
@@ -290,7 +292,7 @@ function ChainCard({ chain, onClick }: { chain: Chain; onClick: () => void }) {
       {/* Steps + creator */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 12, color: '#9CA3AF' }}>
-          {chain.steps_count} intercambio{chain.steps_count !== 1 ? 's' : ''}
+          {chain.steps?.length || chain.steps_count} intercambio{(chain.steps?.length || chain.steps_count) !== 1 ? 's' : ''}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <div style={{ width: 20, height: 20, borderRadius: '50%', overflow: 'hidden', background: '#EDE7DF', flexShrink: 0 }}>
