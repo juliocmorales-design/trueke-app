@@ -263,12 +263,16 @@ export default function Home() {
           </div>
 
           {/* RECOMENDADOS — scroll horizontal compacto */}
-          <Section title="Recomendados" href="/buscar" badge="Nuevo" />
-          <div style={styles.scrollRow}>
-            {items.slice(6, 12).map(item => (
-              <Card key={item.id} router={router} item={item} small />
-            ))}
-          </div>
+          {items.length > 6 && (
+            <>
+              <Section title="Recomendados" href="/buscar" badge="Nuevo" />
+              <div style={styles.scrollRow}>
+                {items.slice(6, 12).map(item => (
+                  <Card key={item.id} router={router} item={item} small />
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
 
