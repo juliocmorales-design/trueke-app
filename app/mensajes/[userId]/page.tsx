@@ -121,6 +121,28 @@ export default function OfferChatPage() {
     setText('')
   }
 
+  const handleReport = async () => {
+    setShowMenu(false)
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const myId = sessionData.session?.user?.id
+      if (!myId) return
+
+      const { error } = await supabase
+        .from('reports')
+        .insert({
+          reporter_id: myId,
+          reported_id: otherUser?.id,
+          offer_id: offerId ? Number(offerId) : null,
+          reason: 'reported_from_chat',
+        })
+
+      if (!error) setReported(true)
+    } catch (err) {
+      console.error('Error al reportar:', err)
+    }
+  }
+
   const isMine = (m: any) => currentUser && m.sender_id === currentUser.id
 
   const progress = offer ? (STEPS[offer.status] ?? STEPS.pending) : STEPS.pending
@@ -166,7 +188,7 @@ export default function OfferChatPage() {
             <div style={s.menu}>
               <div
                 style={s.menuItem}
-                onClick={() => { setShowMenu(false); setReported(true) }}
+                onClick={handleReport}
               >
                 Reportar
               </div>
