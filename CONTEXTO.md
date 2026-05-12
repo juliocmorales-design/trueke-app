@@ -237,6 +237,14 @@ rating/[offerId] → calificación 1-5 + comentario
 - **layout.tsx → Server Component** — exporta `metadata` de Next.js; lógica client separada en `ClientLayout.tsx`
 - **20 items demo** en BD (IDs 78–101) con categorías, imágenes y datos realistas
 
+### Cambios adicionales sesión 9
+
+- **Home afinado** — avatar del dueño en cards (home y búsqueda), "Ver todo ›" en secciones, buscador fondo blanco con sombra, pin ubicación más prominente
+- **Botones back estandarizados** — `polyline points="15 18 9 12 15 6"` 18×18 en toda la app (item, rating, perfil/edit, publicaciones, reseñas, buscar)
+- **Tarjeta compartible V1 unificada** — botón "Compartir mi historia" eliminado; V1 integrada al inicio del modal "📤 Compartir"
+- **Logo base64 en tarjeta compartible** — `logo.png` leído en Server Component y pasado como prop para que html2canvas lo capture
+- **Botones circulares estandarizados** — exchange (chat SVG) y crear (back SVG) usan estilo circular `#F0EAE0` estándar
+
 ## ⏳ Pendiente MVP — en orden de prioridad
 
 1. **Onboarding Step 0** — rediseño en proceso con ChatGPT (CSS simple, sin SVG). 4 cards con fotos Unsplash placeholder, eslabones entre cards. Pendiente verificar en dispositivo.
