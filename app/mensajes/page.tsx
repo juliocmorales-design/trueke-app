@@ -90,7 +90,7 @@ export default function MessagesPage() {
 
     const [{ data: msgs }, { data: profiles }, { data: items }] = await Promise.all([
       supabase.from('messages').select('*').in('offer_id', offerIds).order('created_at', { ascending: false }),
-      supabase.from('profiles').select('id, name, avatar_url').in('id', otherUserIds),
+      supabase.from('profiles').select('id, name, username, avatar_url').in('id', otherUserIds),
       allItemIds.length > 0
         ? supabase.from('items').select('id, title').in('id', allItemIds)
         : { data: [] },
@@ -119,7 +119,7 @@ export default function MessagesPage() {
 
       return {
         offerId: o.id,
-        otherUser: profilesMap[otherUserId] || { name: 'Usuario' },
+        otherUser: profilesMap[otherUserId] || { name: null, username: 'Usuario' },
         myItem: itemsMap[myItemId],
         theirItem: itemsMap[theirItemId],
         lastMessage: lastMsg?.text || 'Oferta enviada',
@@ -188,14 +188,14 @@ export default function MessagesPage() {
               <img src={c.otherUser.avatar_url} style={styles.avatar} />
             ) : (
               <div style={styles.avatarPlaceholder}>
-                {(c.otherUser?.name || 'U').charAt(0).toUpperCase()}
+                {(c.otherUser?.name || c.otherUser?.username || 'U').charAt(0).toUpperCase()}
               </div>
             )}
           </div>
 
           <div style={styles.textContainer}>
             <div style={styles.topRow}>
-              <strong style={styles.name}>{c.otherUser?.name || 'Usuario'}</strong>
+              <strong style={styles.name}>{c.otherUser?.name || c.otherUser?.username || 'Usuario'}</strong>
               <span style={styles.time}>
                 {mounted ? formatTime(c.created_at) : ''}
               </span>
