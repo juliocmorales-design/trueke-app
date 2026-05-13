@@ -29,6 +29,12 @@ export default function EditarItem() {
   const [city,        setCity]        = useState('')
   const [description, setDescription] = useState('')
 
+  // URLs de fotos existentes que el usuario no ha eliminado
+  const [existingImages, setExistingImages] = useState<string[]>([])
+  // Fotos nuevas seleccionadas por el usuario
+  const [newFiles,    setNewFiles]    = useState<File[]>([])
+  const [newPreviews, setNewPreviews] = useState<string[]>([])
+
   useEffect(() => { loadItem() }, [])
 
   const loadItem = async () => {
@@ -44,7 +50,6 @@ export default function EditarItem() {
         .single()
 
       if (!item) { router.replace('/'); return }
-
       if (item.user_id !== user.id) { router.replace(`/item/${id}`); return }
 
       setTitle(item.title ?? '')
@@ -52,6 +57,7 @@ export default function EditarItem() {
       setCategory(item.category ?? '')
       setCity(item.city ?? '')
       setDescription(item.description ?? '')
+      setExistingImages(item.images ?? [])
     } catch {
       router.replace('/')
     } finally {
@@ -59,15 +65,63 @@ export default function EditarItem() {
     }
   }
 
+  const totalCount = existingImages.length + newFiles.length
+
+  const handleImages = (e: any) => {
+    const selected = Array.from(e.target.files || []) as File[]
+    const slots = 5 - existingImages.length
+    const combined = [...newFiles, ...selected].slice(0, slots)
+    setNewFiles(combined)
+    setNewPreviews(combined.map(f => URL.createObjectURL(f as Blob)))
+  }
+
+  const removeExisting = (index: number) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const removeNew = (index: number) => {
+    const f = [...newFiles]
+    const p = [...newPreviews]
+    f.splice(index, 1)
+    p.splice(index, 1)
+    setNewFiles(f)
+    setNewPreviews(p)
+  }
+
   const handleSave = async () => {
     if (!title.trim() || !city.trim() || !category) return
+    if (existingImages.length + newFiles.length === 0) {
+      setErrorMsg('Agrega al menos una imagen')
+      return
+    }
+
     setSaving(true)
     setErrorMsg(null)
 
     try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const user = sessionData.session?.user
+      if (!user) return
+
+      const uploadedUrls: string[] = []
+      for (const file of newFiles) {
+        const fileName = `items/${user.id}/${Date.now()}-${file.name}`
+        const { error } = await supabase.storage.from('images').upload(fileName, file)
+        if (error) {
+          console.error(error)
+          setErrorMsg('Error subiendo imagen')
+          setSaving(false)
+          return
+        }
+        const { data } = supabase.storage.from('images').getPublicUrl(fileName)
+        uploadedUrls.push(data.publicUrl)
+      }
+
+      const finalImages = [...existingImages, ...uploadedUrls]
+
       const { error } = await supabase
         .from('items')
-        .update({ title, wanted, category, city, description })
+        .update({ title, wanted, category, city, description, images: finalImages })
         .eq('id', id)
 
       if (error) {
@@ -109,15 +163,41 @@ export default function EditarItem() {
         <div style={{ width: 40 }} />
       </div>
 
-      {/* FOTOS — no editables en MVP */}
-      <div style={styles.photosNote}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-          stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        <span>Para cambiar las fotos, contacta a soporte.</span>
+      {/* FOTOS */}
+      <div style={styles.section}>
+        <div style={styles.label}>Fotos</div>
+        <div style={styles.subLabel}>{totalCount}/5 fotos</div>
+
+        <div style={styles.photosRow}>
+
+          {totalCount < 5 && (
+            <label style={styles.addPhoto}>
+              <span style={{ fontSize: 28, color: '#F97316', lineHeight: 1 }}>+</span>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleImages}
+              />
+            </label>
+          )}
+
+          {existingImages.map((url, i) => (
+            <div key={`ex-${i}`} style={styles.photoWrapper}>
+              <img src={url} style={styles.photo} alt="" />
+              <div style={styles.removeBtn} onClick={() => removeExisting(i)}>×</div>
+            </div>
+          ))}
+
+          {newPreviews.map((p, i) => (
+            <div key={`new-${i}`} style={styles.photoWrapper}>
+              <img src={p} style={styles.photo} alt="" />
+              <div style={styles.removeBtn} onClick={() => removeNew(i)}>×</div>
+            </div>
+          ))}
+
+        </div>
       </div>
 
       {/* TÍTULO */}
@@ -249,17 +329,7 @@ const styles: any = {
     color: '#1A2744',
   },
 
-  photosNote: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    background: '#FFF5F0',
-    border: '1.5px solid #F97316',
-    borderRadius: 12,
-    padding: '10px 14px',
-    fontSize: 13,
-    color: '#C2410C',
-    fontWeight: 500,
+  section: {
     marginBottom: 20,
   },
 
@@ -272,6 +342,58 @@ const styles: any = {
     fontWeight: 600,
     color: '#1A2744',
     marginBottom: 6,
+  },
+
+  subLabel: {
+    fontSize: 13,
+    color: '#6F7A82',
+    marginBottom: 10,
+  },
+
+  photosRow: {
+    display: 'flex',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+
+  addPhoto: {
+    width: 80,
+    height: 80,
+    borderRadius: 16,
+    border: '2px dashed #F97316',
+    background: '#FDF8F3',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+  },
+
+  photoWrapper: {
+    position: 'relative',
+  },
+
+  photo: {
+    width: 80,
+    height: 80,
+    borderRadius: 16,
+    objectFit: 'cover',
+  },
+
+  removeBtn: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    width: 28,
+    height: 28,
+    borderRadius: '50%',
+    background: '#1A2744',
+    color: '#fff',
+    fontSize: 18,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    lineHeight: 1,
   },
 
   input: {
