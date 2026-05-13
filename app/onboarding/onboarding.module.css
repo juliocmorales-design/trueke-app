@@ -36,7 +36,7 @@
 .progressionWrapper {
   width: 100%;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
   gap: 4px;
   margin-bottom: 24px;
@@ -48,11 +48,11 @@
   background: #FFFFFF;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(26,39,68,0.08);
-  padding: 10px 6px 12px;
+  padding: 8px 4px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  aspect-ratio: 0.72;
+  aspect-ratio: 0.62;
   box-sizing: border-box;
 }
 
@@ -85,7 +85,7 @@
 
 .chainLink {
   flex-shrink: 0;
-  margin-bottom: 40px;
+  margin-top: 10px;
   color: #F97316;
 }
 
@@ -141,6 +141,6 @@
 @media (max-width: 390px) {
   .headline { font-size: 20px; }
   .progressionWrapper { gap: 3px; }
-  .progressCard { padding: 8px 4px 10px; }
+  .progressCard { padding: 6px 3px 8px; }
   .cardLabel { font-size: 9px; }
 }
