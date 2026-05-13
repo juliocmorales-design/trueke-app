@@ -138,6 +138,30 @@ export default function EditarItem() {
     }
   }
 
+  const handleDeactivate = async () => {
+    const confirmed = window.confirm(
+      '¿Seguro que quieres desactivar esta publicación? Ya no aparecerá en el feed ni en búsquedas.'
+    )
+    if (!confirmed) return
+
+    const { data: sessionData } = await supabase.auth.getSession()
+    const user = sessionData.session?.user
+    if (!user) return
+
+    const { error } = await supabase
+      .from('items')
+      .update({ active: false })
+      .eq('id', id)
+      .eq('user_id', user.id)
+
+    if (error) {
+      setErrorMsg('Error al desactivar: ' + error.message)
+      return
+    }
+
+    router.push('/perfil/publicaciones')
+  }
+
   const canSave = title.trim().length > 0 && city.trim().length > 0 && category !== '' && !saving
 
   if (loading) {
@@ -291,6 +315,25 @@ export default function EditarItem() {
         }}
       >
         {saving ? 'Guardando...' : 'Guardar cambios'}
+      </button>
+
+      <button
+        onClick={handleDeactivate}
+        style={{
+          background: 'none',
+          border: '1.5px solid #DC2626',
+          borderRadius: 16,
+          padding: '14px',
+          width: '100%',
+          color: '#DC2626',
+          fontSize: 15,
+          fontWeight: 600,
+          cursor: 'pointer',
+          fontFamily: 'inherit',
+          marginTop: 8,
+        }}
+      >
+        Desactivar publicación
       </button>
     </div>
   )
