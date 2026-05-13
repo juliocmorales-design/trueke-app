@@ -36,15 +36,19 @@
 .progressionWrapper {
   width: 100%;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 4px;
+  align-items: stretch;
+  gap: 6px;
   margin-bottom: 24px;
 }
 
-.progressCard {
+.cardSlot {
   flex: 1;
   min-width: 0;
+  position: relative;
+}
+
+.progressCard {
+  width: 100%;
   background: #FFFFFF;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(26,39,68,0.08);
@@ -54,6 +58,21 @@
   align-items: center;
   aspect-ratio: 0.62;
   box-sizing: border-box;
+}
+
+.chainOverlay {
+  position: absolute;
+  right: -14px;
+  top: 14px;
+  z-index: 3;
+  width: 22px;
+  height: 22px;
+  background: #FAF3ED;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 2px #FAF3ED;
 }
 
 .cardImage {
@@ -84,8 +103,6 @@
 }
 
 .chainLink {
-  flex-shrink: 0;
-  margin-top: 10px;
   color: #F97316;
 }
 
