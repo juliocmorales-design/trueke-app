@@ -1,26 +1,32 @@
 .onboarding {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 32px 20px 40px;
+  background: #FAF3ED;
   min-height: 100svh;
-  background: #FDF8F3;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px 24px 40px;
+  font-family: system-ui, -apple-system, sans-serif;
   box-sizing: border-box;
-  gap: 28px;
 }
 
 .logo {
   width: 160px;
-  display: block;
+  height: auto;
+  margin-bottom: 24px;
+  object-fit: contain;
 }
 
 .headline {
-  font-size: clamp(22px, 6vw, 28px);
+  font-size: 22px;
+  line-height: 1.3;
   font-weight: 700;
-  color: #1A2744;
   text-align: center;
-  margin: 0;
-  line-height: 1.35;
+  color: #1A2744;
+  margin: 0 0 24px;
+  letter-spacing: -0.02em;
 }
 
 .headline span {
@@ -28,93 +34,113 @@
 }
 
 .progressionWrapper {
-  display: flex;
-  align-items: center;
-  gap: 4px;
   width: 100%;
-  padding: 8px 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 24px;
 }
 
 .progressCard {
   flex: 1;
   min-width: 0;
-  aspect-ratio: 0.72;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(26,39,68,0.08);
+  padding: 10px 6px 12px;
   display: flex;
   flex-direction: column;
-  background: #fff;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid #F0EBE3;
+  align-items: center;
+  aspect-ratio: 0.72;
+  box-sizing: border-box;
 }
 
 .cardImage {
   width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  display: block;
-  background: #F5F0EB;
+  flex: 1;
+  object-fit: contain;
+  margin-bottom: 8px;
 }
 
 .cardFooter {
-  padding: 10px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-}
-
-.cardIcon {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  background: #FFF3EA;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .cardLabel {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 700;
+  text-align: center;
   color: #1A2744;
-  line-height: 1.2;
+}
+
+.cardLabel span {
+  font-weight: 400;
+  color: #F97316;
+  font-style: italic;
 }
 
 .chainLink {
   flex-shrink: 0;
-  width: 18px;
-  margin-top: -34px;
+  margin-bottom: 40px;
+  color: #F97316;
+}
+
+.subheadline {
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  color: #1A2744;
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.subheadline span {
+  color: #F97316;
+  font-weight: 700;
 }
 
 .ctaButton {
   width: 100%;
   max-width: 400px;
-  background: #F97316;
-  color: #fff;
+  padding: 16px;
   border: none;
   border-radius: 16px;
-  font-weight: 600;
+  background: #F97316;
+  color: #FFFFFF;
   font-size: 16px;
-  padding: 16px;
+  font-weight: 600;
   cursor: pointer;
+  margin-bottom: 20px;
   font-family: inherit;
+  box-shadow: 0 8px 20px rgba(249,115,22,0.22);
 }
 
 .loginRow {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 15px;
   color: #6B7280;
 }
 
 .loginRow button {
   color: #F97316;
-  font-weight: 600;
-  font-size: 15px;
+  font-weight: 700;
   border: none;
   background: none;
   cursor: pointer;
   font-family: inherit;
+  font-size: 15px;
   padding: 0;
+}
+
+@media (max-width: 390px) {
+  .headline { font-size: 20px; }
+  .progressionWrapper { gap: 3px; }
+  .progressCard { padding: 8px 4px 10px; }
+  .cardLabel { font-size: 9px; }
 }

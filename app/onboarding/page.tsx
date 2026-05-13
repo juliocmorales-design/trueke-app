@@ -153,7 +153,7 @@ export default function Onboarding() {
   }
 
   const ChainLink = () => (
-    <svg className={css.chainLink} width="18" height="18" viewBox="0 0 24 24" fill="none">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
     </svg>
@@ -172,72 +172,51 @@ export default function Onboarding() {
         <div className={css.progressionWrapper}>
 
           <div className={css.progressCard}>
-            <img className={css.cardImage} src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&q=80" alt="Sube algo" />
+            <img className={css.cardImage} src="/images/onboarding/01_libros.png" alt="Libros" />
             <div className={css.cardFooter}>
-              <div className={css.cardIcon}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="19" x2="12" y2="5" />
-                  <polyline points="5 12 12 5 19 12" />
-                </svg>
-              </div>
-              <div className={css.cardLabel}>Sube algo</div>
+              <div className={css.cardLabel}>Tengo<br/><span>unos libros</span></div>
             </div>
           </div>
 
-          <ChainLink />
+          <div className={css.chainLink}><ChainLink /></div>
 
           <div className={css.progressCard}>
-            <img className={css.cardImage} src="https://images.unsplash.com/photo-1504148455328-c376907d081c?w=300&q=80" alt="Intercambia" />
+            <img className={css.cardImage} src="/images/onboarding/02_sierra.png" alt="Sierra" />
             <div className={css.cardFooter}>
-              <div className={css.cardIcon}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="1 4 1 10 7 10" />
-                  <polyline points="23 20 23 14 17 14" />
-                  <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
-                </svg>
-              </div>
-              <div className={css.cardLabel}>Intercambia</div>
+              <div className={css.cardLabel}>Me dan<br/><span>una sierra</span></div>
             </div>
           </div>
 
-          <ChainLink />
+          <div className={css.chainLink}><ChainLink /></div>
 
           <div className={css.progressCard}>
-            <img className={css.cardImage} src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&q=80" alt="Un paso más cerca" />
+            <img className={css.cardImage} src="/images/onboarding/03_mochila.png" alt="Mochila" />
             <div className={css.cardFooter}>
-              <div className={css.cardIcon}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="7" y1="17" x2="17" y2="7" />
-                  <polyline points="7 7 17 7 17 17" />
-                </svg>
-              </div>
-              <div className={css.cardLabel}>Un paso más cerca</div>
+              <div className={css.cardLabel}>La cambio<br/><span>por mochila</span></div>
             </div>
           </div>
 
-          <ChainLink />
+          <div className={css.chainLink}><ChainLink /></div>
 
           <div className={css.progressCard}>
-            <img className={css.cardImage} src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80" alt="A eso que quieres" />
+            <img className={css.cardImage} src="/images/onboarding/04_bici.png" alt="Bicicleta" />
             <div className={css.cardFooter}>
-              <div className={css.cardIcon}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="9 12 11 14 15 10" />
-                </svg>
-              </div>
-              <div className={css.cardLabel}>A eso que quieres</div>
+              <div className={css.cardLabel}>Llego a<br/><span>una bici</span></div>
             </div>
           </div>
 
         </div>
 
+        <p className={css.subheadline}>
+          Sin dinero. Solo <span>intercambios.</span>
+        </p>
+
         <button className={css.ctaButton} onClick={() => setStep(1)}>
-          Comenzar
+          Comenzar →
         </button>
 
         <div className={css.loginRow}>
-          ¿Ya tienes cuenta?{' '}
+          <span>¿Ya tienes cuenta?</span>
           <button onClick={() => router.push('/login')}>Iniciar sesión</button>
         </div>
 
