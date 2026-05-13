@@ -163,9 +163,25 @@ export default function ItemDetail() {
               </svg>
             </button>
 
-            {/* Three-dots menu — only visible to the owner */}
+            {/* Owner actions */}
             {isOwner && (
-              <div style={{ position: 'relative' }}>
+              <>
+                <button
+                  onClick={() => router.push(`/item/${id}/editar`)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 4,
+                    color: '#F97316',
+                    fontSize: 15,
+                    fontWeight: 600,
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  Editar
+                </button>
+                <div style={{ position: 'relative' }}>
                 <button style={styles.backBtn} onClick={() => setShowMenu(v => !v)} aria-label="Opciones">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="5"  r="1" fill="#1A2744"/>
@@ -199,6 +215,7 @@ export default function ItemDetail() {
                   </>
                 )}
               </div>
+              </>
             )}
           </div>
         </div>
