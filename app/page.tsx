@@ -146,7 +146,7 @@ export default function Home() {
       setReady(true)
     } catch (err) {
       console.error(err)
-      router.replace('/login')
+      router.replace('/onboarding')
     }
   }
 
