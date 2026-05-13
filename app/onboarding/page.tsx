@@ -25,6 +25,7 @@ export default function Onboarding() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [emailSent, setEmailSent] = useState(false)
 
   // existingUserId: set when user already has a session (incomplete profile)
   const [existingUserId, setExistingUserId] = useState<string | null>(null)
@@ -144,8 +145,7 @@ export default function Onboarding() {
       return
     }
 
-    localStorage.setItem('onboarding_seen', 'true')
-    router.push('/')
+    setEmailSent(true)
   }
 
   if (loading) {
@@ -158,6 +158,77 @@ export default function Onboarding() {
       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
     </svg>
   )
+
+  if (emailSent) {
+    return (
+      <div style={{
+        minHeight: '100svh',
+        background: '#FAF3ED',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '32px 24px',
+        textAlign: 'center',
+        gap: 16,
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+      }}>
+        <img src="/images/logo.png" style={{ width: 140, marginBottom: 8 }} />
+
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+          stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+
+        <h2 style={{ fontSize: 24, fontWeight: 700, color: '#1A2744', margin: 0 }}>
+          ¡Casi listo!
+        </h2>
+
+        <p style={{ fontSize: 16, color: '#1A2744', margin: 0, lineHeight: 1.5 }}>
+          Te enviamos un correo a<br/>
+          <strong>{email}</strong>
+        </p>
+
+        <p style={{ fontSize: 14, color: '#6B7280', margin: 0, lineHeight: 1.6 }}>
+          Confirma tu cuenta haciendo clic en el enlace del correo.
+        </p>
+
+        <div style={{
+          background: '#FFF5F0',
+          border: '1.5px solid #F97316',
+          borderRadius: 12,
+          padding: '12px 16px',
+          width: '100%',
+          maxWidth: 360,
+        }}>
+          <p style={{ fontSize: 13, color: '#F97316', margin: 0, fontWeight: 600 }}>
+            ⚠️ Revisa también tu carpeta de Spam o Promociones si no ves el correo en tu bandeja principal.
+          </p>
+        </div>
+
+        <button
+          onClick={() => router.push('/login')}
+          style={{
+            background: '#F97316',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 16,
+            padding: '16px',
+            width: '100%',
+            maxWidth: 360,
+            fontSize: 16,
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            marginTop: 8,
+          }}
+        >
+          Ir a iniciar sesión
+        </button>
+      </div>
+    )
+  }
 
   if (step === 0) {
     return (
