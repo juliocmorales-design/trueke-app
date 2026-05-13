@@ -161,6 +161,6 @@
   .headline { font-size: 20px; }
   .progressionWrapper { gap: 3px; }
   .progressCard { padding: 6px 3px 8px; }
-  .cardLabel { font-size: 13px; }
-  .cardLabel span { font-size: 12px; }
+  .cardLabel { font-size: 14px; }
+  .cardLabel span { font-size: 13px; }
 }
