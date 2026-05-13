@@ -246,7 +246,7 @@ export default function Onboarding() {
             <div className={css.progressCard}>
               <img className={css.cardImage} src="/images/onboarding/01_libros.png" alt="Libros" />
               <div className={css.cardFooter}>
-                <div className={css.cardLabel}>Tengo<br/><span>libros</span></div>
+                <div className={css.cardLabel}>Tengo<br/><span>Unos libros</span></div>
               </div>
             </div>
             <div className={css.chainOverlay}><ChainLink /></div>
@@ -256,7 +256,7 @@ export default function Onboarding() {
             <div className={css.progressCard}>
               <img className={css.cardImage} src="/images/onboarding/02_sierra.png" alt="Sierra" />
               <div className={css.cardFooter}>
-                <div className={css.cardLabel}>Me dan<br/><span>sierra</span></div>
+                <div className={css.cardLabel}>Me dan<br/><span>Una Sierra</span></div>
               </div>
             </div>
             <div className={css.chainOverlay}><ChainLink /></div>
@@ -266,7 +266,7 @@ export default function Onboarding() {
             <div className={css.progressCard}>
               <img className={css.cardImage} src="/images/onboarding/03_mochila.png" alt="Mochila" />
               <div className={css.cardFooter}>
-                <div className={css.cardLabel}>Cambio<br/><span>mochila</span></div>
+                <div className={css.cardLabel}>Cambio x<br/><span>Mochila</span></div>
               </div>
             </div>
             <div className={css.chainOverlay}><ChainLink /></div>
@@ -276,7 +276,7 @@ export default function Onboarding() {
             <div className={css.progressCard}>
               <img className={css.cardImage} src="/images/onboarding/04_bici.png" alt="Bicicleta" />
               <div className={css.cardFooter}>
-                <div className={css.cardLabel}>Obtengo<br/><span>bici</span></div>
+                <div className={css.cardLabel}>Obtengo<br/><span>Una bici</span></div>
               </div>
             </div>
           </div>
