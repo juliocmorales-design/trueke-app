@@ -26,7 +26,7 @@ export default function Home() {
       const { data: sessionData } = await supabase.auth.getSession()
       const user = sessionData.session?.user
 
-      if (!user) { router.replace('/login'); return }
+      if (!user) { router.replace('/onboarding'); return }
 
       const { data: profile } = await supabase
         .from('profiles').select('username, city').eq('id', user.id).single()
