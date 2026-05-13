@@ -246,17 +246,30 @@ function Thumb({ src, alt }: { src?: string | null; alt: string }) {
 }
 
 /* ── Arrow ─────────────────────────────────────────────────────────── */
-function Arrow() {
+function Arrow({ hidden = 0 }: { hidden?: number }) {
   return (
-    <svg width="18" height="14" viewBox="0 0 18 14" fill="none" style={{ flexShrink: 0 }}>
-      <line x1="0" y1="7" x2="14" y2="7" stroke="#F97316" strokeWidth="2" strokeLinecap="round"/>
-      <polyline points="9,2 14,7 9,12" stroke="#F97316" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, gap: 2 }}>
+      {hidden > 0 && (
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: '#F97316',
+          background: '#FFF0E6', borderRadius: 999, padding: '1px 5px', lineHeight: 1.4,
+        }}>
+          +{hidden}
+        </span>
+      )}
+      <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+        <line x1="0" y1="7" x2="14" y2="7" stroke="#F97316" strokeWidth="2" strokeLinecap="round"/>
+        <polyline points="9,2 14,7 9,12" stroke="#F97316" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
   )
 }
 
 /* ── ChainCard ─────────────────────────────────────────────────────── */
 function ChainCard({ chain, onClick }: { chain: Chain; onClick: () => void }) {
+  const shownSteps  = (chain.middleItem ? 1 : 0) + (chain.finalItem ? 1 : 0)
+  const hiddenCount = Math.max(0, chain.steps_count - shownSteps)
+
   return (
     <div
       onClick={onClick}
@@ -271,7 +284,7 @@ function ChainCard({ chain, onClick }: { chain: Chain; onClick: () => void }) {
         <Thumb src={chain.initialItem?.images?.[0]} alt={chain.initialItem?.title ?? ''} />
         {chain.middleItem && (
           <>
-            <Arrow />
+            <Arrow hidden={hiddenCount} />
             <Thumb src={chain.middleItem.images?.[0]} alt={chain.middleItem.title} />
           </>
         )}
