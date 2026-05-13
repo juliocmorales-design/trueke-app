@@ -14,11 +14,13 @@ type Chain = {
   status: string
   steps_count: number
   created_at: string
-  steps:       Array<{ step_number: number; item_id: number }>
-  initialItem: ChainItem | null
-  finalItem:   ChainItem | null
-  middleItem:  ChainItem | null
-  creator:     Profile   | null
+  steps:        Array<{ step_number: number; item_id: number }>
+  initialItem:  ChainItem | null
+  middle1Item:  ChainItem | null
+  middle2Item:  ChainItem | null
+  finalItem:    ChainItem | null
+  hiddenCount:  number
+  creator:      Profile   | null
 }
 
 type Filter = 'populares' | 'recientes' | 'epicas'
@@ -77,24 +79,23 @@ export default function CadenasPage() {
     })
 
     const enriched: Chain[] = rawChains.map((c: any) => {
-      const steps   = (stepsByChain[c.id] || []).sort((a: any, b: any) => a.step_number - b.step_number)
-      const last    = steps[steps.length - 1]
-      const mid     = steps.length >= 3
-        ? steps[Math.floor(steps.length / 2)]
-        : steps.length === 2 ? steps[0] : null
+      const steps = (stepsByChain[c.id] || []).sort((a: any, b: any) => a.step_number - b.step_number)
+      const n     = steps.length
 
-      const middleItemId = mid?.item_id
-      const isDuplicate  =
-        middleItemId === c.initial_item_id ||
-        middleItemId === last?.item_id
+      // N=1: only final. N=2: m1+final. N>=3: m1+m2+final, +N for hidden beyond 3
+      const m1   = n >= 2 ? steps[0]       : null
+      const m2   = n >= 3 ? steps[1]       : null
+      const last = n >= 1 ? steps[n - 1]   : null
 
       return {
         ...c,
         steps,
         initialItem: itemMap[c.initial_item_id] ?? null,
-        finalItem:   last ? (itemMap[last.item_id]              ?? null) : null,
-        middleItem:  mid && !isDuplicate ? (itemMap[mid.item_id] ?? null) : null,
-        creator:     profileMap[c.creator_id]                   ?? null,
+        middle1Item: m1   ? (itemMap[m1.item_id]   ?? null) : null,
+        middle2Item: m2   ? (itemMap[m2.item_id]   ?? null) : null,
+        finalItem:   last ? (itemMap[last.item_id] ?? null) : null,
+        hiddenCount: Math.max(0, n - 3),
+        creator:     profileMap[c.creator_id]      ?? null,
       }
     })
 
@@ -267,9 +268,6 @@ function Arrow({ hidden = 0 }: { hidden?: number }) {
 
 /* ── ChainCard ─────────────────────────────────────────────────────── */
 function ChainCard({ chain, onClick }: { chain: Chain; onClick: () => void }) {
-  const shownSteps  = (chain.middleItem ? 1 : 0) + (chain.finalItem ? 1 : 0)
-  const hiddenCount = Math.max(0, chain.steps_count - shownSteps)
-
   return (
     <div
       onClick={onClick}
@@ -279,18 +277,24 @@ function ChainCard({ chain, onClick }: { chain: Chain; onClick: () => void }) {
         cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 12,
       }}
     >
-      {/* Item progression */}
+      {/* Item progression — hasta 4 fotos */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <Thumb src={chain.initialItem?.images?.[0]} alt={chain.initialItem?.title ?? ''} />
-        {chain.middleItem && (
+        {chain.middle1Item && (
           <>
-            <Arrow hidden={hiddenCount} />
-            <Thumb src={chain.middleItem.images?.[0]} alt={chain.middleItem.title} />
+            <Arrow />
+            <Thumb src={chain.middle1Item.images?.[0]} alt={chain.middle1Item.title} />
+          </>
+        )}
+        {chain.middle2Item && (
+          <>
+            <Arrow />
+            <Thumb src={chain.middle2Item.images?.[0]} alt={chain.middle2Item.title} />
           </>
         )}
         {chain.finalItem && (
           <>
-            <Arrow />
+            <Arrow hidden={chain.hiddenCount} />
             <Thumb src={chain.finalItem.images?.[0]} alt={chain.finalItem.title} />
           </>
         )}
