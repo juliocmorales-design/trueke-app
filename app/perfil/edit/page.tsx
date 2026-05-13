@@ -70,18 +70,23 @@ export default function EditProfile() {
       const user = sessionData.session?.user
       if (!user) return
 
-      const avatar_url = await uploadAvatar(user.id)
+      const uploadedUrl = await uploadAvatar(user.id)
+      const finalAvatarUrl = uploadedUrl ?? profile?.avatar_url ?? null
 
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('profiles')
-        .update({ name, username, city, avatar_url })
+        .update({ name, username, city, avatar_url: finalAvatarUrl })
         .eq('id', user.id)
 
-      if (error?.code === '23505') {
+      if (updateError?.code === '23505') {
         setSaveError('Ese nombre de usuario ya está tomado. Elige otro.')
         return
       }
-      if (error) throw error
+      if (updateError) {
+        console.error('Update error:', updateError)
+        setSaveError('Error al guardar: ' + updateError.message)
+        return
+      }
       router.push('/perfil')
     } catch {
       setSaveError('Error al guardar, intenta de nuevo')
@@ -166,7 +171,7 @@ export default function EditProfile() {
       )}
 
       <button
-        style={{ ...s.saveBtn, opacity: saving ? 0.6 : 1 }}
+        style={{ ...s.saveBtn, opacity: saving ? 0.7 : 1 }}
         onClick={handleSave}
         disabled={saving}
       >
