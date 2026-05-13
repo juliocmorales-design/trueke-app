@@ -98,7 +98,7 @@
 }
 
 .cardLabel span {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
   color: #F97316;
   font-style: italic;
@@ -162,5 +162,5 @@
   .progressionWrapper { gap: 3px; }
   .progressCard { padding: 6px 3px 8px; }
   .cardLabel { font-size: 14px; }
-  .cardLabel span { font-size: 13px; }
+  .cardLabel span { font-size: 15px; }
 }
