@@ -83,13 +83,18 @@ export default function CadenasPage() {
         ? steps[Math.floor(steps.length / 2)]
         : steps.length === 2 ? steps[0] : null
 
+      const middleItemId = mid?.item_id
+      const isDuplicate  =
+        middleItemId === c.initial_item_id ||
+        middleItemId === last?.item_id
+
       return {
         ...c,
         steps,
         initialItem: itemMap[c.initial_item_id] ?? null,
-        finalItem:   last ? (itemMap[last.item_id]   ?? null) : null,
-        middleItem:  mid  ? (itemMap[mid.item_id]    ?? null) : null,
-        creator:     profileMap[c.creator_id]        ?? null,
+        finalItem:   last ? (itemMap[last.item_id]              ?? null) : null,
+        middleItem:  mid && !isDuplicate ? (itemMap[mid.item_id] ?? null) : null,
+        creator:     profileMap[c.creator_id]                   ?? null,
       }
     })
 
@@ -292,7 +297,7 @@ function ChainCard({ chain, onClick }: { chain: Chain; onClick: () => void }) {
       {/* Steps + creator */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 12, color: '#9CA3AF' }}>
-          {chain.steps?.length || chain.steps_count} intercambio{(chain.steps?.length || chain.steps_count) !== 1 ? 's' : ''}
+          {chain.steps_count} intercambio{chain.steps_count !== 1 ? 's' : ''}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <div style={{ width: 20, height: 20, borderRadius: '50%', overflow: 'hidden', background: '#EDE7DF', flexShrink: 0 }}>
