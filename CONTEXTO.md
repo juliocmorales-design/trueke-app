@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 12 Mayo 2026 (sesión 9 — cierre completo)
+> Última actualización: 13 Mayo 2026 (sesión 10)
 
 ---
 
@@ -151,6 +151,8 @@ trueke-app/app/
 ├── api/chains/create/               ✅ POST — crea cadena (offerId opcional desde sesión 3)
 ├── api/chains/add-step/             ✅ POST — agrega paso a cadena existente
 ├── mis-cadenas/page.tsx             ✅ Mis cadenas — como creador y como participante
+├── cadenas/page.tsx                 ✅ Listado público de cadenas con filtros (Populares/Recientes/Épicas)
+├── item/[id]/editar/page.tsx        ✅ Editar publicación: fotos (agregar/eliminar), campos, desactivar
 └── lib/
     ├── supabase.js                  ✅ Cliente Supabase (anon, con fallback ?? '' para build)
     └── notifications.ts             ✅ Helper createNotification con admin client
@@ -263,6 +265,24 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Sección "Recomendados" condicional** — `page.tsx`: se oculta si hay ≤6 items (evita header huérfano)
 - **Username en lista de mensajes** — `mensajes/page.tsx`: select de profiles incluye `username`; fallback `name || username || 'Usuario'`
 
+## ✅ Completado sesión 10
+
+### Nuevas pantallas
+- **`app/cadenas/page.tsx`** — listado público de cadenas con filtros (Populares/Recientes/Épicas)
+- **`app/item/[id]/editar/page.tsx`** — editar publicación con fotos (agregar/eliminar hasta 5), campos, desactivar con `active = false`
+- **Pantalla de confirmación de email en onboarding** — `emailSent` state, muestra email capturado + aviso de spam + botón "Ir a iniciar sesión"
+
+### Cambios importantes
+- **Onboarding Step 0** — imágenes propias en `public/images/onboarding/` (01_libros, 02_sierra, 03_mochila, 04_bici); textos cards simplificados: "Tengo/libros", "Me dan/sierra", "Cambio/mochila", "Obtengo/bici"
+- **Redirección sin sesión** — usuarios sin sesión van a `/onboarding` (no `/login`), incluyendo el catch de error en home
+- **Perfil edit** — protección de `avatar_url` si upload falla (`uploadedUrl ?? profile?.avatar_url ?? null`); `updateError` con `console.error` y mensaje real de Supabase
+- **Desactivar publicación** — botón en `/item/[id]/editar` hace `UPDATE active=false` con doble guard (`id` + `user_id`); redirige a `/perfil/publicaciones`
+- **FeaturedChains** — "Ver todas →" apunta a `/cadenas`
+- **SEO metadata** — completa en `layout.tsx`
+- **Cadenas demo** — chain_steps reales (IDs 19–23)
+- **Home** — `aspect-ratio` cards `3/2`
+- **Tipografía onboarding cards** — `.cardLabel` 15px, `.cardLabel span` 16px, `.subheadline` 18px
+
 ### Segundo análisis y fixes técnicos (sesión 9 — cierre)
 
 - **Emoji 📍 eliminado de MeetingClient** — mensaje de propuesta de encuentro ya no contiene emoji; texto plano consistente con el resto de la app
@@ -275,11 +295,16 @@ rating/[offerId] → calificación 1-5 + comentario
 - **3 cadenas demo agregadas en BD** — IDs 21 (Armajulion, item 93, bicicleta eléctrica, 2 pasos), 22 (Julio, item 100, guitarra eléctrica, 1 paso), 23 (Armajulion, item 94, audio premium, 3 pasos)
 - **Modal compartir chain** — botones `.downloadBtn` cambiados de `#1A2744` a `#F97316`; label "WHATSAPP / PNG" → "PNG PARA COMPARTIR"
 
-## ⏳ Pendiente MVP — en orden de prioridad
+## ⏳ Pendiente post-lanzamiento
 
-1. **Onboarding Step 0** — rediseño en proceso con ChatGPT (CSS simple, sin SVG). 4 cards con fotos Unsplash placeholder, eslabones entre cards. Pendiente verificar en dispositivo.
-2. **Tarjetas compartibles de cadena** — mockup actualizado aprobado, pendiente implementar en chain/[id]
-3. **Push notifications** — PWA o web push para notificaciones en tiempo real
+- Crop circular al subir foto de perfil
+- `next/image` optimización
+- PWA / Push notifications
+- `og-image.png` (1200×630px) para WhatsApp preview
+- Tarjetas compartibles V2 y V3
+- Niveles de usuario / logros
+- Paginación / infinite scroll
+- Ranking social
 
 ---
 
