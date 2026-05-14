@@ -542,11 +542,15 @@ export default function Onboarding() {
             </div>
           )}
 
-          {error && <p style={styles.errorText}>{error}</p>}
-
           <button style={{ ...styles.button, border: 'none' }} onClick={handleFinish} disabled={saving}>
-            {saving ? 'Creando cuenta...' : '¡Todo listo! ✓'}
+            {saving ? 'Creando cuenta...' : '¡Todo listo!'}
           </button>
+
+          {error && (
+            <p style={styles.errorText}>
+              Ocurrió un error. Verifica tu conexión a internet e intenta de nuevo.
+            </p>
+          )}
 
           <div style={styles.back} onClick={() => { setError(''); setStep(4) }}>Atrás</div>
         </div>
