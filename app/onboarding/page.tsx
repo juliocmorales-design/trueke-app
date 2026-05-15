@@ -119,31 +119,20 @@ export default function Onboarding() {
       }
     }
 
-    const { data: existing } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('username', username)
-      .neq('id', uid)
-      .maybeSingle()
+    const res = await fetch('/api/profiles/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: uid, username, city, interests }),
+    })
 
-    if (existing) {
-      setError('Este username ya está tomado, elige otro')
-      setSaving(false)
-      return
-    }
-
-    const { error: profileErr } = await supabase
-      .from('profiles')
-      .upsert({ id: uid, username, city, interests })
-
+    const result = await res.json()
     setSaving(false)
 
-    if (profileErr) {
-      console.error('Profile error:', profileErr)
-      if (profileErr.code === '23505') {
+    if (!res.ok) {
+      if (result.error === 'USERNAME_TAKEN') {
         setError('Ese nombre de usuario ya está tomado. Elige otro.')
       } else {
-        setError(profileErr?.message || 'Error desconocido')
+        setError(result.error || 'Ocurrió un error. Intenta de nuevo.')
       }
       return
     }
