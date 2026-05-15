@@ -38,6 +38,7 @@ export default function Onboarding() {
   const [interests, setInterests] = useState<string[]>([])
   const [showOtroInput, setShowOtroInput] = useState(false)
   const [otroText, setOtroText] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -105,6 +106,7 @@ export default function Onboarding() {
         password,
       })
       if (signUpErr) {
+        console.error('SignUp error:', signUpErr)
         setError(signUpErr.message)
         setSaving(false)
         return
@@ -137,10 +139,11 @@ export default function Onboarding() {
     setSaving(false)
 
     if (profileErr) {
+      console.error('Profile error:', profileErr)
       if (profileErr.code === '23505') {
         setError('Ese nombre de usuario ya está tomado. Elige otro.')
       } else {
-        setError('Ocurrió un error. Intenta de nuevo.')
+        setError(profileErr?.message || 'Error desconocido')
       }
       return
     }
@@ -374,14 +377,46 @@ export default function Onboarding() {
           <h1 style={styles.title}>Elige tu contraseña</h1>
           <p style={styles.subtitle}>Al menos 6 caracteres</p>
 
-          <input
-            style={styles.input}
-            placeholder="Contraseña"
-            value={password}
-            onChange={e => { setPassword(e.target.value); setError('') }}
-            type="password"
-            autoComplete="new-password"
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              style={{ ...styles.input, paddingRight: 44 }}
+              placeholder="Contraseña"
+              value={password}
+              onChange={e => { setPassword(e.target.value); setError('') }}
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 4,
+                color: '#9CA3AF',
+              }}
+            >
+              {showPassword ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              )}
+            </button>
+          </div>
           <input
             style={styles.input}
             placeholder="Confirma tu contraseña"
@@ -547,9 +582,7 @@ export default function Onboarding() {
           </button>
 
           {error && (
-            <p style={styles.errorText}>
-              Ocurrió un error. Verifica tu conexión a internet e intenta de nuevo.
-            </p>
+            <p style={styles.errorText}>{error}</p>
           )}
 
           <div style={styles.back} onClick={() => { setError(''); setStep(4) }}>Atrás</div>
