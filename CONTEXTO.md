@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 13 Mayo 2026 (sesión 10)
+> Última actualización: 13 Mayo 2026 (sesión 11)
 
 ---
 
@@ -273,7 +273,7 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Pantalla de confirmación de email en onboarding** — `emailSent` state, muestra email capturado + aviso de spam + botón "Ir a iniciar sesión"
 
 ### Cambios importantes
-- **Onboarding Step 0** — imágenes propias en `public/images/onboarding/` (01_libros, 02_sierra, 03_mochila, 04_bici); textos cards simplificados: "Tengo/libros", "Me dan/sierra", "Cambio/mochila", "Obtengo/bici"
+- **Onboarding Step 0** — imágenes propias en `public/images/onboarding/` (01_libros, 02_sierra, 03_mochila, 04_bici); textos cards: "Tengo/Unos libros", "Me dan/Una Sierra", "Cambio x/Mochila", "Obtengo/Una bici"
 - **Redirección sin sesión** — usuarios sin sesión van a `/onboarding` (no `/login`), incluyendo el catch de error en home
 - **Perfil edit** — protección de `avatar_url` si upload falla (`uploadedUrl ?? profile?.avatar_url ?? null`); `updateError` con `console.error` y mensaje real de Supabase
 - **Desactivar publicación** — botón en `/item/[id]/editar` hace `UPDATE active=false` con doble guard (`id` + `user_id`); redirige a `/perfil/publicaciones`
@@ -294,6 +294,12 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Sintaxis onClick toast corregida** — `perfil/page.tsx`: arrow functions en "Ayuda y soporte" y "Configuración" tenían `}}}` triple; corregido a `}}`
 - **3 cadenas demo agregadas en BD** — IDs 21 (Armajulion, item 93, bicicleta eléctrica, 2 pasos), 22 (Julio, item 100, guitarra eléctrica, 1 paso), 23 (Armajulion, item 94, audio premium, 3 pasos)
 - **Modal compartir chain** — botones `.downloadBtn` cambiados de `#1A2744` a `#F97316`; label "WHATSAPP / PNG" → "PNG PARA COMPARTIR"
+
+## ✅ Completado sesión 11
+
+- **Textos cards onboarding** — artículos y etiqueta corregidos: "Tengo/Unos libros", "Me dan/Una Sierra", "Cambio x/Mochila", "Obtengo/Una bici"
+
+---
 
 ## ⏳ Pendiente post-lanzamiento
 
