@@ -8,7 +8,12 @@ export default function AuthCallbackPage() {
   const router = useRouter()
 
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      router.replace('/login?error=timeout')
+    }, 10000)
+
     const handleCallback = async () => {
+      clearTimeout(timeout)
       const { data, error } = await supabase.auth.getSession()
 
       if (error || !data.session) {
@@ -32,6 +37,7 @@ export default function AuthCallbackPage() {
     }
 
     handleCallback()
+    return () => clearTimeout(timeout)
   }, [])
 
   return (

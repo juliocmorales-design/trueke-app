@@ -67,8 +67,18 @@ export default function EditarItem() {
 
   const totalCount = existingImages.length + newFiles.length
 
+  const MAX_SIZE = 5 * 1024 * 1024 // 5MB
+
   const handleImages = (e: any) => {
     const selected = Array.from(e.target.files || []) as File[]
+
+    for (const file of selected) {
+      if (file.size > MAX_SIZE) {
+        setErrorMsg('Cada foto debe pesar menos de 5MB.')
+        return
+      }
+    }
+
     const slots = 5 - existingImages.length
     const combined = [...newFiles, ...selected].slice(0, slots)
     setNewFiles(combined)

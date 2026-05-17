@@ -98,6 +98,20 @@ export default function MisResenasPage() {
           <p style={styles.emptySubtext}>Completa intercambios para recibir calificaciones</p>
         </div>
       ) : (
+        <>
+          {/* RESUMEN */}
+          <div style={styles.summary}>
+            <div style={styles.summaryAvg}>
+              {(ratings.reduce((s, r) => s + r.score, 0) / ratings.length).toFixed(1)}
+            </div>
+            <div style={styles.summaryStars}>
+              <Stars score={Math.round(ratings.reduce((s, r) => s + r.score, 0) / ratings.length)} />
+            </div>
+            <div style={styles.summaryCount}>
+              {ratings.length} reseña{ratings.length !== 1 ? 's' : ''}
+            </div>
+          </div>
+
         <div style={styles.list}>
           {ratings.map(r => (
             <div key={r.id} style={styles.card}>
@@ -122,6 +136,7 @@ export default function MisResenasPage() {
             </div>
           ))}
         </div>
+        </>
       )}
     </div>
   )
@@ -190,6 +205,37 @@ const styles: any = {
     fontSize: 13,
     color: '#9CA3AF',
     lineHeight: 1.5,
+  },
+
+  summary: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 6,
+    padding: '20px 16px 12px',
+    background: '#FFFFFF',
+    margin: '0 16px 16px',
+    borderRadius: 16,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+    border: '1px solid #F0EBE3',
+  },
+
+  summaryAvg: {
+    fontSize: 48,
+    fontWeight: 800,
+    color: '#1A2744',
+    lineHeight: 1,
+  },
+
+  summaryStars: {
+    display: 'flex',
+    gap: 2,
+  },
+
+  summaryCount: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    fontWeight: 500,
   },
 
   list: {
