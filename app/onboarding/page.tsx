@@ -356,11 +356,24 @@ export default function Onboarding() {
 
           {error && <p style={styles.errorText}>{error}</p>}
 
-          <button style={{ ...styles.button, border: 'none' }} onClick={() => {
+          <button style={{ ...styles.button, border: 'none' }} onClick={async () => {
             if (!email.trim()) return
+            setSaving(true)
+            setError('')
+            const res = await fetch('/api/auth/check-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email }),
+            })
+            const result = await res.json()
+            setSaving(false)
+            if (result.exists) {
+              setError('Este correo ya tiene una cuenta. Usa "Iniciar sesión" en lugar de registrarte.')
+              return
+            }
             setStep(3)
-          }}>
-            Siguiente →
+          }} disabled={saving}>
+            {saving ? 'Verificando...' : 'Siguiente →'}
           </button>
 
           <div style={styles.back} onClick={() => setStep(1)}>Atrás</div>
