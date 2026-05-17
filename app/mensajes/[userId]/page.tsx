@@ -167,7 +167,7 @@ export default function OfferChatPage() {
           </svg>
         </button>
 
-        <div style={s.headerCenter}>
+        <div style={s.headerCenter} onClick={() => router.push(`/perfil/${otherUser?.id}`)}>
           {otherUser?.avatar_url ? (
             <img src={otherUser.avatar_url} style={s.avatar} />
           ) : (
@@ -374,6 +374,7 @@ const s: any = {
     gap: 10,
     flex: 1,
     justifyContent: 'center',
+    cursor: 'pointer',
   },
 
   avatar: {
