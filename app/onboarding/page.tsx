@@ -716,6 +716,16 @@ export default function Onboarding() {
             <p style={styles.errorText}>{error}</p>
           )}
 
+          <p style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'center', marginTop: 8, lineHeight: 1.5 }}>
+            Al continuar aceptas nuestros{' '}
+            <span
+              style={{ color: '#F97316', cursor: 'pointer' }}
+              onClick={() => window.open('/terminos', '_blank')}
+            >
+              Términos de Uso y Política de Privacidad
+            </span>
+          </p>
+
           <div style={styles.back} onClick={() => { setError(''); setStep(5) }}>Atrás</div>
         </div>
       )}

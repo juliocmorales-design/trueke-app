@@ -17,6 +17,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     pathname.startsWith('/login')
 
   const hideNav =
+    pathname.startsWith('/terminos') ||
     pathname.startsWith('/onboarding') ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/perfil/setup') ||
