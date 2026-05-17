@@ -27,6 +27,7 @@ export type ChainData = {
     steps_count: number
     created_at: string
     personal_quote?: string
+    goal_description?: string | null
   }
   steps: Step[]
   itemMap: Record<number, Item>
