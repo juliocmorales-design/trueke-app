@@ -107,7 +107,13 @@ export default function Onboarding() {
       })
       if (signUpErr) {
         console.error('SignUp error:', signUpErr)
-        setError(signUpErr.message)
+        if (signUpErr.message.includes('already registered') ||
+            signUpErr.message.includes('already been registered') ||
+            signUpErr.status === 422) {
+          setError('Este correo ya tiene una cuenta. Usa "Iniciar sesión" en lugar de registrarte.')
+        } else {
+          setError(signUpErr.message)
+        }
         setSaving(false)
         return
       }
