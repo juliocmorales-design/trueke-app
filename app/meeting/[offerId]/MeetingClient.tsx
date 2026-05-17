@@ -59,7 +59,7 @@ export default function MeetingClient({ offerId, data }: { offerId: string; data
         }),
       ])
 
-      router.replace(`/mensajes/${offerId}`)
+      router.replace(`/mensajes/${receiver}`)
     } catch {
       setSaving(false)
       setMeetingError('Error al confirmar el punto, intenta de nuevo')

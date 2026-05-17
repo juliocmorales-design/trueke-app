@@ -39,6 +39,9 @@ export default function ItemDetail() {
 
       if (!data) { router.push('/'); return }
 
+      const userId = sessionData.session?.user?.id ?? null
+      if (!data.active && data.user_id !== userId) { router.replace('/'); return }
+
       setItem(data)
 
       try {
@@ -135,7 +138,7 @@ export default function ItemDetail() {
     </div>
   )
 
-  const images = item.images?.length ? item.images : ['/images/placeholder.png']
+  const images = item.images?.length ? item.images : []
   const isOwner = currentUser != null && item.user_id === currentUser
 
   return (
@@ -236,18 +239,29 @@ export default function ItemDetail() {
 
         {/* CARRUSEL */}
         <div style={styles.carouselWrapper}>
-          <div style={styles.carousel} ref={carouselRef}>
-            {images.map((img: string, i: number) => (
-              <div key={i} style={styles.slide}>
-                <img src={img} style={styles.image} />
-              </div>
-            ))}
-          </div>
-
-          {images.length > 1 && (
+          {images.length === 0 ? (
+            <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F0EAE0' }}>
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+            </div>
+          ) : (
             <>
-              <button style={styles.arrowLeft} onClick={prev}>‹</button>
-              <button style={styles.arrowRight} onClick={next}>›</button>
+              <div style={styles.carousel} ref={carouselRef}>
+                {images.map((img: string, i: number) => (
+                  <div key={i} style={styles.slide}>
+                    <img src={img} style={styles.image} />
+                  </div>
+                ))}
+              </div>
+              {images.length > 1 && (
+                <>
+                  <button style={styles.arrowLeft} onClick={prev}>‹</button>
+                  <button style={styles.arrowRight} onClick={next}>›</button>
+                </>
+              )}
             </>
           )}
         </div>

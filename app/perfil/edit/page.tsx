@@ -63,6 +63,19 @@ export default function EditProfile() {
   }
 
   const handleSave = async () => {
+    if (!name.trim() || name.trim().length < 2) {
+      setSaveError('El nombre debe tener al menos 2 caracteres.')
+      return
+    }
+    if (!username.trim() || username.trim().length < 3) {
+      setSaveError('El usuario debe tener al menos 3 caracteres.')
+      return
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+      setSaveError('El usuario solo puede tener letras, números y guión bajo (_).')
+      return
+    }
+
     setSaving(true)
     setSaveError(null)
     try {
