@@ -221,10 +221,14 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
             ))}
           </div>
 
-          {stars > 0 && (
+          {stars > 0 ? (
             <div className={s.starsLabel}>
               {['', 'Muy malo', 'Malo', 'Regular', 'Bueno', 'Excelente'][stars]}
             </div>
+          ) : (
+            <p style={{ fontSize: 13, color: '#9CA3AF', textAlign: 'center', margin: '4px 0 0' }}>
+              Selecciona una calificación para continuar
+            </p>
           )}
         </div>
 
