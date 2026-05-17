@@ -214,6 +214,26 @@ export default function ExchangeClient({
     )
   }
 
+  const handleCancelOffer = async () => {
+    const confirmed = window.confirm(
+      '¿Seguro que quieres cancelar esta oferta? Esta acción no se puede deshacer.'
+    )
+    if (!confirmed) return
+
+    const { error } = await supabase
+      .from('offers')
+      .update({ status: 'rejected' })
+      .eq('id', offerId)
+      .eq('from_user_id', currentUserId)
+
+    if (error) {
+      alert('Error al cancelar la oferta. Intenta de nuevo.')
+      return
+    }
+
+    router.push('/intercambios')
+  }
+
   const handleComplete = async () => {
     if (completing) return
     setCompleting(true)
@@ -426,6 +446,15 @@ export default function ExchangeClient({
           </button>
           <button className={s.btnSecondary} onClick={handleReject} disabled={acting}>
             Rechazar
+          </button>
+        </div>
+      ) : status === 'pending' && currentUserId === offer.from_user_id ? (
+        <div className={s.footer}>
+          <button className={s.btnSecondary} onClick={() => router.push(`/mensajes/${offerId}`)}>
+            Ir al chat
+          </button>
+          <button className={s.btnDanger} onClick={handleCancelOffer}>
+            Cancelar oferta
           </button>
         </div>
       ) : (

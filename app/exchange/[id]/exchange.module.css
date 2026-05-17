@@ -372,6 +372,19 @@
   cursor: pointer;
 }
 
+.btnDanger {
+  flex: 1;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1.5px solid #DC2626;
+  background: none;
+  color: #DC2626;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
 /* ── Skeleton ────────────────────────────────── */
 .skeletonWrap {
   display: flex;
