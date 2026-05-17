@@ -39,6 +39,7 @@ export default function Onboarding() {
   const [showOtroInput, setShowOtroInput] = useState(false)
   const [otroText, setOtroText] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -324,8 +325,14 @@ export default function Onboarding() {
             autoComplete="username"
           />
 
+          {error && <p style={styles.errorText}>{error}</p>}
+
           <button style={{ ...styles.button, border: 'none' }} onClick={() => {
-            if (!username.trim()) return
+            setError('')
+            if (!username.trim() || username.trim().length < 2 || !/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(username.trim())) {
+              setError('Por favor ingresa un nombre válido (solo letras, mínimo 2 caracteres)')
+              return
+            }
             setStep(existingUserId ? 4 : 2)
           }}>
             Siguiente →
@@ -357,9 +364,12 @@ export default function Onboarding() {
           {error && <p style={styles.errorText}>{error}</p>}
 
           <button style={{ ...styles.button, border: 'none' }} onClick={async () => {
-            if (!email.trim()) return
-            setSaving(true)
             setError('')
+            if (!email.trim() || email.includes(' ') || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+              setError('Por favor ingresa un correo electrónico válido')
+              return
+            }
+            setSaving(true)
             const res = await fetch('/api/auth/check-email', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -388,7 +398,7 @@ export default function Onboarding() {
           </div>
 
           <h1 style={styles.title}>Elige tu contraseña</h1>
-          <p style={styles.subtitle}>Al menos 6 caracteres</p>
+          <p style={styles.subtitle}>Al menos 8 caracteres, una letra y un número</p>
 
           <div style={{ position: 'relative' }}>
             <input
@@ -430,21 +440,56 @@ export default function Onboarding() {
               )}
             </button>
           </div>
-          <input
-            style={styles.input}
-            placeholder="Confirma tu contraseña"
-            value={confirmPassword}
-            onChange={e => { setConfirmPassword(e.target.value); setError('') }}
-            type="password"
-            autoComplete="new-password"
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showConfirmPassword ? 'text' : 'password'}
+              style={{ ...styles.input, paddingRight: 44 }}
+              placeholder="Confirma tu contraseña"
+              value={confirmPassword}
+              onChange={e => { setConfirmPassword(e.target.value); setError('') }}
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              style={{
+                position: 'absolute',
+                right: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 4,
+                color: '#9CA3AF',
+              }}
+            >
+              {showConfirmPassword ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              )}
+            </button>
+          </div>
 
           {error && <p style={styles.errorText}>{error}</p>}
 
           <button style={{ ...styles.button, border: 'none' }} onClick={() => {
-            if (password.length < 6) { setError('Mínimo 6 caracteres'); return }
-            if (password !== confirmPassword) { setError('Las contraseñas no coinciden'); return }
             setError('')
+            if (!password || !/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
+              setError('La contraseña debe tener al menos 8 caracteres, una letra y un número')
+              return
+            }
+            if (password !== confirmPassword) { setError('Las contraseñas no coinciden'); return }
             setStep(4)
           }}>
             Siguiente →
@@ -487,8 +532,18 @@ export default function Onboarding() {
             onChange={e => setCity(e.target.value)}
           />
 
+          {error && <p style={styles.errorText}>{error}</p>}
+
           <button style={{ ...styles.button, border: 'none' }} onClick={() => {
-            if (!city.trim()) return
+            setError('')
+            if (!username.trim() || username.trim().length < 3 || !/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+              setError('El username solo puede tener letras, números y guión bajo (_), mínimo 3 caracteres')
+              return
+            }
+            if (!city.trim() || city.trim().length < 2) {
+              setError('Por favor ingresa tu ciudad')
+              return
+            }
             setStep(5)
           }}>
             Siguiente →
@@ -590,7 +645,14 @@ export default function Onboarding() {
             </div>
           )}
 
-          <button style={{ ...styles.button, border: 'none' }} onClick={handleFinish} disabled={saving}>
+          <button style={{ ...styles.button, border: 'none' }} onClick={() => {
+            setError('')
+            if (interests.length === 0) {
+              setError('Selecciona al menos un interés')
+              return
+            }
+            handleFinish()
+          }} disabled={saving}>
             {saving ? 'Creando cuenta...' : '¡Todo listo!'}
           </button>
 
