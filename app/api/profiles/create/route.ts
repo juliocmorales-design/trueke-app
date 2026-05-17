@@ -9,7 +9,7 @@ const adminClient = () => createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { id, username, city, interests } = await req.json()
+    const { id, username, name, city, interests } = await req.json()
 
     if (!id || !username) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     const { error } = await adminClient()
       .from('profiles')
-      .upsert({ id, username, city, interests })
+      .upsert({ id, username, name, city, interests })
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })

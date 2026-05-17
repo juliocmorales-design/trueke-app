@@ -27,9 +27,9 @@ export default function Onboarding() {
   const [error, setError] = useState('')
   const [emailSent, setEmailSent] = useState(false)
 
-  // existingUserId: set when user already has a session (incomplete profile)
   const [existingUserId, setExistingUserId] = useState<string | null>(null)
 
+  const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -65,6 +65,7 @@ export default function Onboarding() {
       }
 
       if (profile) {
+        setName(profile.name || '')
         setUsername(profile.username || '')
         setCity(profile.city || '')
         setInterests(profile.interests || [])
@@ -134,7 +135,7 @@ export default function Onboarding() {
     const res = await fetch('/api/profiles/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: uid, username, city, interests }),
+      body: JSON.stringify({ id: uid, username, name, city, interests }),
     })
 
     const result = await res.json()
@@ -311,7 +312,7 @@ export default function Onboarding() {
       {step === 1 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '20%' }} />
+            <div style={{ ...styles.bar, width: `${(step / 6) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>¿Cuál es tu nombre?</h1>
@@ -319,21 +320,21 @@ export default function Onboarding() {
 
           <input
             style={styles.input}
-            placeholder="tunombre"
-            value={username}
-            onChange={e => setUsername(e.target.value.replace('@', '').trim())}
-            autoComplete="username"
+            placeholder="Ej: María García"
+            value={name}
+            onChange={e => { setName(e.target.value); setError('') }}
+            autoComplete="name"
           />
 
           {error && <p style={styles.errorText}>{error}</p>}
 
           <button style={{ ...styles.button, border: 'none' }} onClick={() => {
             setError('')
-            if (!username.trim() || username.trim().length < 2 || !/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(username.trim())) {
+            if (!name.trim() || name.trim().length < 2 || !/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(name.trim())) {
               setError('Por favor ingresa un nombre válido (solo letras, mínimo 2 caracteres)')
               return
             }
-            setStep(existingUserId ? 4 : 2)
+            setStep(2)
           }}>
             Siguiente →
           </button>
@@ -342,11 +343,52 @@ export default function Onboarding() {
         </div>
       )}
 
-      {/* ── STEP 2: Email ── */}
+      {/* ── STEP 2: Username ── */}
       {step === 2 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '40%' }} />
+            <div style={{ ...styles.bar, width: `${(step / 6) * 100}%` }} />
+          </div>
+
+          <h1 style={styles.title}>¿Cuál será tu @usuario?</h1>
+          <p style={styles.subtitle}>Este será tu identificador público en Trueke</p>
+
+          <input
+            style={styles.input}
+            placeholder="Ej: mariag"
+            value={username}
+            onChange={e => { setUsername(e.target.value.replace('@', '').trim()); setError('') }}
+            autoComplete="username"
+          />
+
+          {username.trim() && (
+            <p style={{ color: '#F97316', fontWeight: 600, fontSize: 15, marginTop: -8, marginBottom: 16 }}>
+              @{username}
+            </p>
+          )}
+
+          {error && <p style={styles.errorText}>{error}</p>}
+
+          <button style={{ ...styles.button, border: 'none' }} onClick={() => {
+            setError('')
+            if (!username.trim() || username.trim().length < 3 || !/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+              setError('El username solo puede tener letras, números y guión bajo (_), mínimo 3 caracteres')
+              return
+            }
+            setStep(existingUserId ? 5 : 3)
+          }}>
+            Siguiente →
+          </button>
+
+          <div style={styles.back} onClick={() => { setError(''); setStep(1) }}>Atrás</div>
+        </div>
+      )}
+
+      {/* ── STEP 3: Email ── */}
+      {step === 3 && (
+        <div style={styles.stepContainer}>
+          <div style={styles.progress}>
+            <div style={{ ...styles.bar, width: `${(step / 6) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>¿Cuál es tu email?</h1>
@@ -381,20 +423,20 @@ export default function Onboarding() {
               setError('Este correo ya tiene una cuenta. Usa "Iniciar sesión" en lugar de registrarte.')
               return
             }
-            setStep(3)
+            setStep(4)
           }} disabled={saving}>
             {saving ? 'Verificando...' : 'Siguiente →'}
           </button>
 
-          <div style={styles.back} onClick={() => setStep(1)}>Atrás</div>
+          <div style={styles.back} onClick={() => { setError(''); setStep(2) }}>Atrás</div>
         </div>
       )}
 
-      {/* ── STEP 3: Contraseña ── */}
-      {step === 3 && (
+      {/* ── STEP 4: Contraseña ── */}
+      {step === 4 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '60%' }} />
+            <div style={{ ...styles.bar, width: `${(step / 6) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>Elige tu contraseña</h1>
@@ -440,6 +482,7 @@ export default function Onboarding() {
               )}
             </button>
           </div>
+
           <div style={{ position: 'relative' }}>
             <input
               type={showConfirmPassword ? 'text' : 'password'}
@@ -490,20 +533,20 @@ export default function Onboarding() {
               return
             }
             if (password !== confirmPassword) { setError('Las contraseñas no coinciden'); return }
-            setStep(4)
+            setStep(5)
           }}>
             Siguiente →
           </button>
 
-          <div style={styles.back} onClick={() => { setError(''); setStep(2) }}>Atrás</div>
+          <div style={styles.back} onClick={() => { setError(''); setStep(3) }}>Atrás</div>
         </div>
       )}
 
-      {/* ── STEP 4: Ciudad ── */}
-      {step === 4 && (
+      {/* ── STEP 5: Ciudad ── */}
+      {step === 5 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '80%' }} />
+            <div style={{ ...styles.bar, width: `${(step / 6) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>¿De qué ciudad eres?</h1>
@@ -536,28 +579,24 @@ export default function Onboarding() {
 
           <button style={{ ...styles.button, border: 'none' }} onClick={() => {
             setError('')
-            if (!username.trim() || username.trim().length < 3 || !/^[a-zA-Z0-9_]+$/.test(username.trim())) {
-              setError('El username solo puede tener letras, números y guión bajo (_), mínimo 3 caracteres')
-              return
-            }
             if (!city.trim() || city.trim().length < 2) {
               setError('Por favor ingresa tu ciudad')
               return
             }
-            setStep(5)
+            setStep(6)
           }}>
             Siguiente →
           </button>
 
-          <div style={styles.back} onClick={() => setStep(existingUserId ? 1 : 3)}>Atrás</div>
+          <div style={styles.back} onClick={() => { setError(''); setStep(existingUserId ? 2 : 4) }}>Atrás</div>
         </div>
       )}
 
-      {/* ── STEP 5: Intereses ── */}
-      {step === 5 && (
+      {/* ── STEP 6: Intereses ── */}
+      {step === 6 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: '100%' }} />
+            <div style={{ ...styles.bar, width: `${(step / 6) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>¿Qué te interesa intercambiar?</h1>
@@ -660,7 +699,7 @@ export default function Onboarding() {
             <p style={styles.errorText}>{error}</p>
           )}
 
-          <div style={styles.back} onClick={() => { setError(''); setStep(4) }}>Atrás</div>
+          <div style={styles.back} onClick={() => { setError(''); setStep(5) }}>Atrás</div>
         </div>
       )}
 
