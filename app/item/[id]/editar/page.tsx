@@ -140,13 +140,25 @@ export default function EditarItem() {
 
   const handleDeactivate = async () => {
     const confirmed = window.confirm(
-      '¿Seguro que quieres desactivar esta publicación? Ya no aparecerá en el feed ni en búsquedas.'
+      '¿Seguro que quieres desactivar esta publicación? Ya no aparecerá en el feed ni en búsquedas, y las ofertas pendientes serán canceladas automáticamente.'
     )
     if (!confirmed) return
 
     const { data: sessionData } = await supabase.auth.getSession()
     const user = sessionData.session?.user
     if (!user) return
+
+    // Cancelar ofertas pendientes de este item
+    const { error: offersError } = await supabase
+      .from('offers')
+      .update({ status: 'rejected' })
+      .eq('status', 'pending')
+      .or(`from_item_id.eq.${id},to_item_id.eq.${id}`)
+
+    if (offersError) {
+      console.error('Error cancelando ofertas:', offersError)
+      // No bloqueamos — continuamos con la desactivación
+    }
 
     const { error } = await supabase
       .from('items')
