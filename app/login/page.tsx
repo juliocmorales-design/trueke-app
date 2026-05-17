@@ -103,7 +103,11 @@ export default function LoginPage() {
         <p
           style={styles.textLink}
           onClick={async () => {
-            if (!email.trim() || resetLoading) return
+            if (resetLoading) return
+            if (!email.trim()) {
+              setError('Escribe tu correo primero para recuperar tu contraseña.')
+              return
+            }
             setResetLoading(true)
             await supabase.auth.resetPasswordForEmail(email.trim())
             setResetLoading(false)

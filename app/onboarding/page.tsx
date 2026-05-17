@@ -428,6 +428,23 @@ export default function Onboarding() {
             {saving ? 'Verificando...' : 'Siguiente →'}
           </button>
 
+          <div style={{ textAlign: 'center', marginTop: 8 }}>
+            <button
+              onClick={() => router.push('/login')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#F97316',
+                fontSize: 14,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                padding: 0,
+              }}
+            >
+              ¿Ya tienes cuenta? Inicia sesión
+            </button>
+          </div>
+
           <div style={styles.back} onClick={() => { setError(''); setStep(2) }}>Atrás</div>
         </div>
       )}
