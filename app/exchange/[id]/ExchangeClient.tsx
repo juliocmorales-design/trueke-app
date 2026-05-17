@@ -220,6 +220,18 @@ export default function ExchangeClient({
     )
     if (!confirmed) return
 
+    const { data: currentOffer } = await supabase
+      .from('offers')
+      .select('status')
+      .eq('id', offerId)
+      .single()
+
+    if (currentOffer?.status !== 'pending') {
+      alert('Esta oferta ya no está pendiente.')
+      router.refresh()
+      return
+    }
+
     const { error } = await supabase
       .from('offers')
       .update({ status: 'rejected' })

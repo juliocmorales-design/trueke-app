@@ -255,6 +255,7 @@ export default function EditarItem() {
           value={title}
           onChange={e => setTitle(e.target.value)}
           style={styles.input}
+          maxLength={80}
         />
       </div>
 
@@ -267,6 +268,7 @@ export default function EditarItem() {
           value={wanted}
           onChange={e => setWanted(e.target.value)}
           style={styles.input}
+          maxLength={100}
         />
       </div>
 
@@ -320,7 +322,11 @@ export default function EditarItem() {
           value={description}
           onChange={e => setDescription(e.target.value)}
           style={styles.textarea}
+          maxLength={500}
         />
+        <p style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'right', margin: '4px 0 0' }}>
+          {description.length}/500
+        </p>
       </div>
 
       {errorMsg && (
