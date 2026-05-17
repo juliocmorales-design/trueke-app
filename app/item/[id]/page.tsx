@@ -305,7 +305,7 @@ export default function ItemDetail() {
             <div style={styles.userRow} onClick={() => router.push(`/perfil/${owner.id}`)}>
               <div style={styles.userLeft}>
                 <img
-                  src={owner.avatar_url || '/images/avatar.png'}
+                  src={owner.avatar_url || '/images/avatar.svg'}
                   style={styles.avatar}
                 />
                 <div>

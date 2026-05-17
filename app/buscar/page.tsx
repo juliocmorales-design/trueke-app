@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase'
 
+const sanitizeQuery = (q: string) => q.replace(/[%_\\]/g, '\\$&')
+
 const CATEGORIAS = [
   { id: 'electronica', label: '📱 Electrónica' },
   { id: 'ropa', label: '👕 Ropa' },
@@ -47,8 +49,9 @@ export default function BuscarPage() {
       let req = supabase.from('items').select('*')
 
       if (q.length >= 2) {
+        const safeQuery = sanitizeQuery(q)
         req = req.or(
-          `title.ilike.%${q}%,description.ilike.%${q}%,wanted.ilike.%${q}%,city.ilike.%${q}%`
+          `title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%,wanted.ilike.%${safeQuery}%,city.ilike.%${safeQuery}%`
         )
       } else {
         req = req.order('created_at', { ascending: false }).limit(12)
