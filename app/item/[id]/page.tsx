@@ -283,6 +283,18 @@ export default function ItemDetail() {
           </div>
 
           <div style={styles.badgesRow}>
+            {item.category && (
+              <span style={{
+                background: '#F0EAE0',
+                color: '#1A2744',
+                fontSize: 12,
+                fontWeight: 600,
+                padding: '4px 10px',
+                borderRadius: 20,
+              }}>
+                {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+              </span>
+            )}
             {item.city && (
               <div style={styles.badge}>{item.city}</div>
             )}

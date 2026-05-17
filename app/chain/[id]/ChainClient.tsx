@@ -409,6 +409,18 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
         <div style={{ width: 40 }} />
       </div>
 
+      {chain.goal_description && (
+        <p style={{
+          fontSize: 14,
+          color: '#6B7280',
+          margin: '0 16px 4px',
+          fontStyle: 'italic',
+          textAlign: 'center',
+        }}>
+          Meta: {chain.goal_description}
+        </p>
+      )}
+
       <div className={s.body}>
 
         {/* PROGRESS BUBBLES */}
