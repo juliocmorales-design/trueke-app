@@ -9,6 +9,9 @@ const adminClient = () => createClient(
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('Using URL:', process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 30))
+    console.log('Has service key:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+
     const { id, username, name, city, interests } = await req.json()
 
     if (!id || !username) {
@@ -31,7 +34,8 @@ export async function POST(req: NextRequest) {
       .upsert({ id, username, name, city, interests })
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('Upsert error:', JSON.stringify(error))
+      return NextResponse.json({ error: error.message, code: error.code }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })
