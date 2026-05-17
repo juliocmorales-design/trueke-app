@@ -117,6 +117,11 @@ export default function Onboarding() {
         setSaving(false)
         return
       }
+      if (data.user && data.user.identities?.length === 0) {
+        setError('Este correo ya tiene una cuenta. Usa "Iniciar sesión" en lugar de registrarte.')
+        setSaving(false)
+        return
+      }
       uid = data.user?.id ?? null
       if (!uid) {
         setError('No se pudo crear la cuenta. Intenta de nuevo.')
