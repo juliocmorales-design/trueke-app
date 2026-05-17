@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 13 Mayo 2026 (sesión 11)
+> Última actualización: 17 Mayo 2026 (sesión 11)
 
 ---
 
@@ -73,10 +73,10 @@ Las tarjetas compartibles solo muestran:
 - **Supabase**: PostgreSQL + Auth OTP + Storage + Realtime
 - Cliente Supabase en `app/lib/supabase.js`
 - Admin client con SERVICE_ROLE_KEY en rutas API (bypasea RLS)
-- **GitHub Codespaces** — repositorio: `juliocmorales-design/trueke-app`, branch: `ui/navbar-refactor`
+- **GitHub Codespaces** — repositorio: `juliocmorales-design/trueke-app`, branch: `main`
 - **Remote URL corregida:** `git@github.com:juliocmorales-design/trueke-app.git` (era `juliomorales-design` sin la c)
 - **Claude Code v2.1.123** instalado y autenticado en Codespaces
-- **Vercel** — dominio `trueke.app` conectado ✅ | deploy automático desde `ui/navbar-refactor`
+- **Vercel** — dominio `trueke.app` conectado ✅ | deploy automático desde `main`
 - **Resend** — SMTP verificado ✅ | emails desde `noreply@trueke.app`
 - **Logo:** `public/images/logo.png` (500×301 px, 65 KB) — trackeado en repo ✅
 
@@ -299,6 +299,28 @@ rating/[offerId] → calificación 1-5 + comentario
 
 - **Textos cards onboarding** — artículos y etiqueta corregidos: "Tengo/Unos libros", "Me dan/Una Sierra", "Cambio x/Mochila", "Obtengo/Una bici"
 
+### Fixes críticos y de UX (sesión 11 — segunda parte)
+
+- **MeetingClient redirect** — `router.replace` usaba `offerId` (numérico) en lugar de `receiver` (UUID del otro usuario); corregido a `/mensajes/${receiver}`
+- **Items inactivos** — `item/[id]/page.tsx`: si `active === false` y el visitante no es el dueño, redirige a `/`
+- **Placeholder SVG en item detail** — reemplaza `placeholder.png` (inexistente) por SVG inline de caja, igual al de feed/buscar
+- **Validación nombre y username en perfil edit** — nombre mínimo 2 chars, username mínimo 3 chars, solo `[a-zA-Z0-9_]`; valida antes de llamar al servidor
+- **check-email con RPC** — `app/api/auth/check-email/route.ts` ahora usa `check_email_exists` (RPC Supabase que consulta `auth.users`); fallback a `listUsers` si la RPC no existe. Elimina el fetch directo a `/auth/v1/admin/users`
+- **Toggle show/hide password en login** — botón ojo SVG igual al del onboarding
+- **Hint en rating** — "Selecciona una calificación para continuar" visible cuando `stars === 0`
+- **Wildcard SQL sanitizado en búsqueda** — `sanitizeQuery()` escapa `%`, `_` y `\` antes de pasarlos al `.ilike()`
+- **avatar.svg consistente** — único uso de `avatar.png` corregido a `avatar.svg` en `item/[id]/page.tsx`
+- **Auth callback timeout** — `app/auth/callback/page.tsx`: timeout 10s → redirige a `/login?error=timeout` si `getSession` no responde
+- **Límite 5MB por foto** — validación client-side en `handleImages` de crear y editar antes de subir a Storage
+- **Promedio en reseñas** — `app/perfil/resenas/page.tsx`: muestra número grande, estrellas y total al inicio de la lista
+- **Categoría en item detail** — badge crema `#F0EAE0` antes del badge de ciudad en `app/item/[id]/page.tsx`
+- **Goal description en cadena** — `chain.goal_description` visible en itálica debajo del header cuando existe; tipo actualizado en `ChainData`
+- **Límites caracteres crear/editar** — `maxLength`: título 80, wanted 100, descripción 500; contador `{description.length}/500` debajo del textarea
+- **Race condition cancelar oferta** — `handleCancelOffer` en ExchangeClient verifica `status === 'pending'` antes del update; muestra alerta y `router.refresh()` si ya fue aceptada
+- **og-image.png** — copiada a `public/images/`, configurada en `app/layout.tsx` (OpenGraph + Twitter)
+- **Términos y privacidad** — `app/terminos/page.tsx` creado con secciones 1-18, nav oculto, link desde perfil y onboarding step 6
+- **Merge a main** — `ui/navbar-refactor` mergeada a `main` (fast-forward, 171 commits); `main` ahora es la rama default y de producción en GitHub y Vercel
+
 ---
 
 ## ⏳ Pendiente post-lanzamiento
@@ -306,7 +328,7 @@ rating/[offerId] → calificación 1-5 + comentario
 - Crop circular al subir foto de perfil
 - `next/image` optimización
 - PWA / Push notifications
-- `og-image.png` (1200×630px) para WhatsApp preview
+- ~~`og-image.png`~~ ✅ completado sesión 11
 - Tarjetas compartibles V2 y V3
 - Niveles de usuario / logros
 - Paginación / infinite scroll
