@@ -61,6 +61,11 @@ export default async function PerfilPublicoPage({
           <div style={{ flex: 1 }}>
             <div style={s.name}>{profile.name || profile.username || 'Usuario'}</div>
             <div style={s.username}>@{profile.username || 'user'}</div>
+            {profile.bio && (
+              <p style={{ fontSize: 13, color: '#6B7280', margin: '6px 0 0', lineHeight: 1.5, fontStyle: 'italic' }}>
+                {profile.bio}
+              </p>
+            )}
           </div>
           <div style={s.scoreBox}>
             <div style={s.score}>{score}</div>

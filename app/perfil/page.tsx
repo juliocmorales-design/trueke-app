@@ -107,6 +107,11 @@ export default function PerfilPage() {
         <div style={{ flex: 1 }}>
           <div style={styles.name}>{profile?.name || profile?.username || 'Usuario'}</div>
           <div style={styles.username}>@{profile?.username || 'user'}</div>
+          {profile?.bio && (
+            <p style={{ fontSize: 13, color: '#6B7280', margin: '6px 0 0', lineHeight: 1.5, fontStyle: 'italic' }}>
+              {profile.bio}
+            </p>
+          )}
         </div>
 
         <div style={styles.scoreBox}>

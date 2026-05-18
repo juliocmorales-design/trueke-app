@@ -14,6 +14,7 @@ export default function Home() {
   const [ready,         setReady]         = useState(false)
   const [items,         setItems]         = useState<Item[]>([])
   const [chains,        setChains]        = useState<Chain[]>([])
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [userCity,      setUserCity]      = useState('')
   const [showCityModal, setShowCityModal] = useState(false)
   const [cityInput,     setCityInput]     = useState('')
@@ -27,6 +28,8 @@ export default function Home() {
       const user = sessionData.session?.user
 
       if (!user) { router.replace('/onboarding'); return }
+
+      setCurrentUserId(user.id)
 
       const { data: profile } = await supabase
         .from('profiles').select('username, city').eq('id', user.id).single()
@@ -258,7 +261,7 @@ export default function Home() {
           <Section title={userCity ? `Cerca de ti en ${userCity}` : 'Publicaciones recientes'} href="/buscar" />
 <div style={styles.grid2}>
             {items.slice(0, 6).map(item => (
-              <Card key={item.id} router={router} item={item} />
+              <Card key={item.id} router={router} item={item} isOwn={item.user_id === currentUserId} />
             ))}
           </div>
 
@@ -268,7 +271,7 @@ export default function Home() {
               <Section title="Recomendados" href="/buscar" badge="Nuevo" />
               <div style={styles.scrollRow}>
                 {items.slice(6, 12).map(item => (
-                  <Card key={item.id} router={router} item={item} small />
+                  <Card key={item.id} router={router} item={item} small isOwn={item.user_id === currentUserId} />
                 ))}
               </div>
             </>
@@ -324,7 +327,7 @@ function Section({ title, href, badge }: { title: string; href?: string; badge?:
   )
 }
 
-function Card({ router, item, small = false }: any) {
+function Card({ router, item, small = false, isOwn = false }: any) {
   const image = item?.images?.[0] ?? null
 
   return (
@@ -332,7 +335,23 @@ function Card({ router, item, small = false }: any) {
       style={{ ...styles.card, ...(small ? styles.cardSmall : {}) }}
       onClick={() => router.push(`/item/${item.id}`)}
     >
-      <div style={styles.cardImg}>
+      <div style={{ ...styles.cardImg, position: 'relative' }}>
+        {isOwn && (
+          <div style={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            background: '#F97316',
+            color: '#fff',
+            fontSize: 10,
+            fontWeight: 700,
+            padding: '2px 8px',
+            borderRadius: 20,
+            zIndex: 1,
+          }}>
+            Tuyo
+          </div>
+        )}
         {image
           ? <img src={image} style={styles.imgEl} alt={item.title} />
           : <div style={{ ...styles.imgFallback, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

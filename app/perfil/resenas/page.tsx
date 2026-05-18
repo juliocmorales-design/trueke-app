@@ -33,7 +33,7 @@ function formatDate(iso: string) {
 }
 
 export default function MisResenasPage() {
-  const router = useRouter()
+  const router  = useRouter()
   const [ratings, setRatings] = useState<Rating[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -125,7 +125,12 @@ export default function MisResenasPage() {
                   }
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={styles.raterName}>{r.raterName}</div>
+                  <div
+                    style={{ ...styles.raterName, color: '#F97316', cursor: 'pointer' }}
+                    onClick={() => router.push(`/perfil/${r.rater_id}`)}
+                  >
+                    {r.raterName}
+                  </div>
                   <Stars score={r.score} />
                 </div>
                 <div style={styles.date}>{formatDate(r.created_at)}</div>

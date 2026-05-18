@@ -78,6 +78,19 @@ export default function Onboarding() {
     init()
   }, [])
 
+  const checkUsernameAvailable = async (value: string) => {
+    if (value.length < 3) return
+    if (!/^[a-zA-Z0-9_]+$/.test(value)) return
+    const res = await fetch('/api/auth/check-username', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: value }),
+    })
+    const data = await res.json()
+    if (data.taken) setError('Ese username ya está tomado. Elige otro.')
+    else setError('')
+  }
+
   const toggleInterest = (i: string) => {
     setInterests(prev =>
       prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]
@@ -358,6 +371,7 @@ export default function Onboarding() {
             placeholder="Ej: mariag"
             value={username}
             onChange={e => { setUsername(e.target.value.replace('@', '').trim()); setError('') }}
+            onBlur={e => checkUsernameAvailable(e.target.value)}
             autoComplete="username"
           />
 

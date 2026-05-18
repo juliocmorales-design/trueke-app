@@ -13,6 +13,7 @@ export interface MeetingData {
     from_item_id: number | null
     to_item_id:   number | null
     status: string
+    meeting_point: string | null
   }
   fromProfile: { id: string; name: string; username: string | null; avatar_url: string | null } | null
   toProfile:   { id: string; name: string; username: string | null; avatar_url: string | null } | null
@@ -90,6 +91,19 @@ export default function MeetingClient({ offerId, data }: { offerId: string; data
 
       {/* BODY */}
       <div className={s.body}>
+        {data.offer.meeting_point && (
+          <div style={{
+            background: '#FFF5F0',
+            border: '1.5px solid #F97316',
+            borderRadius: 12,
+            padding: '12px 16px',
+            marginBottom: 16,
+            fontSize: 14,
+            color: '#1A2744',
+          }}>
+            <strong>Propuesta actual:</strong> {data.offer.meeting_point}
+          </div>
+        )}
         <input
           className={s.input}
           type="text"

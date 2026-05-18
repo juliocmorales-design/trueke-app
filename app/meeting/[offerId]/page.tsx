@@ -15,7 +15,7 @@ export default async function MeetingPage({ params }: { params: Promise<{ offerI
 
   const { data: offer, error } = await supabase
     .from('offers')
-    .select('id, from_user_id, to_user_id, from_item_id, to_item_id, status')
+    .select('id, from_user_id, to_user_id, from_item_id, to_item_id, status, meeting_point')
     .eq('id', offerId)
     .single()
 

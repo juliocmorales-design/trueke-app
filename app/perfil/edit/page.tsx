@@ -11,6 +11,7 @@ export default function EditProfile() {
   const [name,       setName]       = useState('')
   const [username,   setUsername]   = useState('')
   const [city,       setCity]       = useState('')
+  const [bio,        setBio]        = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [preview,    setPreview]    = useState<string | null>(null)
   const [saving,     setSaving]     = useState(false)
@@ -33,6 +34,7 @@ export default function EditProfile() {
       setName(data?.name || '')
       setUsername(data?.username || '')
       setCity(data?.city || '')
+      setBio(data?.bio || '')
       setPreview(data?.avatar_url || null)
     } catch {
       router.replace('/')
@@ -88,7 +90,7 @@ export default function EditProfile() {
 
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ name, username, city, avatar_url: finalAvatarUrl })
+        .update({ name, username, city, avatar_url: finalAvatarUrl, bio: bio.trim() || null })
         .eq('id', user.id)
 
       if (updateError?.code === '23505') {
@@ -167,7 +169,7 @@ export default function EditProfile() {
           />
         </div>
 
-        <div style={{ ...s.field, marginBottom: 0 }}>
+        <div style={s.field}>
           <div style={s.label}>Ciudad</div>
           <input
             style={s.input}
@@ -175,6 +177,20 @@ export default function EditProfile() {
             onChange={e => setCity(e.target.value)}
             placeholder="Ej: Monterrey, CDMX..."
           />
+        </div>
+
+        <div style={{ ...s.field, marginBottom: 0 }}>
+          <div style={s.label}>Sobre ti</div>
+          <textarea
+            style={{ ...s.input, minHeight: 80, resize: 'none', fontFamily: 'inherit' }}
+            value={bio}
+            onChange={e => setBio(e.target.value)}
+            placeholder="Cuéntales a otros qué tipo de intercambios te interesan..."
+            maxLength={200}
+          />
+          <p style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'right', margin: '4px 0 0' }}>
+            {bio.length}/200
+          </p>
         </div>
 
       </div>
