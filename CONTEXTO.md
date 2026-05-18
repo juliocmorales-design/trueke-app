@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 18 Mayo 2026 (sesión 12 — final)
+> Última actualización: 17 Mayo 2026 (sesión 12)
 
 ---
 
@@ -345,12 +345,7 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Guard en rating** — `RatingClient.tsx`: verifica que `currentUser` sea `from_user_id` o `to_user_id` antes de cargar la pantalla; redirige a `/` si no es parte del intercambio
 - **Confirmación antes de cerrar sesión** — `window.confirm` en `handleSignOut` de `perfil/page.tsx`
 
-### Mejoras adicionales (sesión 12 — cierre)
-- **Skeleton loader en home** — `page.tsx`: reemplaza `Cargando...` por skeleton animado (search bar + banner cadenas + 6 cards en grid 2 columnas) con animación shimmer
-- **Timestamps con locale correcto** — `mensajes/page.tsx`: `formatTime()` ahora usa `'es-MX'` en `toLocaleTimeString` y `toLocaleDateString`; fechas consistentes en cualquier dispositivo
-- **V10 confirmado** — link `/terminos` en onboarding step 6 ya estaba implementado (`window.open('/terminos', '_blank')`); sin cambios necesarios
-
-### 9 mejoras de calidad 🟡🟢
+### 11 mejoras de calidad 🟡🟢
 - **Security headers HTTP** — `next.config.ts`: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`
 - **onError en imágenes de cards** — `page.tsx` y `buscar/page.tsx`: imágenes de items con `onError` que muestra SVG fallback si la URL está rota
 - **Timeout 10s en home** — `page.tsx`: `checkFlow` con `setTimeout` de 10 segundos; si Supabase no responde, muestra el home vacío en lugar de loading infinito
@@ -359,16 +354,21 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Feedback de error al enviar mensaje** — si el insert falla: mantiene el texto en el textarea, muestra toast rojo 3 segundos
 - **Textarea auto-resize en chat** — reemplaza `<input>` por `<textarea>` que crece con el contenido; Enter envía, Shift+Enter = salto de línea; botón enviar alineado abajo
 - **onError en avatares de perfil** — `perfil/page.tsx` y `perfil/[userId]/page.tsx`: fallback a `/images/avatar.svg` si la URL falla
-- **Realtime cleanup confirmado** — `mensajes/[userId]/page.tsx` ya tenía `removeChannel` correcto; sin cambios necesarios
+- **Timestamps con locale correcto** — `mensajes/page.tsx`: `formatTime()` usa `'es-MX'` en `toLocaleTimeString` y `toLocaleDateString`
+- **Skeleton loader en home** — `page.tsx`: reemplaza `Cargando...` por skeleton animado (search bar + banner + 6 cards en grid) con animación shimmer
+- **Link /terminos confirmado** — onboarding step 6 ya tenía `window.open('/terminos', '_blank')` funcionando; sin cambios
 
 ---
 
 ## ⏳ Pendiente post-lanzamiento
 
+- **V1** — `next/image` optimización (lazy loading, WebP, LCP)
+- **V6** — Toast "¡Copiado!" al compartir link en tarjetas
+- **V8** — Typing indicator en chat ("Escribiendo...")
+- **V9** — Score de confianza con explicación (tooltip o subtítulo "¿Cómo se calcula?")
+- **V12** — Log de errores centralizado (Sentry o Vercel Analytics)
 - Crop circular al subir foto de perfil
-- `next/image` optimización
 - PWA / Push notifications
-- ~~`og-image.png`~~ ✅ completado sesión 11
 - Tarjetas compartibles V2 y V3
 - Niveles de usuario / logros
 - Paginación / infinite scroll
