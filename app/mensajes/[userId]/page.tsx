@@ -31,6 +31,7 @@ export default function OfferChatPage() {
   const [text, setText]               = useState('')
   const [showMenu, setShowMenu]       = useState(false)
   const [reported, setReported]       = useState(false)
+  const [sendError, setSendError]     = useState('')
 
   const bottomRef = useRef<HTMLDivElement | null>(null)
 
@@ -112,17 +113,25 @@ export default function OfferChatPage() {
 
   const sendMessage = async () => {
     if (!text.trim() || !currentUser || !offer) return
+    if (text.trim().length > 1000) return
+    setSendError('')
+    const msgText = text.trim()
     const otherUserId = offer.from_user_id === currentUser.id
       ? offer.to_user_id
       : offer.from_user_id
 
-    await supabase.from('messages').insert({
+    const { error } = await supabase.from('messages').insert({
       sender_id: currentUser.id,
       receiver: otherUserId,
-      text: text.trim(),
+      text: msgText,
       offer_id: offerId,
       is_read: false,
     })
+    if (error) {
+      setSendError('No se pudo enviar. Intenta de nuevo.')
+      setTimeout(() => setSendError(''), 3000)
+      return
+    }
     setText('')
   }
 
@@ -309,13 +318,24 @@ export default function OfferChatPage() {
       </div>
 
       {/* INPUT */}
+      {sendError && (
+        <div style={{ position: 'fixed', bottom: 72, left: '50%', transform: 'translateX(-50%)', background: '#FEE2E2', color: '#991B1B', borderRadius: 10, padding: '8px 16px', fontSize: 13, zIndex: 30, whiteSpace: 'nowrap' }}>
+          {sendError}
+        </div>
+      )}
       <div style={s.inputBar}>
-        <input
+        <textarea
           value={text}
-          onChange={e => setText(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && sendMessage()}
+          onChange={e => {
+            setText(e.target.value)
+            e.target.style.height = 'auto'
+            e.target.style.height = e.target.scrollHeight + 'px'
+          }}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
           placeholder="Escribe un mensaje..."
-          style={s.inputBox}
+          maxLength={1000}
+          rows={1}
+          style={{ ...s.inputBox, resize: 'none', overflow: 'hidden', maxHeight: '120px', lineHeight: '1.4' }}
         />
         <button
           style={{ ...s.sendBtn, ...(!text.trim() ? s.sendOff : {}) }}
@@ -652,7 +672,7 @@ const s: any = {
     padding: '10px 16px calc(20px + env(safe-area-inset-bottom))',
     background: '#fff',
     borderTop: '1px solid #EDEDED',
-    alignItems: 'center',
+    alignItems: 'flex-end',
   },
 
   inputBox: {

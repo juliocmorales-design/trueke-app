@@ -56,6 +56,7 @@ export default async function PerfilPublicoPage({
               src={profile.avatar_url || '/images/avatar.svg'}
               style={s.avatar}
               alt="avatar"
+              onError={e => { e.currentTarget.src = '/images/avatar.svg' }}
             />
           </div>
           <div style={{ flex: 1 }}>

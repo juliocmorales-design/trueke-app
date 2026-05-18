@@ -103,6 +103,7 @@ export default function PerfilPage() {
             src={profile?.avatar_url || '/images/avatar.svg'}
             style={styles.avatar}
             alt="avatar"
+            onError={e => { e.currentTarget.src = '/images/avatar.svg' }}
           />
         </div>
 
