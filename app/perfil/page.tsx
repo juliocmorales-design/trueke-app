@@ -18,6 +18,8 @@ export default function PerfilPage() {
   useEffect(() => { loadData() }, [])
 
   const handleSignOut = async () => {
+    const confirmed = window.confirm('¿Seguro que quieres cerrar sesión?')
+    if (!confirmed) return
     await supabase.auth.signOut()
     router.replace('/login')
   }

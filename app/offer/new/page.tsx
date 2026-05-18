@@ -106,17 +106,22 @@ function OfferNewForm() {
 
     const { data: { session } } = await supabase.auth.getSession()
     const token = session?.access_token ?? ''
-    fetch('/api/notifications/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        userId:  targetItem.user_id,
-        type:    'offer_received',
-        title:   'Nueva oferta de intercambio 🔄',
-        body:    'Alguien quiere intercambiar algo contigo',
-        offerId: offer.id,
-      }),
-    }).catch(() => {})
+    try {
+      await fetch('/api/notifications/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          userId:  targetItem.user_id,
+          type:    'offer_received',
+          title:   'Nueva oferta de intercambio',
+          body:    'Alguien quiere intercambiar algo contigo',
+          offerId: offer.id,
+        }),
+      })
+    } catch (err) {
+      console.error('Notification failed:', err)
+      // No bloqueamos — la oferta ya se creó
+    }
 
     router.push(`/mensajes/${offer.id}`)
   }

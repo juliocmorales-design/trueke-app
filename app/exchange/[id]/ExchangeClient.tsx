@@ -189,29 +189,41 @@ export default function ExchangeClient({
   }
 
   const handleAccept = async () => {
+    if (acting) return
     setActing(true)
-    await supabase.from('offers').update({ status: 'accepted' }).eq('id', offer.id)
-    setStatus('accepted')
-    setActing(false)
-    sendNotification(
-      offer.from_user_id,
-      'offer_accepted',
-      'Tu oferta fue aceptada 🎉',
-      `${requestedItem?.title || 'Tu ítem'} está listo para el intercambio`,
-    )
+    try {
+      await supabase.from('offers').update({ status: 'accepted' }).eq('id', offer.id)
+      setStatus('accepted')
+      sendNotification(
+        offer.from_user_id,
+        'offer_accepted',
+        'Tu oferta fue aceptada 🎉',
+        `${requestedItem?.title || 'Tu ítem'} está listo para el intercambio`,
+      )
+    } finally {
+      setActing(false)
+    }
   }
 
   const handleReject = async () => {
-    setActing(true)
-    await supabase.from('offers').update({ status: 'rejected' }).eq('id', offer.id)
-    setStatus('rejected')
-    setActing(false)
-    sendNotification(
-      offer.from_user_id,
-      'offer_rejected',
-      'Tu oferta fue rechazada',
-      'La otra parte no pudo aceptar en este momento',
+    const confirmed = window.confirm(
+      '¿Seguro que quieres rechazar esta oferta? Esta acción no se puede deshacer.'
     )
+    if (!confirmed) return
+    if (acting) return
+    setActing(true)
+    try {
+      await supabase.from('offers').update({ status: 'rejected' }).eq('id', offer.id)
+      setStatus('rejected')
+      sendNotification(
+        offer.from_user_id,
+        'offer_rejected',
+        'Tu oferta fue rechazada',
+        'La otra parte no pudo aceptar en este momento',
+      )
+    } finally {
+      setActing(false)
+    }
   }
 
   const handleCancelOffer = async () => {
@@ -453,10 +465,10 @@ export default function ExchangeClient({
         </div>
       ) : status === 'pending' && currentUserId === offer.to_user_id ? (
         <div className={s.footer}>
-          <button className={s.btnPrimary} onClick={handleAccept} disabled={acting}>
-            Aceptar intercambio
+          <button className={s.btnPrimary} onClick={handleAccept} disabled={acting} style={{ opacity: acting ? 0.6 : 1 }}>
+            {acting ? 'Procesando...' : 'Aceptar intercambio'}
           </button>
-          <button className={s.btnSecondary} onClick={handleReject} disabled={acting}>
+          <button className={s.btnSecondary} onClick={handleReject} disabled={acting} style={{ opacity: acting ? 0.6 : 1 }}>
             Rechazar
           </button>
         </div>

@@ -63,6 +63,11 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.replace('/login'); return }
 
+    if (data.offer.from_user_id !== user.id && data.offer.to_user_id !== user.id) {
+      router.replace('/')
+      return
+    }
+
     const iAmFrom    = user.id === data.offer.from_user_id
     const received   = iAmFrom ? data.toItem      : data.fromItem
     const rated      = iAmFrom ? data.toProfile   : data.fromProfile

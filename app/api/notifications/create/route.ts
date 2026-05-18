@@ -24,6 +24,21 @@ export async function POST(req: NextRequest) {
 
   const { userId, type, title, body, offerId } = await req.json()
 
+  const VALID_TYPES = [
+    'offer_received', 'offer_accepted', 'offer_rejected',
+    'offer_completed', 'rating_received',
+  ]
+
+  if (!userId || !type || !title || !body) {
+    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+  }
+  if (!VALID_TYPES.includes(type)) {
+    return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+  }
+  if (title.length > 100 || body.length > 300) {
+    return NextResponse.json({ error: 'Content too long' }, { status: 400 })
+  }
+
   const { error } = await adminClient()
     .from('notifications')
     .insert({
