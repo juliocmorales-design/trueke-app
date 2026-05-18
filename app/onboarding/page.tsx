@@ -40,6 +40,8 @@ export default function Onboarding() {
   const [otroText, setOtroText] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string>('')
 
   useEffect(() => {
     const init = async () => {
@@ -145,10 +147,24 @@ export default function Onboarding() {
       }
     }
 
+    let avatarUrl: string | null = null
+    if (avatarFile && uid) {
+      const ext = avatarFile.name.split('.').pop() ?? 'jpg'
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(`${uid}.${ext}`, avatarFile, { upsert: true })
+      if (!uploadError && uploadData) {
+        const { data: urlData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(uploadData.path)
+        avatarUrl = urlData.publicUrl
+      }
+    }
+
     const res = await fetch('/api/profiles/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: uid, username, name, city, interests }),
+      body: JSON.stringify({ id: uid, username, name, city, interests, avatar_url: avatarUrl }),
     })
 
     const result = await res.json()
@@ -325,7 +341,7 @@ export default function Onboarding() {
       {step === 1 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 6) * 100}%` }} />
+            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>¿Cuál es tu nombre?</h1>
@@ -360,7 +376,7 @@ export default function Onboarding() {
       {step === 2 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 6) * 100}%` }} />
+            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>¿Cuál será tu @usuario?</h1>
@@ -402,7 +418,7 @@ export default function Onboarding() {
       {step === 3 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 6) * 100}%` }} />
+            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>¿Cuál es tu email?</h1>
@@ -467,7 +483,7 @@ export default function Onboarding() {
       {step === 4 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 6) * 100}%` }} />
+            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>Elige tu contraseña</h1>
@@ -577,7 +593,7 @@ export default function Onboarding() {
       {step === 5 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 6) * 100}%` }} />
+            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>¿De qué ciudad eres?</h1>
@@ -623,11 +639,109 @@ export default function Onboarding() {
         </div>
       )}
 
-      {/* ── STEP 6: Intereses ── */}
+      {/* ── STEP 6: Foto de perfil ── */}
       {step === 6 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 6) * 100}%` }} />
+            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
+          </div>
+
+          <h1 style={styles.title}>Agrega tu foto de perfil</h1>
+          <p style={styles.subtitle}>
+            Los usuarios con foto generan más confianza y reciben más ofertas
+          </p>
+
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 20,
+            margin: '32px 0',
+          }}>
+            <div style={{
+              width: 120,
+              height: 120,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              background: '#F0EAE0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              border: avatarPreview ? '3px solid #F97316' : '3px dashed #C4BAB1',
+            }}
+              onClick={() => document.getElementById('avatar-input')?.click()}
+            >
+              {avatarPreview ? (
+                <img src={avatarPreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                  stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              )}
+            </div>
+
+            <input
+              id="avatar-input"
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={e => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                if (file.size > 5 * 1024 * 1024) {
+                  setError('La foto debe pesar menos de 5MB.')
+                  return
+                }
+                setAvatarFile(file)
+                setAvatarPreview(URL.createObjectURL(file))
+                setError('')
+              }}
+            />
+
+            <button
+              style={{
+                background: '#F0EAE0',
+                border: 'none',
+                borderRadius: 12,
+                padding: '12px 24px',
+                fontSize: 15,
+                fontWeight: 600,
+                color: '#1A2744',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+              onClick={() => document.getElementById('avatar-input')?.click()}
+            >
+              {avatarPreview ? 'Cambiar foto' : 'Elegir foto'}
+            </button>
+          </div>
+
+          {error && <p style={styles.errorText}>{error}</p>}
+
+          <button
+            style={{ ...styles.button, border: 'none' }}
+            onClick={() => { setError(''); setStep(7) }}
+          >
+            {avatarPreview ? 'Continuar' : 'Continuar con foto'}
+          </button>
+
+          <div
+            style={{ ...styles.back, color: '#9CA3AF', marginTop: 8 }}
+            onClick={() => { setError(''); setStep(7) }}
+          >
+            Saltar por ahora
+          </div>
+        </div>
+      )}
+
+      {/* ── STEP 7: Intereses ── */}
+      {step === 7 && (
+        <div style={styles.stepContainer}>
+          <div style={styles.progress}>
+            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>¿Qué te interesa intercambiar?</h1>
@@ -740,7 +854,7 @@ export default function Onboarding() {
             </span>
           </p>
 
-          <div style={styles.back} onClick={() => { setError(''); setStep(5) }}>Atrás</div>
+          <div style={styles.back} onClick={() => { setError(''); setStep(6) }}>Atrás</div>
         </div>
       )}
 

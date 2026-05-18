@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     console.log('Using URL:', process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 30))
     console.log('Has service key:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
 
-    const { id, username, name, city, interests } = await req.json()
+    const { id, username, name, city, interests, avatar_url } = await req.json()
 
     if (!id || !username) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     const { error } = await adminClient()
       .from('profiles')
-      .upsert({ id, username, name, city, interests })
+      .upsert({ id, username, name, city, interests, avatar_url: avatar_url || null })
 
     if (error) {
       console.error('Upsert error:', JSON.stringify(error))
