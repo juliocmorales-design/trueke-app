@@ -21,6 +21,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     pathname.startsWith('/onboarding') ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/perfil/setup') ||
+    pathname.startsWith('/auth/reset-password') ||
     isItemPage
 
   useEffect(() => {
