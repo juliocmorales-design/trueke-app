@@ -7,12 +7,13 @@ import { useRouter } from 'next/navigation'
 export default function EditProfile() {
   const router = useRouter()
 
-  const [profile,    setProfile]    = useState<any>(null)
-  const [name,       setName]       = useState('')
-  const [username,   setUsername]   = useState('')
-  const [city,       setCity]       = useState('')
-  const [bio,        setBio]        = useState('')
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [profile,        setProfile]        = useState<any>(null)
+  const [name,           setName]           = useState('')
+  const [username,       setUsername]       = useState('')
+  const [city,           setCity]           = useState('')
+  const [bio,            setBio]            = useState('')
+  const [avatarFile,     setAvatarFile]     = useState<File | null>(null)
+  const [originalValues, setOriginalValues] = useState({ name: '', username: '', city: '', bio: '' })
   const [preview,    setPreview]    = useState<string | null>(null)
   const [saving,     setSaving]     = useState(false)
   const [saveError,  setSaveError]  = useState<string | null>(null)
@@ -35,6 +36,12 @@ export default function EditProfile() {
       setUsername(data?.username || '')
       setCity(data?.city || '')
       setBio(data?.bio || '')
+      setOriginalValues({
+        name:     data?.name     || '',
+        username: data?.username || '',
+        city:     data?.city     || '',
+        bio:      data?.bio      || '',
+      })
       setPreview(data?.avatar_url || null)
     } catch {
       router.replace('/')
@@ -109,6 +116,13 @@ export default function EditProfile() {
       setSaving(false)
     }
   }
+
+  const hasChanges =
+    name     !== originalValues.name     ||
+    username !== originalValues.username ||
+    city     !== originalValues.city     ||
+    bio      !== originalValues.bio      ||
+    !!avatarFile
 
   return (
     <div style={s.container}>
@@ -200,9 +214,9 @@ export default function EditProfile() {
       )}
 
       <button
-        style={{ ...s.saveBtn, opacity: saving ? 0.7 : 1 }}
+        style={{ ...s.saveBtn, opacity: saving || !hasChanges ? 0.6 : 1 }}
         onClick={handleSave}
-        disabled={saving}
+        disabled={saving || !hasChanges}
       >
         {saving ? 'Guardando...' : 'Guardar cambios'}
       </button>
