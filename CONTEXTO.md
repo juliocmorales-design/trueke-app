@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 18 Mayo 2026 (sesión 12)
+> Última actualización: 18 Mayo 2026 (sesión 12 — final)
 
 ---
 
@@ -344,6 +344,11 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Captura error de notificación en offer/new** — fetch a `/api/notifications/create` ahora con `try/await/catch`; loguea el error sin bloquear el flujo
 - **Guard en rating** — `RatingClient.tsx`: verifica que `currentUser` sea `from_user_id` o `to_user_id` antes de cargar la pantalla; redirige a `/` si no es parte del intercambio
 - **Confirmación antes de cerrar sesión** — `window.confirm` en `handleSignOut` de `perfil/page.tsx`
+
+### Mejoras adicionales (sesión 12 — cierre)
+- **Skeleton loader en home** — `page.tsx`: reemplaza `Cargando...` por skeleton animado (search bar + banner cadenas + 6 cards en grid 2 columnas) con animación shimmer
+- **Timestamps con locale correcto** — `mensajes/page.tsx`: `formatTime()` ahora usa `'es-MX'` en `toLocaleTimeString` y `toLocaleDateString`; fechas consistentes en cualquier dispositivo
+- **V10 confirmado** — link `/terminos` en onboarding step 6 ya estaba implementado (`window.open('/terminos', '_blank')`); sin cambios necesarios
 
 ### 9 mejoras de calidad 🟡🟢
 - **Security headers HTTP** — `next.config.ts`: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`
