@@ -173,7 +173,7 @@ export default function Home() {
     }
   }
 
-  if (!ready) return <div style={styles.loading}>Cargando...</div>
+  if (!ready) return <HomeSkeleton />
 
   return (
     <div style={styles.container}>
@@ -287,6 +287,34 @@ export default function Home() {
 }
 
 /* ── Componentes ── */
+
+function HomeSkeleton() {
+  const sh: any = {
+    background: 'linear-gradient(90deg,#e8e0d8 25%,#ddd5cc 37%,#e8e0d8 63%)',
+    backgroundSize: '400% 100%',
+    animation: 'shimmer 1.4s ease infinite',
+    borderRadius: 8,
+  }
+  return (
+    <div style={{ padding: 16, paddingBottom: 100, background: '#FDF8F3', minHeight: '100vh' }}>
+      <style>{`@keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}`}</style>
+      <div style={{ ...sh, height: 44, borderRadius: 16, marginTop: 10, marginBottom: 20 }} />
+      <div style={{ ...sh, height: 110, borderRadius: 16, marginBottom: 24 }} />
+      <div style={{ ...sh, height: 14, width: '45%', borderRadius: 8, marginBottom: 14 }} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        {[0,1,2,3,4,5].map(i => (
+          <div key={i} style={{ background: '#fff', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <div style={{ ...sh, width: '100%', aspectRatio: '3/2', borderRadius: 0 }} />
+            <div style={{ padding: 10, display: 'flex', flexDirection: 'column', gap: 7 }}>
+              <div style={{ ...sh, height: 12, width: '80%' }} />
+              <div style={{ ...sh, height: 10, width: '55%' }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -403,12 +431,6 @@ function Card({ router, item, small = false, isOwn = false }: any) {
 /* ── Estilos ── */
 
 const styles: any = {
-
-  loading: {
-    height: '100vh', display: 'flex',
-    alignItems: 'center', justifyContent: 'center',
-    background: '#FDF8F3',
-  },
 
   container: {
     padding: 16,

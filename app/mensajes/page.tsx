@@ -142,9 +142,9 @@ export default function MessagesPage() {
 
     if (diff < 60) return 'Ahora'
     if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`
-    if (diff < 86400) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    if (diff < 86400) return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
     if (diff < 172800) return 'Ayer'
-    return date.toLocaleDateString()
+    return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
   }
 
   const shimmerStyle: any = {
