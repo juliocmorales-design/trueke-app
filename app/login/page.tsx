@@ -144,7 +144,9 @@ export default function LoginPage() {
               return
             }
             setResetLoading(true)
-            await supabase.auth.resetPasswordForEmail(email.trim())
+            await supabase.auth.resetPasswordForEmail(email.trim(), {
+                redirectTo: `${window.location.origin}/auth/reset-password`,
+              })
             setResetLoading(false)
             setResetSent(true)
           }}
