@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 17 Mayo 2026 (sesión 11)
+> Última actualización: 17 Mayo 2026 (sesión 11 — final)
 
 ---
 
@@ -86,7 +86,7 @@ Las tarjetas compartibles solo muestran:
 
 | Tabla | Columnas clave | Notas |
 |---|---|---|
-| `profiles` | id (uuid), username, avatar_url, city | id = auth.users.id |
+| `profiles` | id (uuid), username, avatar_url, city, bio (text, nullable) | id = auth.users.id — `bio` agregada sesión 11 |
 | `items` | id (bigint), title, description, wanted, city, user_id (uuid), images (jsonb), active (bool) | active agregado sesión 4 |
 | `offers` | id (bigint), from_user_id (uuid), to_user_id (uuid), status, created_at, meeting_point, meeting_confirmed_at | meeting_point agregado |
 | `offer_items` | id (bigint), offer_id → offers | |
@@ -320,6 +320,17 @@ rating/[offerId] → calificación 1-5 + comentario
 - **og-image.png** — copiada a `public/images/`, configurada en `app/layout.tsx` (OpenGraph + Twitter)
 - **Términos y privacidad** — `app/terminos/page.tsx` creado con secciones 1-18, nav oculto, link desde perfil y onboarding step 6
 - **Merge a main** — `ui/navbar-refactor` mergeada a `main` (fast-forward, 171 commits); `main` ahora es la rama default y de producción en GitHub y Vercel
+
+### UX y polish final (sesión 11 — cierre)
+
+- **Username disponibilidad en onBlur** — onboarding step 2: al salir del campo se llama `/api/auth/check-username`; muestra error inline si el username ya está tomado antes de continuar
+- **API route `/api/auth/check-username`** — nueva ruta POST con admin client; consulta `profiles.username` y retorna `{ taken: boolean }`
+- **Reseñador clickeable** — `perfil/resenas/page.tsx`: nombre del reseñador en naranja con `cursor: pointer`; navega a `/perfil/${r.rater_id}`
+- **Badge "Tuyo"** — cards del feed en `page.tsx`: pill naranja "Tuyo" superpuesto en esquina superior derecha para items propios del usuario logueado
+- **Campo bio en perfil edit** — textarea con contador 200 chars; se guarda en `profiles.bio` (columna `text, nullable` agregada en Supabase)
+- **Bio visible en perfil propio y público** — `perfil/page.tsx` y `perfil/[userId]/page.tsx`: muestra bio en itálica gris debajo del username cuando existe
+- **Meeting point muestra propuesta existente** — `MeetingClient.tsx`: si `offer.meeting_point` ya tiene valor, lo muestra en caja naranja sobre el input antes de proponer cambio
+- **Botón guardar solo activo con cambios** — `perfil/edit/page.tsx`: `hasChanges` compara estado actual vs `originalValues`; botón deshabilitado (opacidad 0.6) si no hay cambios ni foto nueva
 
 ---
 
