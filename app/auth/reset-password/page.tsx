@@ -14,15 +14,36 @@ export default function ResetPasswordPage() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    // Supabase maneja el token automáticamente via onAuthStateChange
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event) => {
-        if (event === 'PASSWORD_RECOVERY') {
+    const handleRecovery = async () => {
+      // Leer token_hash de la URL
+      const params = new URLSearchParams(window.location.search)
+      const tokenHash = params.get('token_hash')
+      const type = params.get('type')
+
+      if (tokenHash && type === 'recovery') {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'recovery',
+        })
+        if (!error) {
           setReady(true)
+        } else {
+          setError('El enlace expiró o es inválido. Solicita uno nuevo.')
         }
+      } else {
+        // Fallback: escuchar evento PASSWORD_RECOVERY
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          (event) => {
+            if (event === 'PASSWORD_RECOVERY') {
+              setReady(true)
+            }
+          }
+        )
+        return () => subscription.unsubscribe()
       }
-    )
-    return () => subscription.unsubscribe()
+    }
+
+    handleRecovery()
   }, [])
 
   const handleReset = async () => {
