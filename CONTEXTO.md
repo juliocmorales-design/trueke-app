@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 17 Mayo 2026 (sesión 11 — final)
+> Última actualización: 18 Mayo 2026 (sesión 12)
 
 ---
 
@@ -331,6 +331,30 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Bio visible en perfil propio y público** — `perfil/page.tsx` y `perfil/[userId]/page.tsx`: muestra bio en itálica gris debajo del username cuando existe
 - **Meeting point muestra propuesta existente** — `MeetingClient.tsx`: si `offer.meeting_point` ya tiene valor, lo muestra en caja naranja sobre el input antes de proponer cambio
 - **Botón guardar solo activo con cambios** — `perfil/edit/page.tsx`: `hasChanges` compara estado actual vs `originalValues`; botón deshabilitado (opacidad 0.6) si no hay cambios ni foto nueva
+
+## ✅ Completado sesión 12
+
+### Evaluación pre-lanzamiento
+- Análisis exhaustivo desde 4 perspectivas (programador, usuario, diseño, mejores prácticas) con lista priorizada 🔴/🟡/🟢
+
+### 6 fixes críticos 🔴
+- **Doble submit aceptar/rechazar** — `exchange/[id]/ExchangeClient.tsx`: `handleAccept` y `handleReject` con `if (acting) return` + `try/finally`; botón muestra "Procesando..." con opacidad 0.6
+- **Confirmación antes de rechazar oferta** — `window.confirm` en `handleReject` antes de ejecutar
+- **Validación en /api/notifications/create** — valida campos requeridos, tipo enum contra lista `VALID_TYPES`, longitud máxima (title 100, body 300)
+- **Captura error de notificación en offer/new** — fetch a `/api/notifications/create` ahora con `try/await/catch`; loguea el error sin bloquear el flujo
+- **Guard en rating** — `RatingClient.tsx`: verifica que `currentUser` sea `from_user_id` o `to_user_id` antes de cargar la pantalla; redirige a `/` si no es parte del intercambio
+- **Confirmación antes de cerrar sesión** — `window.confirm` en `handleSignOut` de `perfil/page.tsx`
+
+### 9 mejoras de calidad 🟡🟢
+- **Security headers HTTP** — `next.config.ts`: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`
+- **onError en imágenes de cards** — `page.tsx` y `buscar/page.tsx`: imágenes de items con `onError` que muestra SVG fallback si la URL está rota
+- **Timeout 10s en home** — `page.tsx`: `checkFlow` con `setTimeout` de 10 segundos; si Supabase no responde, muestra el home vacío en lugar de loading infinito
+- **Alt text descriptivo** — avatares de dueño en cards del home y búsqueda con `alt="Avatar de @username"`
+- **Límite 1000 chars en chat** — `mensajes/[userId]/page.tsx`: `maxLength={1000}` + validación en `sendMessage`
+- **Feedback de error al enviar mensaje** — si el insert falla: mantiene el texto en el textarea, muestra toast rojo 3 segundos
+- **Textarea auto-resize en chat** — reemplaza `<input>` por `<textarea>` que crece con el contenido; Enter envía, Shift+Enter = salto de línea; botón enviar alineado abajo
+- **onError en avatares de perfil** — `perfil/page.tsx` y `perfil/[userId]/page.tsx`: fallback a `/images/avatar.svg` si la URL falla
+- **Realtime cleanup confirmado** — `mensajes/[userId]/page.tsx` ya tenía `removeChannel` correcto; sin cambios necesarios
 
 ---
 
