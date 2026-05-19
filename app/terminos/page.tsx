@@ -98,7 +98,7 @@ export default function TerminosPage() {
 
         <Section
           title="14. Tus Derechos (LFPDPPP)"
-          body="Conforme a la Ley Federal de Protección de Datos Personales, tienes derecho de Acceso, Rectificación, Cancelación y Oposición (derechos ARCO). Escríbenos a: juliocmorales@gmail.com — Respondemos en máximo 20 días hábiles."
+          body="Conforme a la Ley Federal de Protección de Datos Personales, tienes derecho de Acceso, Rectificación, Cancelación y Oposición (derechos ARCO). Escríbenos a: truekeapp.com@gmail.com — Respondemos en máximo 20 días hábiles."
         />
 
         <Section
@@ -118,7 +118,7 @@ export default function TerminosPage() {
 
         <Section
           title="18. Contacto"
-          body={"Email: juliocmorales@gmail.com\nSitio: www.trueke.app"}
+          body={"Email: truekeapp.com@gmail.com\nSitio: www.trueke.app"}
         />
 
         <div style={s.divider} />

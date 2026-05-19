@@ -165,8 +165,8 @@ export default function PerfilPage() {
       <div style={styles.menu}>
         <MenuItem label="Mis publicaciones" type="publicaciones" onClick={() => router.push('/perfil/publicaciones')} />
         <MenuItem label="Mis reseñas"       type="resenas"       onClick={() => router.push('/perfil/resenas')} />
-        <MenuItem label="Ayuda y soporte"    type="ayuda"         onClick={() => { setShowComingSoon(true); setTimeout(() => setShowComingSoon(false), 3000) }} />
-        <MenuItem label="Configuración"     type="config"        onClick={() => { setShowComingSoon(true); setTimeout(() => setShowComingSoon(false), 3000) }} />
+        <MenuItem label="Ayuda y soporte"    type="ayuda"         onClick={() => window.open('mailto:truekeapp.com@gmail.com?subject=Ayuda%20Trueke.app', '_blank')} />
+        <MenuItem label="Configuración"     type="config"        onClick={() => window.open('mailto:truekeapp.com@gmail.com?subject=Sugerencia%20Trueke.app', '_blank')} />
         <MenuItem label="Términos y Privacidad" type="terminos"  onClick={() => router.push('/terminos')} />
         <div
           style={{ ...styles.menuItem, borderBottom: 'none' }}
