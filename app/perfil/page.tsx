@@ -13,13 +13,12 @@ export default function PerfilPage() {
   const [avgRating,  setAvgRating]  = useState<number | null>(null)
   const [loading,    setLoading]    = useState(true)
   const [reviewCount, setReviewCount] = useState(0)
-  const [showComingSoon, setShowComingSoon] = useState(false)
+  const [showComingSoon,  setShowComingSoon]  = useState(false)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   useEffect(() => { loadData() }, [])
 
   const handleSignOut = async () => {
-    const confirmed = window.confirm('¿Seguro que quieres cerrar sesión?')
-    if (!confirmed) return
     await supabase.auth.signOut()
     router.replace('/login')
   }
@@ -170,7 +169,7 @@ export default function PerfilPage() {
         <MenuItem label="Términos y Privacidad" type="terminos"  onClick={() => router.push('/terminos')} />
         <div
           style={{ ...styles.menuItem, borderBottom: 'none' }}
-          onClick={handleSignOut}
+          onClick={() => setShowLogoutModal(true)}
         >
           <div style={styles.menuLeft}>
             <div style={styles.menuIcon}>
@@ -184,6 +183,37 @@ export default function PerfilPage() {
           </div>
         </div>
       </div>
+
+      {showLogoutModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+          zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: '20px 20px 0 0',
+            padding: '24px', width: '100%', maxWidth: 500,
+            paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+          }}>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1A2744', margin: '0 0 8px' }}>
+              ¿Cerrar sesión?
+            </h3>
+            <p style={{ fontSize: 14, color: '#6B7280', margin: '0 0 24px' }}>
+              Podrás volver a entrar con tu correo y contraseña.
+            </p>
+            <button onClick={() => { setShowLogoutModal(false); handleSignOut() }}
+              style={{ width: '100%', background: '#DC2626', color: '#fff',
+                border: 'none', borderRadius: 16, padding: 16, fontSize: 16,
+                fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 12 }}>
+              Sí, cerrar sesión
+            </button>
+            <button onClick={() => setShowLogoutModal(false)}
+              style={{ width: '100%', background: 'none', border: 'none',
+                color: '#6B7280', fontSize: 15, cursor: 'pointer', fontFamily: 'inherit' }}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   )
