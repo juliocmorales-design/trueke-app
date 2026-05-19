@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 17 Mayo 2026 (sesión 12)
+> Última actualización: 19 Mayo 2026 (sesión 12)
 
 ---
 
@@ -119,7 +119,7 @@ Las tarjetas compartibles solo muestran:
 trueke-app/app/
 ├── auth/callback/page.tsx           ✅ Callback de Supabase Auth
 ├── auth/reset-password/page.tsx     ✅ Resetear contraseña
-├── onboarding/page.tsx              ✅ Registro email+contraseña — 6 pasos (SMS eliminado, Step 6: contraseña)
+├── onboarding/page.tsx              ✅ Registro email+contraseña — 3 steps (email → contraseña → username+avatar). Ciudad e intereses se piden al publicar por primera vez.
 ├── login/page.tsx                   ✅ Email+contraseña (principal) + magic link (secundario)
 ├── page.tsx                         ✅ Inicio/Home
 ├── crear/page.tsx                   ✅ Crear publicación (hasta 5 fotos, botón "Publicar")
@@ -180,7 +180,7 @@ trueke-app/app/
 | Lista de mensajes | Empty state: SVG campana, 2 líneas, color #1A2744, fontWeight 500 |
 | Mis intercambios | Tabs Activos/Completados/**Rechazados**, fotos con borderRadius: 12, empty states con SVGs ✅ |
 | Notificaciones | Empty state: SVG campana trazo fino #C4BAB1, texto mejorado. Cards con SVGs por tipo |
-| Onboarding (6 pasos) | Step 0: fondo #FAF3ED ✅, 4 marcos SVG de Affinity con clipPath + stroke ✅ (pendiente verificar en dispositivo), paisaje de montaña decorativo abajo ✅. Flujo: nombre→email→contraseña→ciudad→intereses → signUp al final |
+| Onboarding (3 steps) | Step 0: landing con animación de cadena. Flujo: email → contraseña → username+avatar. Ciudad e intereses se piden en /crear (primera vez). 15 avatares de animales en `public/images/avatars/`. |
 | Login | Email+contraseña principal, magic link como link de texto discreto (no botón), reset de contraseña vía Supabase |
 | Perfil | Stats reales (ratings + items count), sin logros, con "Mis cadenas" y sub-páginas |
 | Perfil público | /perfil/[userId] — Server Component, admin client, avatar + stats reales + items activos grid 2col + score de confianza |
@@ -358,11 +358,34 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Skeleton loader en home** — `page.tsx`: reemplaza `Cargando...` por skeleton animado (search bar + banner + 6 cards en grid) con animación shimmer
 - **Link /terminos confirmado** — onboarding step 6 ya tenía `window.open('/terminos', '_blank')` funcionando; sin cambios
 
+### Cambios grandes (sesión 12 — segunda parte)
+
+- **Browsing anónimo** — feed visible sin cuenta; `loadPublicFeed()` en `page.tsx` para usuarios sin sesión; header con logo + "Únete gratis"; CTA en empty state adapta texto según `isAnon`
+- **Onboarding reducido a 3 steps** — email → contraseña → username+avatar. Ciudad e intereses eliminados del flujo de registro y movidos a `/crear` (primera publicación)
+- **15 avatares de animales** — selector de grid en step 3 del onboarding; archivos en `public/images/avatars/` (zorro, búho, mapache, jaguar, armadillo, colibrí, puma, águila, lobo, venado, serpiente, tortuga, nutria, castor, conejo)
+- **Ciudad e intereses en /crear** — si el perfil no tiene ciudad, muestra step previo al formulario para capturarlos antes de la primera publicación; guarda en `profiles`
+- **Reset de contraseña** — flujo completo con `/auth/reset-password`; Supabase Auth redirect URL configurada
+
+### Fixes de auditoría (sesión 12 — segunda parte)
+
+- **Carrusel iOS Safari** — `item/[id]/page.tsx`: `overflowX: scroll` + `scrollSnapType: x mandatory` + `WebkitOverflowScrolling: touch`; dots se actualizan con `onScroll`; flechas ‹ › eliminadas
+- **Fallback items otras ciudades** — `page.tsx`: si hay <6 items en la ciudad del usuario, complementa con items de otras ciudades hasta llenar 12
+- **Modales personalizados en exchange** — `ExchangeClient.tsx`: `window.confirm` reemplazado por bottom sheets con sistema de diseño Trueke en "Rechazar" y "Cancelar oferta"
+- **lazy loading en imágenes** — `page.tsx`, `buscar/page.tsx`, `cadenas/page.tsx`, `perfil/publicaciones/page.tsx`: `loading="lazy"` en todas las imágenes de items. Carrusel: `eager` en imagen 0, `lazy` en el resto
+- **form tags** — `login/page.tsx` y `onboarding/page.tsx` (steps 1 y 2): inputs dentro de `<form onSubmit>` para password managers y Enter nativo. `handleEmailNext` y `handlePasswordNext` extraídos como funciones
+- **Error real de Storage** — `crear/page.tsx`: `setErrorMsg(\`Error subiendo imagen: \${error.message}\`)` + `console.error`
+- **Typo empty state intercambios** — `¡No has tenido ofertas rechazadas` → `No has tenido ofertas rechazadas`
+
 ---
+
+## ⏳ Pendientes activos
+
+- **Error subiendo imagen** — usuaria reportó fallo al publicar; esperando mensaje real del error (ya visible con el fix de Storage)
+- **Email de soporte** — `truekeapp.com@gmail.com` pendiente de agregar en sección 1 de términos y ayuda
 
 ## ⏳ Pendiente post-lanzamiento
 
-- **V1** — `next/image` optimización (lazy loading, WebP, LCP)
+- **`next/image` optimización** — lazy loading nativo ya implementado; pendiente migrar a `next/image` para WebP y LCP automático
 - **V6** — Toast "¡Copiado!" al compartir link en tarjetas
 - **V8** — Typing indicator en chat ("Escribiendo...")
 - **V9** — Score de confianza con explicación (tooltip o subtítulo "¿Cómo se calcula?")
