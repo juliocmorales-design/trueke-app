@@ -320,7 +320,13 @@ function ChainCard({ chain, onClick }: { chain: Chain; onClick: () => void }) {
           <div style={{ width: 20, height: 20, borderRadius: '50%', overflow: 'hidden', background: '#EDE7DF', flexShrink: 0 }}>
             {chain.creator?.avatar_url
               ? <img src={chain.creator.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              : <div style={{ width: '100%', height: '100%', background: '#D8D0C8' }} />
+              : <div style={{
+                  width: '100%', height: '100%', background: '#F0EAE0',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 9, fontWeight: 700, color: '#1A2744',
+                }}>
+                  {(chain.creator?.username || 'T').charAt(0).toUpperCase()}
+                </div>
             }
           </div>
           <span style={{ fontSize: 12, color: '#9CA3AF' }}>@{chain.creator?.username ?? 'usuario'}</span>

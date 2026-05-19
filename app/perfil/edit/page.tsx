@@ -181,6 +181,11 @@ export default function EditProfile() {
             placeholder="tunombre"
             autoCapitalize="none"
           />
+          {username && (
+            <p style={{ fontSize: 13, color: '#F97316', marginTop: 4, fontWeight: 600 }}>
+              @{username}
+            </p>
+          )}
         </div>
 
         <div style={s.field}>

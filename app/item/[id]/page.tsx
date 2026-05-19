@@ -332,7 +332,7 @@ export default function ItemDetail() {
                 <div>
                   <div style={styles.userName}>{owner.username || owner.name || 'Usuario'}</div>
                   <div style={styles.sub}>
-                    {owner.city || 'Monterrey'} · {ownerStats?.count || 0} intercambios · {ownerStats?.avg ? ownerStats.avg.toFixed(1) : 'Nuevo'}
+                    {owner.city || 'Monterrey'} · {ownerStats?.count || 0} reseñas · {ownerStats?.avg ? ownerStats.avg.toFixed(1) : 'Nuevo'}
                     <StarIcon />
                   </div>
                 </div>
