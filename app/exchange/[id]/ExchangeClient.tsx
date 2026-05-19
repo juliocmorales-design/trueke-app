@@ -164,6 +164,8 @@ export default function ExchangeClient({
   const [acting, setActing]               = useState(false)
   const [completing, setCompleting]       = useState(false)
   const [shareError, setShareError]       = useState<string | null>(null)
+  const [showRejectModal, setShowRejectModal] = useState(false)
+  const [showCancelModal, setShowCancelModal] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: s }) => {
@@ -206,10 +208,6 @@ export default function ExchangeClient({
   }
 
   const handleReject = async () => {
-    const confirmed = window.confirm(
-      '¿Seguro que quieres rechazar esta oferta? Esta acción no se puede deshacer.'
-    )
-    if (!confirmed) return
     if (acting) return
     setActing(true)
     try {
@@ -227,11 +225,6 @@ export default function ExchangeClient({
   }
 
   const handleCancelOffer = async () => {
-    const confirmed = window.confirm(
-      '¿Seguro que quieres cancelar esta oferta? Esta acción no se puede deshacer.'
-    )
-    if (!confirmed) return
-
     const { data: currentOffer } = await supabase
       .from('offers')
       .select('status')
@@ -468,7 +461,7 @@ export default function ExchangeClient({
           <button className={s.btnPrimary} onClick={handleAccept} disabled={acting} style={{ opacity: acting ? 0.6 : 1 }}>
             {acting ? 'Procesando...' : 'Aceptar intercambio'}
           </button>
-          <button className={s.btnSecondary} onClick={handleReject} disabled={acting} style={{ opacity: acting ? 0.6 : 1 }}>
+          <button className={s.btnSecondary} onClick={() => setShowRejectModal(true)} disabled={acting} style={{ opacity: acting ? 0.6 : 1 }}>
             Rechazar
           </button>
         </div>
@@ -477,7 +470,7 @@ export default function ExchangeClient({
           <button className={s.btnSecondary} onClick={() => router.push(`/mensajes/${offerId}`)}>
             Ir al chat
           </button>
-          <button className={s.btnDanger} onClick={handleCancelOffer}>
+          <button className={s.btnDanger} onClick={() => setShowCancelModal(true)}>
             Cancelar oferta
           </button>
         </div>
@@ -486,6 +479,68 @@ export default function ExchangeClient({
           <button className={s.btnPrimary} onClick={() => router.push(`/mensajes/${offerId}`)}>
             Ir al chat
           </button>
+        </div>
+      )}
+
+      {showRejectModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+          zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: '20px 20px 0 0',
+            padding: '24px', width: '100%', maxWidth: 500,
+            paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+          }}>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1A2744', margin: '0 0 8px' }}>
+              ¿Rechazar esta oferta?
+            </h3>
+            <p style={{ fontSize: 14, color: '#6B7280', margin: '0 0 24px' }}>
+              Esta acción no se puede deshacer. El otro usuario será notificado.
+            </p>
+            <button onClick={() => { setShowRejectModal(false); handleReject() }}
+              style={{ width: '100%', background: '#DC2626', color: '#fff',
+                border: 'none', borderRadius: 16, padding: 16, fontSize: 16,
+                fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 12 }}>
+              Sí, rechazar
+            </button>
+            <button onClick={() => setShowRejectModal(false)}
+              style={{ width: '100%', background: 'none', border: 'none',
+                color: '#6B7280', fontSize: 15, cursor: 'pointer', fontFamily: 'inherit' }}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showCancelModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+          zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: '20px 20px 0 0',
+            padding: '24px', width: '100%', maxWidth: 500,
+            paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+          }}>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1A2744', margin: '0 0 8px' }}>
+              ¿Cancelar esta oferta?
+            </h3>
+            <p style={{ fontSize: 14, color: '#6B7280', margin: '0 0 24px' }}>
+              Las ofertas canceladas aparecen como rechazadas. Esta acción no se puede deshacer.
+            </p>
+            <button onClick={() => { setShowCancelModal(false); handleCancelOffer() }}
+              style={{ width: '100%', background: '#DC2626', color: '#fff',
+                border: 'none', borderRadius: 16, padding: 16, fontSize: 16,
+                fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 12 }}>
+              Sí, cancelar oferta
+            </button>
+            <button onClick={() => setShowCancelModal(false)}
+              style={{ width: '100%', background: 'none', border: 'none',
+                color: '#6B7280', fontSize: 15, cursor: 'pointer', fontFamily: 'inherit' }}>
+              Volver
+            </button>
+          </div>
         </div>
       )}
 
