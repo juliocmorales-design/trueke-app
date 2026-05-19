@@ -6,14 +6,14 @@ import supabase from '../lib/supabase'
 import { compressImage } from '../lib/compressImage'
 
 const CATEGORIAS = [
-  { id: 'electronica', label: '📱 Electrónica' },
-  { id: 'ropa',        label: '👕 Ropa' },
-  { id: 'hogar',       label: '🏠 Hogar' },
-  { id: 'deportes',    label: '⚽ Deportes' },
-  { id: 'libros',      label: '📚 Libros' },
-  { id: 'juguetes',    label: '🧸 Juguetes' },
-  { id: 'musica',      label: '🎸 Música' },
-  { id: 'otros',       label: '📦 Otros' },
+  { id: 'electronica', emoji: '📱', label: 'Electrónica' },
+  { id: 'ropa',        emoji: '👕', label: 'Ropa' },
+  { id: 'hogar',       emoji: '🏠', label: 'Hogar' },
+  { id: 'deportes',    emoji: '⚽', label: 'Deportes' },
+  { id: 'libros',      emoji: '📚', label: 'Libros' },
+  { id: 'juguetes',    emoji: '🧸', label: 'Juguetes' },
+  { id: 'musica',      emoji: '🎸', label: 'Música' },
+  { id: 'otros',       emoji: '📦', label: 'Otros' },
 ]
 
 const INTERESTS_LIST = [
@@ -360,7 +360,8 @@ function CrearForm() {
                 fontFamily: 'inherit', flexShrink: 0,
               }}
             >
-              {cat.label}
+              <span aria-hidden="true">{cat.emoji}</span>
+              <span>{cat.label}</span>
             </button>
           ))}
         </div>
