@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import BottomNav from './BottomNav'
 import supabase from '@/app/lib/supabase'
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const isItemPage =
     pathname.startsWith('/item') ||
@@ -17,6 +18,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     pathname.startsWith('/login')
 
   const hideNav =
+    !isLoggedIn ||
     pathname.startsWith('/terminos') ||
     pathname.startsWith('/onboarding') ||
     pathname.startsWith('/login') ||
@@ -25,33 +27,15 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     isItemPage
 
   useEffect(() => {
-    const init = async () => {
-      const { data } = await supabase.auth.getSession()
+    supabase.auth.getSession().then(({ data }) => {
+      setIsLoggedIn(!!data.session?.user)
+    })
 
-      if (data.session?.user) {
-        const user = data.session.user
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session?.user)
+    })
 
-        const { data: existing } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', user.id)
-          .single()
-
-        if (!existing) {
-          await supabase
-            .from('profiles')
-            .insert({
-              id: user.id,
-              name: 'Usuario',
-              username: `user_${Math.floor(Math.random() * 10000)}`,
-            })
-            .select()
-        }
-      }
-    }
-
-    init()
-
+    return () => subscription.unsubscribe()
   }, [])
 
   return (

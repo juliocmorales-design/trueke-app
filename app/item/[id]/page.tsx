@@ -121,6 +121,7 @@ export default function ItemDetail() {
   }
 
   const goToOffer = () => {
+    if (!currentUser) { router.push('/onboarding'); return }
     router.push(`/offer/new?itemId=${id}`)
   }
 
@@ -306,7 +307,7 @@ export default function ItemDetail() {
             <>
               <div style={styles.sectionTitle}>¿Te interesa?</div>
               <div style={styles.button} onClick={goToOffer}>
-                Ofrecer algo a cambio
+                {currentUser ? 'Ofrecer algo a cambio' : 'Únete para intercambiar'}
               </div>
             </>
           )}

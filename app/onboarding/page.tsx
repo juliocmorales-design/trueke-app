@@ -5,43 +5,49 @@ import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase'
 import css from './onboarding.module.css'
 
-const cities = [
-  'Monterrey', 'CDMX', 'Guadalajara', 'Tijuana', 'Puebla',
-  'León', 'Cancún', 'Mérida', 'San Luis Potosí', 'Chihuahua',
-  'Toluca', 'Querétaro', 'Hermosillo', 'Saltillo', 'Aguascalientes'
-]
-
-const interestsList = [
-  'Electrónica', 'Ropa', 'Libros', 'Muebles',
-  'Deportes', 'Arte', 'Música', 'Herramientas',
-  'Juguetes', 'Vehículos', 'Servicios', 'Comida',
-  'Plantas', 'Mascotas', 'Otro'
+const AVATARS = [
+  { file: 'avatar_01_zorro.png',     label: 'Zorro' },
+  { file: 'avatar_02_buho.png',      label: 'Búho' },
+  { file: 'avatar_03_mapache.png',   label: 'Mapache' },
+  { file: 'avatar_04_jaguar.png',    label: 'Jaguar' },
+  { file: 'avatar_05_armadillo.png', label: 'Armadillo' },
+  { file: 'avatar_06_colibri.png',   label: 'Colibrí' },
+  { file: 'avatar_07_puma.png',      label: 'Puma' },
+  { file: 'avatar_08_aguila.png',    label: 'Águila' },
+  { file: 'avatar_09_lobo.png',      label: 'Lobo' },
+  { file: 'avatar_10_venado.png',    label: 'Venado' },
+  { file: 'avatar_11_serpiente.png', label: 'Serpiente' },
+  { file: 'avatar_12_tortuga.png',   label: 'Tortuga' },
+  { file: 'avatar_13_nutria.png',    label: 'Nutria' },
+  { file: 'avatar_14_castor.png',    label: 'Castor' },
+  { file: 'avatar_15_conejo.png',    label: 'Conejo' },
 ]
 
 export default function Onboarding() {
   const router = useRouter()
 
-  const [step, setStep] = useState(0)
+  const [step,    setStep]    = useState(0)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
+  const [saving,  setSaving]  = useState(false)
+  const [error,   setError]   = useState('')
   const [emailSent, setEmailSent] = useState(false)
 
   const [existingUserId, setExistingUserId] = useState<string | null>(null)
 
-  const [name, setName] = useState('')
-  const [username, setUsername] = useState('')
+  // Step 1
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+
+  // Step 2
+  const [password,        setPassword]        = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [city, setCity] = useState('')
-  const [interests, setInterests] = useState<string[]>([])
-  const [showOtroInput, setShowOtroInput] = useState(false)
-  const [otroText, setOtroText] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword,        setShowPassword]        = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [avatarPreview, setAvatarPreview] = useState<string>('')
+
+  // Step 3
+  const [username,       setUsername]       = useState('')
+  const [selectedAvatar, setSelectedAvatar] = useState('')
+  const [avatarFile,     setAvatarFile]     = useState<File | null>(null)
+  const [avatarPreview,  setAvatarPreview]  = useState('')
 
   useEffect(() => {
     const init = async () => {
@@ -66,13 +72,6 @@ export default function Onboarding() {
         return
       }
 
-      if (profile) {
-        setName(profile.name || '')
-        setUsername(profile.username || '')
-        setCity(profile.city || '')
-        setInterests(profile.interests || [])
-      }
-
       setStep(0)
       setLoading(false)
     }
@@ -93,24 +92,6 @@ export default function Onboarding() {
     else setError('')
   }
 
-  const toggleInterest = (i: string) => {
-    setInterests(prev =>
-      prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]
-    )
-  }
-
-  const handleOtroClick = () => {
-    if (showOtroInput && !otroText.trim()) setShowOtroInput(false)
-    else setShowOtroInput(true)
-  }
-
-  const addCustomInterest = () => {
-    const trimmed = otroText.trim()
-    if (!trimmed) return
-    if (!interests.includes(trimmed)) setInterests(prev => [...prev, trimmed])
-    setOtroText('')
-  }
-
   const handleFinish = async () => {
     setSaving(true)
     setError('')
@@ -123,11 +104,10 @@ export default function Onboarding() {
         password,
       })
       if (signUpErr) {
-        console.error('SignUp error:', signUpErr)
         if (signUpErr.message.includes('already registered') ||
             signUpErr.message.includes('already been registered') ||
             signUpErr.status === 422) {
-          setError('Este correo ya tiene una cuenta. Usa "Iniciar sesión" en lugar de registrarte.')
+          setError('Este correo ya tiene una cuenta. Usa "Iniciar sesión".')
         } else {
           setError(signUpErr.message)
         }
@@ -135,7 +115,7 @@ export default function Onboarding() {
         return
       }
       if (data.user && data.user.identities?.length === 0) {
-        setError('Este correo ya tiene una cuenta. Usa "Iniciar sesión" en lugar de registrarte.')
+        setError('Este correo ya tiene una cuenta. Usa "Iniciar sesión".')
         setSaving(false)
         return
       }
@@ -148,6 +128,7 @@ export default function Onboarding() {
     }
 
     let avatarUrl: string | null = null
+
     if (avatarFile && uid) {
       const ext = avatarFile.name.split('.').pop() ?? 'jpg'
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -159,12 +140,21 @@ export default function Onboarding() {
           .getPublicUrl(uploadData.path)
         avatarUrl = urlData.publicUrl
       }
+    } else if (selectedAvatar) {
+      avatarUrl = `/images/avatars/${selectedAvatar}`
     }
 
     const res = await fetch('/api/profiles/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: uid, username, name, city, interests, avatar_url: avatarUrl }),
+      body: JSON.stringify({
+        id: uid,
+        username,
+        name: username,
+        city: '',
+        interests: [],
+        avatar_url: avatarUrl,
+      }),
     })
 
     const result = await res.json()
@@ -193,18 +183,14 @@ export default function Onboarding() {
     </svg>
   )
 
+  /* ── Email confirmación enviada ── */
   if (emailSent) {
     return (
       <div style={{
-        minHeight: '100svh',
-        background: '#FAF3ED',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '32px 24px',
-        textAlign: 'center',
-        gap: 16,
+        minHeight: '100svh', background: '#FAF3ED',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '32px 24px', textAlign: 'center', gap: 16,
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}>
         <img src="/images/logo.png" style={{ width: 140, marginBottom: 8 }} />
@@ -229,33 +215,20 @@ export default function Onboarding() {
         </p>
 
         <div style={{
-          background: '#FFF5F0',
-          border: '1.5px solid #F97316',
-          borderRadius: 12,
-          padding: '12px 16px',
-          width: '100%',
-          maxWidth: 360,
+          background: '#FFF5F0', border: '1.5px solid #F97316',
+          borderRadius: 12, padding: '12px 16px', width: '100%', maxWidth: 360,
         }}>
           <p style={{ fontSize: 13, color: '#F97316', margin: 0, fontWeight: 600 }}>
-            ⚠️ Revisa también tu carpeta de Spam o Promociones si no ves el correo en tu bandeja principal.
+            Revisa también tu carpeta de Spam o Promociones si no ves el correo.
           </p>
         </div>
 
         <button
           onClick={() => router.push('/login')}
           style={{
-            background: '#F97316',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 16,
-            padding: '16px',
-            width: '100%',
-            maxWidth: 360,
-            fontSize: 16,
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            marginTop: 8,
+            background: '#F97316', color: '#fff', border: 'none', borderRadius: 16,
+            padding: '16px', width: '100%', maxWidth: 360,
+            fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', marginTop: 8,
           }}
         >
           Ir a iniciar sesión
@@ -264,6 +237,7 @@ export default function Onboarding() {
     )
   }
 
+  /* ── STEP 0: Landing ── */
   if (step === 0) {
     return (
       <div className={css.onboarding}>
@@ -321,7 +295,7 @@ export default function Onboarding() {
           Sin dinero. Solo <span>intercambios.</span>
         </p>
 
-        <button className={css.ctaButton} onClick={() => setStep(1)}>
+        <button className={css.ctaButton} onClick={() => setStep(existingUserId ? 3 : 1)}>
           Comenzar →
         </button>
 
@@ -334,91 +308,15 @@ export default function Onboarding() {
     )
   }
 
+  /* ── Steps 1-3 ── */
   return (
     <div style={styles.container}>
 
-      {/* ── STEP 1: Nombre ── */}
+      {/* ── STEP 1: Email ── */}
       {step === 1 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
-          </div>
-
-          <h1 style={styles.title}>¿Cuál es tu nombre?</h1>
-          <p style={styles.subtitle}>Así te verán los demás en Trueke</p>
-
-          <input
-            style={styles.input}
-            placeholder="Ej: María García"
-            value={name}
-            onChange={e => { setName(e.target.value); setError('') }}
-            autoComplete="name"
-          />
-
-          {error && <p style={styles.errorText}>{error}</p>}
-
-          <button style={{ ...styles.button, border: 'none' }} onClick={() => {
-            setError('')
-            if (!name.trim() || name.trim().length < 2 || !/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(name.trim())) {
-              setError('Por favor ingresa un nombre válido (solo letras, mínimo 2 caracteres)')
-              return
-            }
-            setStep(2)
-          }}>
-            Siguiente →
-          </button>
-
-          <div style={styles.back} onClick={() => setStep(0)}>Atrás</div>
-        </div>
-      )}
-
-      {/* ── STEP 2: Username ── */}
-      {step === 2 && (
-        <div style={styles.stepContainer}>
-          <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
-          </div>
-
-          <h1 style={styles.title}>¿Cuál será tu @usuario?</h1>
-          <p style={styles.subtitle}>Este será tu identificador público en Trueke</p>
-
-          <input
-            style={styles.input}
-            placeholder="Ej: mariag"
-            value={username}
-            onChange={e => { setUsername(e.target.value.replace('@', '').trim()); setError('') }}
-            onBlur={e => checkUsernameAvailable(e.target.value)}
-            autoComplete="username"
-          />
-
-          {username.trim() && (
-            <p style={{ color: '#F97316', fontWeight: 600, fontSize: 15, marginTop: -8, marginBottom: 16 }}>
-              @{username}
-            </p>
-          )}
-
-          {error && <p style={styles.errorText}>{error}</p>}
-
-          <button style={{ ...styles.button, border: 'none' }} onClick={() => {
-            setError('')
-            if (!username.trim() || username.trim().length < 3 || !/^[a-zA-Z0-9_]+$/.test(username.trim())) {
-              setError('El username solo puede tener letras, números y guión bajo (_), mínimo 3 caracteres')
-              return
-            }
-            setStep(existingUserId ? 5 : 3)
-          }}>
-            Siguiente →
-          </button>
-
-          <div style={styles.back} onClick={() => { setError(''); setStep(1) }}>Atrás</div>
-        </div>
-      )}
-
-      {/* ── STEP 3: Email ── */}
-      {step === 3 && (
-        <div style={styles.stepContainer}>
-          <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
+            <div style={{ ...styles.bar, width: `${(step / 3) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>¿Cuál es tu email?</h1>
@@ -431,30 +329,35 @@ export default function Onboarding() {
             onChange={e => { setEmail(e.target.value); setError('') }}
             type="email"
             autoComplete="email"
+            autoFocus
           />
 
           {error && <p style={styles.errorText}>{error}</p>}
 
-          <button style={{ ...styles.button, border: 'none' }} onClick={async () => {
-            setError('')
-            if (!email.trim() || email.includes(' ') || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-              setError('Por favor ingresa un correo electrónico válido')
-              return
-            }
-            setSaving(true)
-            const res = await fetch('/api/auth/check-email', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email }),
-            })
-            const result = await res.json()
-            setSaving(false)
-            if (result.exists) {
-              setError('Este correo ya tiene una cuenta. Usa "Iniciar sesión" en lugar de registrarte.')
-              return
-            }
-            setStep(4)
-          }} disabled={saving}>
+          <button
+            style={{ ...styles.button, border: 'none', opacity: saving ? 0.6 : 1 }}
+            disabled={saving}
+            onClick={async () => {
+              setError('')
+              if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+                setError('Por favor ingresa un correo electrónico válido')
+                return
+              }
+              setSaving(true)
+              const res = await fetch('/api/auth/check-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+              })
+              const result = await res.json()
+              setSaving(false)
+              if (result.exists) {
+                setError('Este correo ya tiene una cuenta. Usa "Iniciar sesión".')
+                return
+              }
+              setStep(2)
+            }}
+          >
             {saving ? 'Verificando...' : 'Siguiente →'}
           </button>
 
@@ -462,28 +365,23 @@ export default function Onboarding() {
             <button
               onClick={() => router.push('/login')}
               style={{
-                background: 'none',
-                border: 'none',
-                color: '#F97316',
-                fontSize: 14,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                padding: 0,
+                background: 'none', border: 'none', color: '#F97316',
+                fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', padding: 0,
               }}
             >
               ¿Ya tienes cuenta? Inicia sesión
             </button>
           </div>
 
-          <div style={styles.back} onClick={() => { setError(''); setStep(2) }}>Atrás</div>
+          <div style={styles.back} onClick={() => { setError(''); setStep(0) }}>Atrás</div>
         </div>
       )}
 
-      {/* ── STEP 4: Contraseña ── */}
-      {step === 4 && (
+      {/* ── STEP 2: Contraseña ── */}
+      {step === 2 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
+            <div style={{ ...styles.bar, width: `${(step / 3) * 100}%` }} />
           </div>
 
           <h1 style={styles.title}>Elige tu contraseña</h1>
@@ -498,31 +396,15 @@ export default function Onboarding() {
               onChange={e => { setPassword(e.target.value); setError('') }}
               autoComplete="new-password"
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              style={{
-                position: 'absolute',
-                right: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 4,
-                color: '#9CA3AF',
-              }}
-            >
+            <button type="button" onClick={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
               {showPassword ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
                   <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
                   <line x1="1" y1="1" x2="23" y2="23"/>
                 </svg>
               ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                   <circle cx="12" cy="12" r="3"/>
                 </svg>
@@ -539,31 +421,15 @@ export default function Onboarding() {
               onChange={e => { setConfirmPassword(e.target.value); setError('') }}
               autoComplete="new-password"
             />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              style={{
-                position: 'absolute',
-                right: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 4,
-                color: '#9CA3AF',
-              }}
-            >
+            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeBtn}>
               {showConfirmPassword ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
                   <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
                   <line x1="1" y1="1" x2="23" y2="23"/>
                 </svg>
               ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                   <circle cx="12" cy="12" r="3"/>
                 </svg>
@@ -573,276 +439,154 @@ export default function Onboarding() {
 
           {error && <p style={styles.errorText}>{error}</p>}
 
-          <button style={{ ...styles.button, border: 'none' }} onClick={() => {
-            setError('')
-            if (!password || !/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
-              setError('La contraseña debe tener al menos 8 caracteres, una letra y un número')
-              return
-            }
-            if (password !== confirmPassword) { setError('Las contraseñas no coinciden'); return }
-            setStep(5)
-          }}>
+          <button
+            style={{ ...styles.button, border: 'none' }}
+            onClick={() => {
+              setError('')
+              if (!password || !/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
+                setError('La contraseña debe tener al menos 8 caracteres, una letra y un número')
+                return
+              }
+              if (password !== confirmPassword) { setError('Las contraseñas no coinciden'); return }
+              setStep(3)
+            }}
+          >
             Siguiente →
           </button>
 
-          <div style={styles.back} onClick={() => { setError(''); setStep(3) }}>Atrás</div>
+          <div style={styles.back} onClick={() => { setError(''); setStep(1) }}>Atrás</div>
         </div>
       )}
 
-      {/* ── STEP 5: Ciudad ── */}
-      {step === 5 && (
+      {/* ── STEP 3: Username + Avatar ── */}
+      {step === 3 && (
         <div style={styles.stepContainer}>
           <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
+            <div style={{ ...styles.bar, width: '100%' }} />
           </div>
 
-          <h1 style={styles.title}>¿De qué ciudad eres?</h1>
+          <h1 style={styles.title}>Elige tu @usuario</h1>
+          <p style={styles.subtitle}>Así te verán en Trueke</p>
 
-          <div style={styles.chips}>
-            {cities.map(c => (
+          <input
+            style={styles.input}
+            placeholder="Ej: mariag"
+            value={username}
+            onChange={e => { setUsername(e.target.value.replace('@', '').trim()); setError('') }}
+            onBlur={e => checkUsernameAvailable(e.target.value)}
+            autoComplete="username"
+          />
+
+          {username.trim() && (
+            <p style={{ color: '#F97316', fontWeight: 600, fontSize: 15, marginTop: -8, marginBottom: 16 }}>
+              @{username}
+            </p>
+          )}
+
+          {/* Grid de avatares */}
+          <p style={{ fontSize: 14, fontWeight: 600, color: '#1A2744', marginBottom: 10 }}>
+            Elige tu avatar
+          </p>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: 8,
+            marginBottom: 16,
+          }}>
+            {AVATARS.map(av => (
               <div
-                key={c}
-                style={{
-                  ...styles.chip,
-                  background: city === c ? '#F97316' : '#fff',
-                  color: city === c ? '#fff' : '#333',
-                  borderColor: city === c ? '#F97316' : '#ddd',
-                }}
-                onClick={() => setCity(c)}
+                key={av.file}
+                onClick={() => { setSelectedAvatar(av.file); setAvatarFile(null); setAvatarPreview('') }}
+                style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
               >
-                {c}
+                <div style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  border: selectedAvatar === av.file && !avatarPreview
+                    ? '3px solid #F97316'
+                    : '3px solid transparent',
+                  boxSizing: 'border-box',
+                  background: '#F0EAE0',
+                  transition: 'border 0.15s',
+                }}>
+                  <img
+                    src={`/images/avatars/${av.file}`}
+                    alt={av.label}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                </div>
+                <span style={{ fontSize: 9, color: '#9CA3AF', textAlign: 'center', lineHeight: 1.2 }}>
+                  {av.label}
+                </span>
               </div>
             ))}
           </div>
 
-          <input
-            style={styles.input}
-            placeholder="O escribe tu ciudad"
-            value={city}
-            onChange={e => setCity(e.target.value)}
-          />
-
-          {error && <p style={styles.errorText}>{error}</p>}
-
-          <button style={{ ...styles.button, border: 'none' }} onClick={() => {
-            setError('')
-            if (!city.trim() || city.trim().length < 2) {
-              setError('Por favor ingresa tu ciudad')
-              return
-            }
-            setStep(6)
-          }}>
-            Siguiente →
-          </button>
-
-          <div style={styles.back} onClick={() => { setError(''); setStep(existingUserId ? 2 : 4) }}>Atrás</div>
-        </div>
-      )}
-
-      {/* ── STEP 6: Foto de perfil ── */}
-      {step === 6 && (
-        <div style={styles.stepContainer}>
-          <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
-          </div>
-
-          <h1 style={styles.title}>Agrega tu foto de perfil</h1>
-          <p style={styles.subtitle}>
-            Los usuarios con foto generan más confianza y reciben más ofertas
-          </p>
-
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 20,
-            margin: '32px 0',
-          }}>
-            <div style={{
-              width: 120,
-              height: 120,
-              borderRadius: '50%',
-              overflow: 'hidden',
-              background: '#F0EAE0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              border: avatarPreview ? '3px solid #F97316' : '3px dashed #C4BAB1',
-            }}
-              onClick={() => document.getElementById('avatar-input')?.click()}
-            >
-              {avatarPreview ? (
-                <img src={avatarPreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
-                  stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-              )}
+          {/* Subir foto propia */}
+          {avatarPreview ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, padding: '10px 0' }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: '50%', overflow: 'hidden',
+                border: '3px solid #F97316', boxSizing: 'border-box', flexShrink: 0,
+              }}>
+                <img src={avatarPreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Mi foto" />
+              </div>
+              <span style={{ fontSize: 14, color: '#1A2744', fontWeight: 600, flex: 1 }}>Mi foto seleccionada</span>
+              <button
+                onClick={() => { setAvatarFile(null); setAvatarPreview('') }}
+                style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', fontSize: 14, fontFamily: 'inherit' }}
+              >
+                Quitar
+              </button>
             </div>
-
-            <input
-              id="avatar-input"
-              type="file"
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={e => {
-                const file = e.target.files?.[0]
-                if (!file) return
-                if (file.size > 5 * 1024 * 1024) {
-                  setError('La foto debe pesar menos de 5MB.')
-                  return
-                }
-                setAvatarFile(file)
-                setAvatarPreview(URL.createObjectURL(file))
-                setError('')
-              }}
-            />
-
-            <button
-              style={{
-                background: '#F0EAE0',
-                border: 'none',
-                borderRadius: 12,
-                padding: '12px 24px',
-                fontSize: 15,
-                fontWeight: 600,
-                color: '#1A2744',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
-              onClick={() => document.getElementById('avatar-input')?.click()}
-            >
-              {avatarPreview ? 'Cambiar foto' : 'Elegir foto'}
-            </button>
-          </div>
+          ) : (
+            <label style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              background: '#F0EAE0', borderRadius: 12, padding: '12px 16px',
+              cursor: 'pointer', marginBottom: 16,
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span style={{ fontSize: 14, color: '#6B7280', fontWeight: 500 }}>Subir mi propia foto</span>
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={e => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  if (file.size > 5 * 1024 * 1024) { setError('La foto debe pesar menos de 5MB.'); return }
+                  setAvatarFile(file)
+                  setAvatarPreview(URL.createObjectURL(file))
+                  setSelectedAvatar('')
+                  setError('')
+                }}
+              />
+            </label>
+          )}
 
           {error && <p style={styles.errorText}>{error}</p>}
 
           <button
-            style={{ ...styles.button, border: 'none' }}
-            onClick={() => { setError(''); setStep(7) }}
+            style={{ ...styles.button, border: 'none', opacity: saving ? 0.6 : 1 }}
+            disabled={saving}
+            onClick={() => {
+              setError('')
+              if (!username.trim() || username.trim().length < 3 || !/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+                setError('El username solo puede tener letras, números y guión bajo (_), mínimo 3 caracteres')
+                return
+              }
+              handleFinish()
+            }}
           >
-            {avatarPreview ? 'Continuar' : 'Continuar con foto'}
-          </button>
-
-          <div
-            style={{ ...styles.back, color: '#9CA3AF', marginTop: 8 }}
-            onClick={() => { setError(''); setStep(7) }}
-          >
-            Saltar por ahora
-          </div>
-        </div>
-      )}
-
-      {/* ── STEP 7: Intereses ── */}
-      {step === 7 && (
-        <div style={styles.stepContainer}>
-          <div style={styles.progress}>
-            <div style={{ ...styles.bar, width: `${(step / 7) * 100}%` }} />
-          </div>
-
-          <h1 style={styles.title}>¿Qué te interesa intercambiar?</h1>
-          <p style={styles.subtitle}>Selecciona todo lo que aplique</p>
-
-          <div style={styles.chips}>
-            {interestsList.filter(i => i !== 'Otro').map(i => (
-              <div
-                key={i}
-                style={{
-                  ...styles.chip,
-                  background: interests.includes(i) ? '#F97316' : '#fff',
-                  color: interests.includes(i) ? '#fff' : '#333',
-                  borderColor: interests.includes(i) ? '#F97316' : '#ddd',
-                }}
-                onClick={() => toggleInterest(i)}
-              >
-                {i}
-              </div>
-            ))}
-
-            {interests.filter(i => !interestsList.includes(i)).map(i => (
-              <div
-                key={i}
-                style={{
-                  ...styles.chip,
-                  background: '#F97316',
-                  color: '#FDF8F3',
-                  borderColor: '#F97316',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
-              >
-                {i}
-                <span
-                  style={{ fontWeight: 700, lineHeight: 1, cursor: 'pointer' }}
-                  onClick={() => setInterests(interests.filter(x => x !== i))}
-                >
-                  ×
-                </span>
-              </div>
-            ))}
-
-            <div
-              style={{
-                ...styles.chip,
-                background: showOtroInput ? '#F97316' : '#FDF8F3',
-                color: showOtroInput ? '#FDF8F3' : '#1A2744',
-                borderColor: showOtroInput ? '#F97316' : '#ddd',
-              }}
-              onClick={handleOtroClick}
-            >
-              + Otro
-            </div>
-          </div>
-
-          {showOtroInput && (
-            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              <input
-                style={{ ...styles.input, flex: 1, marginBottom: 0 }}
-                placeholder="¿Qué te interesa? Ej: fotografía, cocina..."
-                value={otroText}
-                onChange={e => setOtroText(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') addCustomInterest() }}
-                autoFocus
-              />
-              <div
-                style={{
-                  background: '#F97316',
-                  color: '#FDF8F3',
-                  padding: '0 18px',
-                  borderRadius: 16,
-                  fontWeight: 600,
-                  fontSize: 14,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  whiteSpace: 'nowrap',
-                }}
-                onClick={addCustomInterest}
-              >
-                Agregar
-              </div>
-            </div>
-          )}
-
-          <button style={{ ...styles.button, border: 'none' }} onClick={() => {
-            setError('')
-            if (interests.length === 0) {
-              setError('Selecciona al menos un interés')
-              return
-            }
-            handleFinish()
-          }} disabled={saving}>
             {saving ? 'Creando cuenta...' : '¡Todo listo!'}
           </button>
-
-          {error && (
-            <p style={styles.errorText}>{error}</p>
-          )}
 
           <p style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'center', marginTop: 8, lineHeight: 1.5 }}>
             Al continuar aceptas nuestros{' '}
@@ -854,7 +598,7 @@ export default function Onboarding() {
             </span>
           </p>
 
-          <div style={styles.back} onClick={() => { setError(''); setStep(6) }}>Atrás</div>
+          <div style={styles.back} onClick={() => { setError(''); setStep(existingUserId ? 0 : 2) }}>Atrás</div>
         </div>
       )}
 
@@ -868,7 +612,6 @@ const styles: any = {
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between',
     background: '#FDF8F3',
   },
 
@@ -887,19 +630,6 @@ const styles: any = {
   subtitle: {
     color: '#6B7680',
     marginBottom: 20,
-  },
-
-  illustrationWrapper: {
-    position: 'relative',
-    height: 320,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  image: {
-    width: '105%',
-    zIndex: 1,
   },
 
   progress: {
@@ -926,22 +656,20 @@ const styles: any = {
     fontSize: 16,
     background: '#F0EAE0',
     boxSizing: 'border-box',
+    fontFamily: 'inherit',
+    outline: 'none',
   },
 
-  chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 20,
-  },
-
-  chip: {
-    padding: '10px 14px',
-    borderRadius: 999,
-    border: '1px solid #ddd',
+  eyeBtn: {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
     cursor: 'pointer',
-    fontSize: 14,
-    transition: 'all 0.15s ease',
+    padding: 4,
+    color: '#9CA3AF',
   },
 
   button: {
@@ -955,6 +683,7 @@ const styles: any = {
     fontSize: 16,
     marginBottom: 8,
     width: '100%',
+    fontFamily: 'inherit',
   },
 
   back: {
@@ -965,13 +694,6 @@ const styles: any = {
     fontSize: 16,
     fontWeight: 500,
     padding: 14,
-  },
-
-  login: {
-    textAlign: 'center',
-    marginTop: 10,
-    color: '#6B7680',
-    fontSize: 14,
   },
 
   errorText: {

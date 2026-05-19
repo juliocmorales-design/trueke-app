@@ -15,6 +15,12 @@ const CATEGORIAS = [
   { id: 'otros',       label: '📦 Otros' },
 ]
 
+const INTERESTS_LIST = [
+  'Electrónica', 'Ropa', 'Libros', 'Muebles',
+  'Deportes', 'Arte', 'Música', 'Herramientas',
+  'Juguetes', 'Vehículos', 'Comida', 'Plantas',
+]
+
 export default function CrearPage() {
   return (
     <Suspense fallback={null}>
@@ -28,15 +34,25 @@ function CrearForm() {
   const searchParams = useSearchParams()
   const chainId  = searchParams.get('chainId')
   const newChain = searchParams.get('newChain')
-  const itemId   = searchParams.get('itemId')
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [wanted, setWanted] = useState('')
-  const [category, setCategory] = useState('')
-  const [city, setCity] = useState('')
 
-  const [files, setFiles] = useState<File[]>([])
+  const [title,       setTitle]       = useState('')
+  const [description, setDescription] = useState('')
+  const [wanted,      setWanted]      = useState('')
+  const [category,    setCategory]    = useState('')
+  const [city,        setCity]        = useState('')
+
+  const [files,    setFiles]    = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
+
+  const [loading,   setLoading]   = useState(false)
+  const [errorMsg,  setErrorMsg]  = useState<string | null>(null)
+
+  // City step
+  const [needsCityStep,    setNeedsCityStep]    = useState(false)
+  const [cityStepDone,     setCityStepDone]     = useState(false)
+  const [cityStepInput,    setCityStepInput]    = useState('')
+  const [cityStepInterests, setCityStepInterests] = useState<string[]>([])
+  const [savingCityStep,   setSavingCityStep]   = useState(false)
 
   useEffect(() => {
     const loadUserCity = async () => {
@@ -45,86 +61,78 @@ function CrearForm() {
       if (!user) return
       const { data: profile } = await supabase
         .from('profiles')
-        .select('city')
+        .select('city, interests')
         .eq('id', user.id)
         .single()
-      if (profile?.city) setCity(profile.city)
+      if (profile?.city) {
+        setCity(profile.city)
+        setCityStepDone(true)
+      } else {
+        setNeedsCityStep(true)
+        if (profile?.interests?.length) {
+          setCityStepInterests(profile.interests)
+        }
+      }
     }
     loadUserCity()
   }, [])
 
-  const [loading, setLoading] = useState(false)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const saveCityStep = async () => {
+    if (!cityStepInput.trim()) return
+    setSavingCityStep(true)
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const user = sessionData.session?.user
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ city: cityStepInput.trim(), interests: cityStepInterests })
+          .eq('id', user.id)
+        setCity(cityStepInput.trim())
+      }
+    } finally {
+      setSavingCityStep(false)
+      setCityStepDone(true)
+    }
+  }
 
-  const MAX_SIZE = 5 * 1024 * 1024 // 5MB
+  const MAX_SIZE = 5 * 1024 * 1024
 
   const handleImages = (e: any) => {
     const selected = Array.from(e.target.files || []) as File[]
-
     for (const file of selected) {
-      if (file.size > MAX_SIZE) {
-        setErrorMsg('Cada foto debe pesar menos de 5MB.')
-        return
-      }
+      if (file.size > MAX_SIZE) { setErrorMsg('Cada foto debe pesar menos de 5MB.'); return }
     }
-
     const total = [...files, ...selected].slice(0, 5)
     setFiles(total)
-    const urls = total.map((f) => URL.createObjectURL(f as Blob))
-    setPreviews(urls)
+    setPreviews(total.map(f => URL.createObjectURL(f as Blob)))
   }
 
   const removeImage = (index: number) => {
-    const newFiles = [...files]
-    const newPreviews = [...previews]
-
-    newFiles.splice(index, 1)
-    newPreviews.splice(index, 1)
-
-    setFiles(newFiles)
-    setPreviews(newPreviews)
+    const nf = [...files]
+    const np = [...previews]
+    nf.splice(index, 1)
+    np.splice(index, 1)
+    setFiles(nf)
+    setPreviews(np)
   }
 
   const handleSubmit = async () => {
     setErrorMsg(null)
-
-    if (files.length === 0) {
-      setErrorMsg('Agrega al menos una imagen')
-      return
-    }
-
+    if (files.length === 0) { setErrorMsg('Agrega al menos una imagen'); return }
     setLoading(true)
 
     try {
       const { data: sessionData } = await supabase.auth.getSession()
       const user = sessionData.session?.user
-
-      if (!user) {
-        setErrorMsg('No autenticado')
-        setLoading(false)
-        return
-      }
+      if (!user) { setErrorMsg('No autenticado'); setLoading(false); return }
 
       const uploadedUrls: string[] = []
-
       for (const file of files) {
         const fileName = `items/${user.id}/${Date.now()}-${file.name}`
-
-        const { error } = await supabase.storage
-          .from('images')
-          .upload(fileName, file)
-
-        if (error) {
-          console.error(error)
-          setErrorMsg('Error subiendo imagen')
-          setLoading(false)
-          return
-        }
-
-        const { data } = supabase.storage
-          .from('images')
-          .getPublicUrl(fileName)
-
+        const { error } = await supabase.storage.from('images').upload(fileName, file)
+        if (error) { setErrorMsg('Error subiendo imagen'); setLoading(false); return }
+        const { data } = supabase.storage.from('images').getPublicUrl(fileName)
         uploadedUrls.push(data.publicUrl)
       }
 
@@ -134,12 +142,7 @@ function CrearForm() {
         .select('id')
         .single()
 
-      if (error || !newItem) {
-        console.error(error)
-        setErrorMsg('Error guardando la publicación')
-        setLoading(false)
-        return
-      }
+      if (error || !newItem) { setErrorMsg('Error guardando la publicación'); setLoading(false); return }
 
       const newItemId = newItem.id
       const { data: { session: sess } } = await supabase.auth.getSession()
@@ -168,7 +171,6 @@ function CrearForm() {
       }
 
       router.push('/')
-
     } catch (err) {
       console.error(err)
       setErrorMsg('Ocurrió un error inesperado')
@@ -179,6 +181,85 @@ function CrearForm() {
 
   const canSubmit = title.trim().length > 0 && files.length > 0 && city.trim().length > 0 && category !== '' && !loading
 
+  /* ── City step ── */
+  if (needsCityStep && !cityStepDone) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.header}>
+          <button onClick={() => router.back()} style={styles.backBtn}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <span style={styles.headerTitle}>Antes de publicar</span>
+          <div style={{ width: 40 }} />
+        </div>
+
+        <div style={{ padding: '0 0 80px' }}>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#1A2744', marginBottom: 8, marginTop: 8 }}>
+            Un momento antes...
+          </h2>
+          <p style={{ fontSize: 15, color: '#6B7280', lineHeight: 1.6, marginBottom: 28 }}>
+            ¿En qué ciudad estás? Así conectamos tu objeto con personas cerca de ti.
+          </p>
+
+          <div style={{ marginBottom: 24 }}>
+            <div style={styles.label}>Ciudad</div>
+            <input
+              style={styles.input}
+              placeholder="Ej: Monterrey, CDMX..."
+              value={cityStepInput}
+              onChange={e => setCityStepInput(e.target.value)}
+              autoFocus
+            />
+          </div>
+
+          <div style={{ marginBottom: 28 }}>
+            <div style={styles.label}>¿Qué te interesa intercambiar? <span style={{ color: '#9CA3AF', fontWeight: 400 }}>(opcional)</span></div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+              {INTERESTS_LIST.map(i => (
+                <div
+                  key={i}
+                  onClick={() => setCityStepInterests(prev =>
+                    prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]
+                  )}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: 999,
+                    border: '1.5px solid',
+                    borderColor: cityStepInterests.includes(i) ? '#F97316' : '#E5DDD5',
+                    background: cityStepInterests.includes(i) ? '#FFF5F0' : '#FFFFFF',
+                    color: cityStepInterests.includes(i) ? '#F97316' : '#6B7280',
+                    fontSize: 13,
+                    fontWeight: cityStepInterests.includes(i) ? 600 : 400,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {i}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={saveCityStep}
+            disabled={!cityStepInput.trim() || savingCityStep}
+            style={{
+              ...styles.button,
+              opacity: !cityStepInput.trim() || savingCityStep ? 0.5 : 1,
+              cursor: !cityStepInput.trim() || savingCityStep ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {savingCityStep ? 'Guardando...' : 'Continuar'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  /* ── Main form ── */
   return (
     <div style={styles.container}>
       <style>{`
@@ -211,29 +292,19 @@ function CrearForm() {
       <div style={styles.section}>
         <div style={styles.label}>Fotos</div>
         <div style={styles.subLabel}>{previews.length}/5 fotos</div>
-
         <div style={styles.photosRow}>
-
           {previews.length < 5 && (
             <label style={styles.addPhoto}>
               <span style={{ fontSize: 28, color: '#F97316', lineHeight: 1 }}>+</span>
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={handleImages}
-              />
+              <input type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={handleImages} />
             </label>
           )}
-
           {previews.map((p, i) => (
             <div key={i} style={styles.photoWrapper}>
-              <img src={p} style={styles.photo} />
+              <img src={p} style={styles.photo} alt={`foto ${i + 1}`} />
               <div style={styles.removeBtn} onClick={() => removeImage(i)}>×</div>
             </div>
           ))}
-
         </div>
       </div>
 
@@ -244,7 +315,7 @@ function CrearForm() {
           className="crear-input"
           placeholder="Ej: Cámara Sony Alpha 6000"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={e => setTitle(e.target.value)}
           style={styles.input}
           maxLength={80}
         />
@@ -257,7 +328,7 @@ function CrearForm() {
           className="crear-input"
           placeholder="Ej: Bicicleta, guitarra o nada en particular..."
           value={wanted}
-          onChange={(e) => setWanted(e.target.value)}
+          onChange={e => setWanted(e.target.value)}
           style={styles.input}
           maxLength={100}
         />
@@ -272,18 +343,13 @@ function CrearForm() {
               key={cat.id}
               onClick={() => setCategory(cat.id)}
               style={{
-                padding: '8px 14px',
-                borderRadius: 20,
-                border: '1.5px solid',
+                padding: '8px 14px', borderRadius: 20, border: '1.5px solid',
                 borderColor: category === cat.id ? '#F97316' : '#E5DDD5',
                 background: category === cat.id ? '#FFF5F0' : '#FFFFFF',
                 color: category === cat.id ? '#F97316' : '#6B7280',
                 fontWeight: category === cat.id ? 700 : 400,
-                fontSize: 13,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                fontFamily: 'inherit',
-                flexShrink: 0,
+                fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap',
+                fontFamily: 'inherit', flexShrink: 0,
               }}
             >
               {cat.label}
@@ -299,7 +365,7 @@ function CrearForm() {
           className="crear-input"
           placeholder="Ej: Monterrey, CDMX..."
           value={city}
-          onChange={(e) => setCity(e.target.value)}
+          onChange={e => setCity(e.target.value)}
           style={styles.input}
         />
       </div>
@@ -311,7 +377,7 @@ function CrearForm() {
           className="crear-textarea"
           placeholder="Cuéntales más sobre tu objeto..."
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={e => setDescription(e.target.value)}
           style={styles.textarea}
           maxLength={500}
         />
@@ -320,22 +386,15 @@ function CrearForm() {
         </p>
       </div>
 
-      {errorMsg && (
-        <div style={styles.errorBox}>{errorMsg}</div>
-      )}
+      {errorMsg && <div style={styles.errorBox}>{errorMsg}</div>}
 
       <button
         onClick={handleSubmit}
         disabled={!canSubmit}
-        style={{
-          ...styles.button,
-          opacity: canSubmit ? 1 : 0.5,
-          cursor: canSubmit ? 'pointer' : 'not-allowed',
-        }}
+        style={{ ...styles.button, opacity: canSubmit ? 1 : 0.5, cursor: canSubmit ? 'pointer' : 'not-allowed' }}
       >
         {loading ? 'Publicando...' : 'Publicar'}
       </button>
-
     </div>
   )
 }
@@ -349,148 +408,64 @@ const styles: any = {
   },
 
   header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 24,
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24,
   },
 
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: '50%',
-    background: '#F0EAE0',
-    border: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
+    width: 40, height: 40, borderRadius: '50%', background: '#F0EAE0',
+    border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
   },
 
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 700,
-    color: '#1A2744',
-  },
+  headerTitle: { fontSize: 18, fontWeight: 700, color: '#1A2744' },
 
   chainBanner: {
-    background: '#FFF0E6',
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 14,
-    fontWeight: 500,
-    color: '#C2410C',
-    marginBottom: 20,
+    background: '#FFF0E6', borderRadius: 12, padding: 12,
+    fontSize: 14, fontWeight: 500, color: '#C2410C', marginBottom: 20,
   },
 
-  section: {
-    marginBottom: 20,
-  },
+  section: { marginBottom: 20 },
 
-  group: {
-    marginBottom: 16,
-  },
+  group: { marginBottom: 16 },
 
-  label: {
-    fontSize: 15,
-    fontWeight: 600,
-    color: '#1A2744',
-    marginBottom: 6,
-  },
+  label: { fontSize: 15, fontWeight: 600, color: '#1A2744', marginBottom: 6 },
 
-  subLabel: {
-    fontSize: 13,
-    color: '#6F7A82',
-    marginBottom: 10,
-  },
+  subLabel: { fontSize: 13, color: '#6F7A82', marginBottom: 10 },
 
-  photosRow: {
-    display: 'flex',
-    gap: 10,
-    flexWrap: 'wrap',
-  },
+  photosRow: { display: 'flex', gap: 10, flexWrap: 'wrap' },
 
   addPhoto: {
-    width: 80,
-    height: 80,
-    borderRadius: 16,
-    border: '2px dashed #F97316',
-    background: '#FDF8F3',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
+    width: 80, height: 80, borderRadius: 16, border: '2px dashed #F97316',
+    background: '#FDF8F3', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
   },
 
-  photoWrapper: {
-    position: 'relative',
-  },
+  photoWrapper: { position: 'relative' },
 
-  photo: {
-    width: 80,
-    height: 80,
-    borderRadius: 16,
-    objectFit: 'cover',
-  },
+  photo: { width: 80, height: 80, borderRadius: 16, objectFit: 'cover' },
 
   removeBtn: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    width: 28,
-    height: 28,
-    borderRadius: '50%',
-    background: '#1A2744',
-    color: '#fff',
-    fontSize: 18,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    lineHeight: 1,
+    position: 'absolute', top: -6, right: -6, width: 28, height: 28, borderRadius: '50%',
+    background: '#1A2744', color: '#fff', fontSize: 18,
+    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', lineHeight: 1,
   },
 
   input: {
-    width: '100%',
-    padding: 14,
-    borderRadius: 12,
-    border: 'none',
-    fontSize: 14,
-    background: '#F0EAE0',
-    boxSizing: 'border-box',
+    width: '100%', padding: 14, borderRadius: 12, border: 'none',
+    fontSize: 14, background: '#F0EAE0', boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none',
   },
 
   textarea: {
-    width: '100%',
-    padding: 14,
-    borderRadius: 12,
-    border: 'none',
-    fontSize: 14,
-    minHeight: 100,
-    resize: 'none',
-    background: '#F0EAE0',
-    boxSizing: 'border-box',
+    width: '100%', padding: 14, borderRadius: 12, border: 'none',
+    fontSize: 14, minHeight: 100, resize: 'none', background: '#F0EAE0',
+    boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none',
   },
 
   button: {
-    width: '100%',
-    padding: 16,
-    borderRadius: 16,
-    background: '#F97316',
-    color: '#fff',
-    border: 'none',
-    fontSize: 16,
-    fontWeight: 600,
-    marginTop: 24,
-    marginBottom: 24,
+    width: '100%', padding: 16, borderRadius: 16, background: '#F97316',
+    color: '#fff', border: 'none', fontSize: 16, fontWeight: 600,
+    marginTop: 24, marginBottom: 24, fontFamily: 'inherit',
   },
 
   errorBox: {
-    background: '#FEE2E2',
-    color: '#991B1B',
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 14,
-    marginTop: 8,
+    background: '#FEE2E2', color: '#991B1B', borderRadius: 12, padding: 12, fontSize: 14, marginTop: 8,
   },
 }

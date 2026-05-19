@@ -12,6 +12,7 @@ type Chain = { id: number; initial_item_id: number; created_at: string; initial_
 export default function Home() {
   const router = useRouter()
   const [ready,         setReady]         = useState(false)
+  const [isAnon,        setIsAnon]        = useState(false)
   const [items,         setItems]         = useState<Item[]>([])
   const [chains,        setChains]        = useState<Chain[]>([])
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
@@ -22,13 +23,44 @@ export default function Home() {
 
   useEffect(() => { checkFlow() }, [])
 
+  const loadPublicFeed = async () => {
+    try {
+      const { data: itemsData } = await supabase
+        .from('items')
+        .select('*')
+        .eq('active', true)
+        .order('created_at', { ascending: false })
+        .limit(12)
+
+      const userIds = [...new Set((itemsData || []).map((i: any) => i.user_id))]
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles').select('id, username, avatar_url').in('id', userIds)
+        const profileMap: Record<string, any> = {}
+        profilesData?.forEach((p: any) => { profileMap[p.id] = p })
+        setItems((itemsData || []).map((item: any) => ({
+          ...item,
+          profile: profileMap[item.user_id] ?? null,
+        })))
+      } else {
+        setItems(itemsData || [])
+      }
+    } catch { setItems([]) }
+  }
+
   const checkFlow = async () => {
     const timeoutId = setTimeout(() => { setReady(true) }, 10000)
     try {
       const { data: sessionData } = await supabase.auth.getSession()
       const user = sessionData.session?.user
 
-      if (!user) { router.replace('/onboarding'); return }
+      if (!user) {
+        setIsAnon(true)
+        await loadPublicFeed()
+        clearTimeout(timeoutId)
+        setReady(true)
+        return
+      }
 
       setCurrentUserId(user.id)
 
@@ -63,11 +95,10 @@ export default function Home() {
             .in('id', userIds)
           const profileMap: Record<string, any> = {}
           profilesData?.forEach((p: any) => { profileMap[p.id] = p })
-          const itemsWithProfiles = (itemsData || []).map((item: any) => ({
+          setItems((itemsData || []).map((item: any) => ({
             ...item,
             profile: profileMap[item.user_id] ?? null,
-          }))
-          setItems(itemsWithProfiles)
+          })))
         } else {
           setItems(itemsData || [])
         }
@@ -90,6 +121,7 @@ export default function Home() {
 
           if (itemIds.length === 0 || creatorIds.length === 0 || chainIds.length === 0) {
             setChains([])
+            clearTimeout(timeoutId)
             setReady(true)
             return
           }
@@ -152,7 +184,9 @@ export default function Home() {
     } catch (err) {
       clearTimeout(timeoutId)
       console.error(err)
-      router.replace('/onboarding')
+      setIsAnon(true)
+      await loadPublicFeed()
+      setReady(true)
     }
   }
 
@@ -180,31 +214,39 @@ export default function Home() {
 
       {/* HEADER */}
       <div style={styles.header}>
-        <button
-          style={styles.locationBtn}
-          onClick={() => { setCityInput(userCity || ''); setShowCityModal(true) }}
-        >
-          <svg viewBox="0 0 24 24" width={20} height={20} style={{ flexShrink: 0 }}>
-            <path d="M12 21s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z" fill="#F97316"/>
-            <circle cx="12" cy="11" r="2.5" fill="#fff"/>
-          </svg>
-          <span style={styles.city}>{userCity || 'Mi ciudad'}</span>
-          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-            <path d="M6 9l6 6 6-6"/>
-          </svg>
-        </button>
-        <div style={styles.headerIcons}>
-          <div
-            style={{ cursor: 'pointer', padding: 4 }}
-            onClick={() => router.push('/mensajes')}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-              stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-          </div>
-          <NotifBadge />
-        </div>
+        {isAnon ? (
+          <>
+            <img src="/images/logo.png" style={{ height: 28, display: 'block' }} alt="Trueke" />
+            <button style={styles.joinBtn} onClick={() => router.push('/onboarding')}>
+              Únete gratis
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              style={styles.locationBtn}
+              onClick={() => { setCityInput(userCity || ''); setShowCityModal(true) }}
+            >
+              <svg viewBox="0 0 24 24" width={20} height={20} style={{ flexShrink: 0 }}>
+                <path d="M12 21s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z" fill="#F97316"/>
+                <circle cx="12" cy="11" r="2.5" fill="#fff"/>
+              </svg>
+              <span style={styles.city}>{userCity || 'Mi ciudad'}</span>
+              <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <div style={styles.headerIcons}>
+              <div style={{ cursor: 'pointer', padding: 4 }} onClick={() => router.push('/mensajes')}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                  stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <NotifBadge />
+            </div>
+          </>
+        )}
       </div>
 
       {/* MODAL CIUDAD */}
@@ -245,7 +287,7 @@ export default function Home() {
       {/* CADENAS DESTACADAS */}
       <FeaturedChains chains={chains} />
 
-      {/* CERCA DE TI — 2 columnas */}
+      {/* FEED — 2 columnas */}
       {items.length === 0 ? (
         <div style={styles.emptyFeed}>
           <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -253,22 +295,31 @@ export default function Home() {
             <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
             <line x1="12" y1="22.08" x2="12" y2="12"/>
           </svg>
-          <p style={styles.emptyFeedTitle}>Aún no hay items cerca de ti</p>
-          <p style={styles.emptyFeedSub}>Sé el primero en publicar algo</p>
-          <button style={styles.emptyFeedBtn} onClick={() => router.push('/crear')}>
-            Publicar algo
+          <p style={styles.emptyFeedTitle}>
+            {isAnon ? 'Aún no hay publicaciones' : 'Aún no hay items cerca de ti'}
+          </p>
+          <p style={styles.emptyFeedSub}>
+            {isAnon ? 'Únete y sé el primero en publicar algo' : 'Sé el primero en publicar algo'}
+          </p>
+          <button
+            style={styles.emptyFeedBtn}
+            onClick={() => router.push(isAnon ? '/onboarding' : '/crear')}
+          >
+            {isAnon ? 'Únete gratis' : 'Publicar algo'}
           </button>
         </div>
       ) : (
         <>
-          <Section title={userCity ? `Cerca de ti en ${userCity}` : 'Publicaciones recientes'} href="/buscar" />
-<div style={styles.grid2}>
+          <Section
+            title={isAnon ? 'Publicaciones recientes' : (userCity ? `Cerca de ti en ${userCity}` : 'Publicaciones recientes')}
+            href="/buscar"
+          />
+          <div style={styles.grid2}>
             {items.slice(0, 6).map(item => (
               <Card key={item.id} router={router} item={item} isOwn={item.user_id === currentUserId} />
             ))}
           </div>
 
-          {/* RECOMENDADOS — scroll horizontal compacto */}
           {items.length > 6 && (
             <>
               <Section title="Recomendados" href="/buscar" badge="Nuevo" />
@@ -286,7 +337,7 @@ export default function Home() {
   )
 }
 
-/* ── Componentes ── */
+/* ── Sub-componentes ── */
 
 function HomeSkeleton() {
   const sh: any = {
@@ -335,12 +386,8 @@ function Section({ title, href, badge }: { title: string; href?: string; badge?:
         <strong style={{ fontSize: 17, color: '#1A2744' }}>{title}</strong>
         {badge && (
           <span style={{
-            background: '#F97316',
-            color: '#fff',
-            fontSize: 11,
-            fontWeight: 700,
-            padding: '2px 8px',
-            borderRadius: 20,
+            background: '#F97316', color: '#fff',
+            fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
           }}>
             {badge}
           </span>
@@ -360,7 +407,6 @@ function Section({ title, href, badge }: { title: string; href?: string; badge?:
 
 function Card({ router, item, small = false, isOwn = false }: any) {
   const image = item?.images?.[0] ?? null
-
   return (
     <div
       style={{ ...styles.card, ...(small ? styles.cardSmall : {}) }}
@@ -369,16 +415,9 @@ function Card({ router, item, small = false, isOwn = false }: any) {
       <div style={{ ...styles.cardImg, position: 'relative' }}>
         {isOwn && (
           <div style={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            background: '#F97316',
-            color: '#fff',
-            fontSize: 10,
-            fontWeight: 700,
-            padding: '2px 8px',
-            borderRadius: 20,
-            zIndex: 1,
+            position: 'absolute', top: 8, right: 8,
+            background: '#F97316', color: '#fff',
+            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, zIndex: 1,
           }}>
             Tuyo
           </div>
@@ -408,19 +447,13 @@ function Card({ router, item, small = false, isOwn = false }: any) {
         <div style={styles.exchange}>por {item.wanted || 'algo'}</div>
         <div style={styles.ownerRow}>
           {item.profile?.avatar_url ? (
-            <img
-              src={item.profile.avatar_url}
-              style={styles.ownerAvatar}
-              alt={`Avatar de ${item.profile?.username || 'usuario'}`}
-            />
+            <img src={item.profile.avatar_url} style={styles.ownerAvatar} alt={`Avatar de ${item.profile?.username || 'usuario'}`} />
           ) : (
             <div style={styles.ownerAvatarFallback}>
               {(item.profile?.username || 'U').charAt(0).toUpperCase()}
             </div>
           )}
-          <span style={styles.ownerName}>
-            @{item.profile?.username || 'usuario'}
-          </span>
+          <span style={styles.ownerName}>@{item.profile?.username || 'usuario'}</span>
         </div>
         <div style={styles.timeAgo}>{timeAgo(item.created_at)}</div>
       </div>
@@ -443,13 +476,21 @@ const styles: any = {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
   },
 
-  location: {
-    display: 'flex', alignItems: 'center', gap: 6,
-  },
-
   locationBtn: {
     display: 'flex', alignItems: 'center', gap: 6,
     background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+  },
+
+  joinBtn: {
+    background: '#F97316',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 20,
+    padding: '10px 20px',
+    fontSize: 14,
+    fontWeight: 700,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
   },
 
   overlay: {
@@ -459,7 +500,8 @@ const styles: any = {
 
   modalCard: {
     background: '#fff', borderRadius: '20px 20px 0 0',
-    padding: 24, width: '100%', maxWidth: 500,
+    padding: 24, paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+    width: '100%', maxWidth: 500,
     display: 'flex', flexDirection: 'column', gap: 12,
   },
 
@@ -483,131 +525,63 @@ const styles: any = {
     fontSize: 15, cursor: 'pointer', fontFamily: 'inherit', padding: '4px 0',
   },
 
-  city: {
-    fontWeight: 700,
-    fontSize: 16,
-    color: '#1A2744',
-  },
+  city: { fontWeight: 700, fontSize: 16, color: '#1A2744' },
 
-  headerIcons: {
-    display: 'flex', alignItems: 'center', gap: 16,
-  },
+  headerIcons: { display: 'flex', alignItems: 'center', gap: 16 },
 
   search: {
-    marginTop: 14,
-    background: '#FFFFFF',
-    border: 'none',
-    borderRadius: 16,
-    padding: '12px 16px',
-    color: '#9CA3AF',
-    fontSize: 14,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
+    marginTop: 14, background: '#FFFFFF', border: 'none', borderRadius: 16,
+    padding: '12px 16px', color: '#9CA3AF', fontSize: 14,
+    display: 'flex', alignItems: 'center', gap: 8,
     boxShadow: '0 2px 8px rgba(26,39,68,0.08)',
   },
 
   section: {
-    marginTop: 24,
-    marginBottom: 12,
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    marginTop: 24, marginBottom: 12,
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
   },
 
-  /* Cerca de ti: 2 columnas */
-  grid2: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: 12,
-  },
+  grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
 
-  /* Recomendados: scroll horizontal */
   scrollRow: {
-    display: 'flex',
-    overflowX: 'auto',
-    gap: 12,
-    paddingBottom: 4,
-    marginLeft: -16, marginRight: -16,
-    paddingLeft: 16, paddingRight: 16,
+    display: 'flex', overflowX: 'auto', gap: 12, paddingBottom: 4,
+    marginLeft: -16, marginRight: -16, paddingLeft: 16, paddingRight: 16,
   },
 
   card: {
-    background: '#FFFFFF',
-    border: '1px solid #F0EBE3',
-    borderRadius: 16,
-    overflow: 'hidden',
-    cursor: 'pointer',
+    background: '#FFFFFF', border: '1px solid #F0EBE3',
+    borderRadius: 16, overflow: 'hidden', cursor: 'pointer',
     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
   },
 
-  cardSmall: {
-    minWidth: 140,
-    maxWidth: 160,
-    flexShrink: 0,
-  },
+  cardSmall: { minWidth: 140, maxWidth: 160, flexShrink: 0 },
 
-  cardImg: {
-    width: '100%',
-    aspectRatio: '3 / 2',
-    overflow: 'hidden',
-    background: '#EDE7DF',
-  },
+  cardImg: { width: '100%', aspectRatio: '3 / 2', overflow: 'hidden', background: '#EDE7DF' },
 
-  imgEl: {
-    width: '100%', height: '100%',
-    objectFit: 'cover', display: 'block',
-  },
+  imgEl: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
 
-  imgFallback: {
-    width: '100%', height: '100%',
-    background: '#E8E0D8',
-  },
+  imgFallback: { width: '100%', height: '100%', background: '#E8E0D8' },
 
   cardBody: { padding: 10 },
 
   name: {
-    fontWeight: 700,
-    fontSize: 13,
-    color: '#1A2744',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    fontWeight: 700, fontSize: 13, color: '#1A2744',
+    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
   },
 
   exchange: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
 
-  ownerRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 6,
-  },
+  ownerRow: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 },
 
-  ownerAvatar: {
-    width: 20,
-    height: 20,
-    borderRadius: '50%',
-    objectFit: 'cover',
-  },
+  ownerAvatar: { width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' },
 
   ownerAvatarFallback: {
-    width: 20,
-    height: 20,
-    borderRadius: '50%',
-    background: '#F0EAE0',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 10,
-    fontWeight: 700,
-    color: '#1A2744',
+    width: 20, height: 20, borderRadius: '50%', background: '#F0EAE0',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: 10, fontWeight: 700, color: '#1A2744',
   },
 
-  ownerName: {
-    fontSize: 11,
-    color: '#9CA3AF',
-  },
+  ownerName: { fontSize: 11, color: '#9CA3AF' },
 
   timeAgo: { fontSize: 11, color: '#C4BAB1', marginTop: 2 },
 
@@ -616,13 +590,9 @@ const styles: any = {
     justifyContent: 'center', padding: '48px 32px', gap: 10, textAlign: 'center',
   },
 
-  emptyFeedTitle: {
-    margin: 0, fontSize: 16, fontWeight: 700, color: '#1A2744',
-  },
+  emptyFeedTitle: { margin: 0, fontSize: 16, fontWeight: 700, color: '#1A2744' },
 
-  emptyFeedSub: {
-    margin: 0, fontSize: 14, color: '#9AA3AB',
-  },
+  emptyFeedSub: { margin: 0, fontSize: 14, color: '#9AA3AB' },
 
   emptyFeedBtn: {
     marginTop: 4, background: '#F97316', color: '#fff', border: 'none',
