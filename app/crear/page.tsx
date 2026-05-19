@@ -131,7 +131,12 @@ function CrearForm() {
       for (const file of files) {
         const fileName = `items/${user.id}/${Date.now()}-${file.name}`
         const { error } = await supabase.storage.from('images').upload(fileName, file)
-        if (error) { setErrorMsg('Error subiendo imagen'); setLoading(false); return }
+        if (error) {
+          console.error('Storage error:', error)
+          setErrorMsg(`Error subiendo imagen: ${error.message}`)
+          setLoading(false)
+          return
+        }
         const { data } = supabase.storage.from('images').getPublicUrl(fileName)
         uploadedUrls.push(data.publicUrl)
       }
