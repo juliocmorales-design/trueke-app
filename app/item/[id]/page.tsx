@@ -262,7 +262,12 @@ export default function ItemDetail() {
               >
                 {images.map((img: string, i: number) => (
                   <div key={i} style={styles.slide}>
-                    <img src={img} style={styles.image} />
+                    <img
+                      src={img}
+                      style={styles.image}
+                      loading={i === 0 ? 'eager' : 'lazy'}
+                      alt={item.title}
+                    />
                   </div>
                 ))}
               </div>
