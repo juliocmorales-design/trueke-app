@@ -106,8 +106,7 @@ export default function ItemDetail() {
 
   const scrollTo = (index: number) => {
     if (!carouselRef.current) return
-    const width = carouselRef.current.clientWidth
-    carouselRef.current.scrollTo({ left: width * index, behavior: 'smooth' })
+    carouselRef.current.scrollLeft = carouselRef.current.clientWidth * index
     setCurrent(index)
   }
 
@@ -250,19 +249,23 @@ export default function ItemDetail() {
             </div>
           ) : (
             <>
-              <div style={styles.carousel} ref={carouselRef}>
+              <div
+                style={styles.carousel}
+                ref={carouselRef}
+                onScroll={() => {
+                  if (!carouselRef.current) return
+                  const index = Math.round(
+                    carouselRef.current.scrollLeft / carouselRef.current.clientWidth
+                  )
+                  setCurrent(index)
+                }}
+              >
                 {images.map((img: string, i: number) => (
                   <div key={i} style={styles.slide}>
                     <img src={img} style={styles.image} />
                   </div>
                 ))}
               </div>
-              {images.length > 1 && (
-                <>
-                  <button style={styles.arrowLeft} onClick={prev}>‹</button>
-                  <button style={styles.arrowRight} onClick={next}>›</button>
-                </>
-              )}
             </>
           )}
         </div>
@@ -461,11 +464,17 @@ const styles: any = {
 
   carousel: {
     display: 'flex',
-    overflowX: 'hidden',
+    overflowX: 'scroll',
+    scrollSnapType: 'x mandatory',
+    WebkitOverflowScrolling: 'touch',
+    scrollbarWidth: 'none',
+    msOverflowStyle: 'none',
   },
 
   slide: {
     minWidth: '100%',
+    scrollSnapAlign: 'start',
+    flexShrink: 0,
   },
 
   image: {
