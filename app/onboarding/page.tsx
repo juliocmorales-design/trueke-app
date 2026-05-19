@@ -92,6 +92,37 @@ export default function Onboarding() {
     else setError('')
   }
 
+  const handleEmailNext = async () => {
+    setError('')
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Por favor ingresa un correo electrónico válido')
+      return
+    }
+    setSaving(true)
+    const res = await fetch('/api/auth/check-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+    const result = await res.json()
+    setSaving(false)
+    if (result.exists) {
+      setError('Este correo ya tiene una cuenta. Usa "Iniciar sesión".')
+      return
+    }
+    setStep(2)
+  }
+
+  const handlePasswordNext = () => {
+    setError('')
+    if (!password || !/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
+      setError('La contraseña debe tener al menos 8 caracteres, una letra y un número')
+      return
+    }
+    if (password !== confirmPassword) { setError('Las contraseñas no coinciden'); return }
+    setStep(3)
+  }
+
   const handleFinish = async () => {
     setSaving(true)
     setError('')
@@ -322,6 +353,7 @@ export default function Onboarding() {
           <h1 style={styles.title}>¿Cuál es tu email?</h1>
           <p style={styles.subtitle}>Para crear tu cuenta en Trueke</p>
 
+          <form onSubmit={e => { e.preventDefault(); handleEmailNext() }}>
           <input
             style={styles.input}
             placeholder="correo@ejemplo.com"
@@ -335,31 +367,13 @@ export default function Onboarding() {
           {error && <p style={styles.errorText}>{error}</p>}
 
           <button
+            type="submit"
             style={{ ...styles.button, border: 'none', opacity: saving ? 0.6 : 1 }}
             disabled={saving}
-            onClick={async () => {
-              setError('')
-              if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-                setError('Por favor ingresa un correo electrónico válido')
-                return
-              }
-              setSaving(true)
-              const res = await fetch('/api/auth/check-email', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-              })
-              const result = await res.json()
-              setSaving(false)
-              if (result.exists) {
-                setError('Este correo ya tiene una cuenta. Usa "Iniciar sesión".')
-                return
-              }
-              setStep(2)
-            }}
           >
             {saving ? 'Verificando...' : 'Siguiente →'}
           </button>
+          </form>
 
           <div style={{ textAlign: 'center', marginTop: 8 }}>
             <button
@@ -387,6 +401,7 @@ export default function Onboarding() {
           <h1 style={styles.title}>Elige tu contraseña</h1>
           <p style={styles.subtitle}>Al menos 8 caracteres, una letra y un número</p>
 
+          <form onSubmit={e => { e.preventDefault(); handlePasswordNext() }}>
           <div style={{ position: 'relative' }}>
             <input
               type={showPassword ? 'text' : 'password'}
@@ -440,19 +455,12 @@ export default function Onboarding() {
           {error && <p style={styles.errorText}>{error}</p>}
 
           <button
+            type="submit"
             style={{ ...styles.button, border: 'none' }}
-            onClick={() => {
-              setError('')
-              if (!password || !/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
-                setError('La contraseña debe tener al menos 8 caracteres, una letra y un número')
-                return
-              }
-              if (password !== confirmPassword) { setError('Las contraseñas no coinciden'); return }
-              setStep(3)
-            }}
           >
             Siguiente →
           </button>
+          </form>
 
           <div style={styles.back} onClick={() => { setError(''); setStep(1) }}>Atrás</div>
         </div>

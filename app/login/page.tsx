@@ -74,6 +74,7 @@ export default function LoginPage() {
 
       <h1 style={styles.title}>Iniciar sesión</h1>
 
+      <form onSubmit={e => { e.preventDefault(); signIn() }}>
       <input
         style={styles.input}
         placeholder="correo@ejemplo.com"
@@ -126,9 +127,10 @@ export default function LoginPage() {
 
       {error && <p style={styles.errorText}>{error}</p>}
 
-      <button style={styles.button} onClick={signIn} disabled={loading}>
+      <button type="submit" style={styles.button} disabled={loading}>
         {loading ? 'Entrando...' : 'Entrar con email'}
       </button>
+      </form>
 
       {resetSent ? (
         <p style={styles.resetConfirm}>
