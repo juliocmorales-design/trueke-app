@@ -241,7 +241,7 @@ function EmptyState({ tab, onChangeTab }: { tab: TabKey; onChangeTab: (i: number
         </svg>
       ),
       title: 'Todo limpio por aquí',
-      subtitle: '¡No has tenido ofertas rechazadas. ¡Sigue así!',
+      subtitle: 'No has tenido ofertas rechazadas. ¡Sigue así!',
     },
   }
   const { icon, title, subtitle } = content[tab]
