@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Icon from '../icons/Icon'
 import useUnreadMessages from '@/app/hooks/useUnreadMessages'
 
@@ -11,20 +11,20 @@ export default function BottomNav() {
   const router   = useRouter()
 
   const [visible,    setVisible]    = useState(true)
-  const [lastScroll, setLastScroll] = useState(0)
+  const lastScrollRef = useRef(0)
 
   const isActive = (path: string) => pathname === path
 
   useEffect(() => {
     const handleScroll = () => {
       const current = window.scrollY
-      setVisible(current <= lastScroll || current <= 50)
-      setLastScroll(current)
+      setVisible(current <= lastScrollRef.current || current <= 50)
+      lastScrollRef.current = current
     }
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [lastScroll])
+  }, [])
 
   const go = (path: string) => {
     if (navigator.vibrate) navigator.vibrate(10)

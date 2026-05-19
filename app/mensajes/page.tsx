@@ -40,10 +40,12 @@ export default function MessagesPage() {
 
       const channel = supabase.channel(`messages-list-${user.id}`)
       channel
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' },
-          () => loadConversations(user.id))
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' },
-          () => loadConversations(user.id))
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver=eq.${user.id}`,
+        }, () => loadConversations(user.id))
         .subscribe()
 
       channelRef.current = channel

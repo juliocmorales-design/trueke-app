@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import supabase from '../lib/supabase'
+import { compressImage } from '../lib/compressImage'
 
 const CATEGORIAS = [
   { id: 'electronica', label: '📱 Electrónica' },
@@ -127,8 +128,9 @@ function CrearForm() {
       const user = sessionData.session?.user
       if (!user) { setErrorMsg('No autenticado'); setLoading(false); return }
 
+      const compressedFiles = await Promise.all(files.map(f => compressImage(f)))
       const uploadedUrls: string[] = []
-      for (const file of files) {
+      for (const file of compressedFiles) {
         const fileName = `items/${user.id}/${Date.now()}-${file.name}`
         const { error } = await supabase.storage.from('images').upload(fileName, file)
         if (error) {
@@ -293,6 +295,7 @@ function CrearForm() {
         </div>
       )}
 
+      <form onSubmit={e => { e.preventDefault(); handleSubmit() }}>
       {/* FOTOS */}
       <div style={styles.section}>
         <div style={styles.label}>Fotos</div>
@@ -394,12 +397,13 @@ function CrearForm() {
       {errorMsg && <div style={styles.errorBox}>{errorMsg}</div>}
 
       <button
-        onClick={handleSubmit}
+        type="submit"
         disabled={!canSubmit}
         style={{ ...styles.button, opacity: canSubmit ? 1 : 0.5, cursor: canSubmit ? 'pointer' : 'not-allowed' }}
       >
         {loading ? 'Publicando...' : 'Publicar'}
       </button>
+      </form>
     </div>
   )
 }

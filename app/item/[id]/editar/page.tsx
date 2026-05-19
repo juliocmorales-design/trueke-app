@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
+import { compressImage } from '@/app/lib/compressImage'
 
 const CATEGORIAS = [
   { id: 'electronica', label: '📱 Electrónica' },
@@ -113,8 +114,9 @@ export default function EditarItem() {
       const user = sessionData.session?.user
       if (!user) return
 
+      const compressedFiles = await Promise.all(newFiles.map(f => compressImage(f)))
       const uploadedUrls: string[] = []
-      for (const file of newFiles) {
+      for (const file of compressedFiles) {
         const fileName = `items/${user.id}/${Date.now()}-${file.name}`
         const { error } = await supabase.storage.from('images').upload(fileName, file)
         if (error) {
