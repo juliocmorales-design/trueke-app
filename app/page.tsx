@@ -448,6 +448,7 @@ function Card({ router, item, small = false, isOwn = false }: any) {
               src={image}
               style={styles.imgEl}
               alt={item.title}
+              loading="lazy"
               onError={e => {
                 e.currentTarget.style.display = 'none'
                 e.currentTarget.parentElement!.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#F0EAE0"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C4BAB1" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>'

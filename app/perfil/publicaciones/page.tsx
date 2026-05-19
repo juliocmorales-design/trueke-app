@@ -157,7 +157,7 @@ function ItemCard({
     <div style={{ ...styles.card, opacity: deleting ? 0.5 : 1 }} onClick={onClick}>
       <div style={styles.cardImg}>
         {img
-          ? <img src={img} alt={item.title} style={styles.imgEl} />
+          ? <img src={img} alt={item.title} loading="lazy" style={styles.imgEl} />
           : <div style={{ ...styles.imgFallback, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
                 stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

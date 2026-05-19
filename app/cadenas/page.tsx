@@ -239,7 +239,7 @@ function Thumb({ src, alt }: { src?: string | null; alt: string }) {
   return (
     <div style={{ width: 56, height: 56, borderRadius: 12, overflow: 'hidden', background: '#EDE7DF', flexShrink: 0 }}>
       {src
-        ? <img src={src} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        ? <img src={src} alt={alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         : <div style={{ width: '100%', height: '100%', background: '#E0D8D0' }} />
       }
     </div>
