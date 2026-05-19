@@ -28,6 +28,9 @@ export const metadata: Metadata = {
     description: 'Convierte tus objetos en algo mejor. La forma más inteligente de conseguir lo que quieres sin gastar dinero.',
     images: ['https://www.trueke.app/images/og-image.png'],
   },
+  icons: {
+    apple: '/images/logo.png',
+  },
   metadataBase: new URL('https://www.trueke.app'),
 }
 
