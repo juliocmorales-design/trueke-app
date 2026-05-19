@@ -376,12 +376,20 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Error real de Storage** — `crear/page.tsx`: `setErrorMsg(\`Error subiendo imagen: \${error.message}\`)` + `console.error`
 - **Typo empty state intercambios** — `¡No has tenido ofertas rechazadas` → `No has tenido ofertas rechazadas`
 
+### Fixes adicionales (sesión 12 — cierre)
+
+- **Compresión de imágenes** — `app/lib/compressImage.ts`: helper canvas que redimensiona a max 1200px y convierte a JPEG quality 0.8. Aplicado en `crear/page.tsx` y `item/[id]/editar/page.tsx` antes del upload loop con `Promise.all`
+- **BottomNav stale closure** — `BottomNav.tsx`: `lastScroll` migrado de `useState` a `useRef`; `useEffect` deps cambia de `[lastScroll]` a `[]`; elimina re-registro del listener en cada scroll
+- **Realtime mensajes optimizado** — `mensajes/page.tsx`: suscripción de dos listeners (INSERT+UPDATE sin filtro) → un listener `event: '*'` con `filter: receiver=eq.${userId}`; evita recargar conversaciones por mensajes de otros usuarios
+- **form en crear item** — `crear/page.tsx`: campos y botón "Publicar" envueltos en `<form onSubmit>`; botón cambia a `type="submit"`
+- **Modal cerrar sesión** — `perfil/page.tsx`: `window.confirm` eliminado; bottom sheet rojo con "Sí, cerrar sesión" / "Cancelar", igual al patrón de exchange
+- **Email de soporte real** — `perfil/page.tsx`: "Ayuda y soporte" abre `mailto:truekeapp.com@gmail.com`; ya estaba correcto en `terminos/page.tsx`
+- **Metadata actualizada** — `layout.tsx`: title/OG/Twitter actualizados a "De lo que tienes a lo que quieres" con descripción orientada a beneficio del usuario
+- **Reseñas vs intercambios** — `item/[id]/page.tsx`: contador del dueño dice "X reseñas" en lugar de "X intercambios"
+- **Avatar iniciales en cadenas** — `cadenas/page.tsx`: fallback muestra inicial del username en lugar de div gris vacío
+- **Preview @username en editar perfil** — `perfil/edit/page.tsx`: preview naranja en tiempo real bajo el input de username
+
 ---
-
-## ⏳ Pendientes activos
-
-- **Error subiendo imagen** — usuaria reportó fallo al publicar; esperando mensaje real del error (ya visible con el fix de Storage)
-- **Email de soporte** — `truekeapp.com@gmail.com` pendiente de agregar en sección 1 de términos y ayuda
 
 ## ⏳ Pendiente post-lanzamiento
 
