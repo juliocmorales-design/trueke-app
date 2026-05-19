@@ -28,7 +28,7 @@ export default function TerminosPage() {
 
         <Section
           title="1. Aceptación de los Términos"
-          body="Al crear una cuenta y usar Trueke.app aceptas estos Términos en su totalidad. Trueke.app es operada por Julio Morales, con domicilio en Monterrey, Nuevo León, México."
+          body="Al crear una cuenta y usar Trueke.app aceptas estos Términos en su totalidad. Trueke.app es operada por Julio Morales, con domicilio en Monterrey, Nuevo León, México. Contacto: truekeapp.com@gmail.com"
         />
 
         <Section
