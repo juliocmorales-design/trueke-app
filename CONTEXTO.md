@@ -388,6 +388,12 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Reseñas vs intercambios** — `item/[id]/page.tsx`: contador del dueño dice "X reseñas" en lugar de "X intercambios"
 - **Avatar iniciales en cadenas** — `cadenas/page.tsx`: fallback muestra inicial del username en lugar de div gris vacío
 - **Preview @username en editar perfil** — `perfil/edit/page.tsx`: preview naranja en tiempo real bajo el input de username
+- **Toasts reemplazan alert()** — `ExchangeClient.tsx`: `alert()` eliminados; `showToast()` muestra pill navy centrado sobre BottomNav, auto-dismiss 3s
+- **robots.txt** — `app/robots.ts`: Next.js genera `/robots.txt`; bloquea `/api/`, `/crear`, `/perfil/edit`, `/offer/`; apunta a `/sitemap.xml`
+- **Sitemap** — `app/sitemap.ts`: genera `/sitemap.xml` con las 4 rutas públicas (home, buscar, cadenas, términos)
+- **Touch icon** — `app/layout.tsx`: `icons.apple` apunta a `/images/logo.png` para iOS "Agregar a pantalla de inicio"
+- **Descripción SEO** — `app/layout.tsx`: descripción ampliada a +150 chars en metadata, OG y Twitter
+- **Accesibilidad categorías** — `crear/page.tsx` y `buscar/page.tsx`: `CATEGORIAS` separado en `emoji` + `label`; chips renderizan `<span aria-hidden="true">` para el emoji
 
 ---
 
