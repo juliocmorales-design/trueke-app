@@ -46,7 +46,7 @@ export default function BuscarPage() {
     setLoading(true)
     setSearchError(false)
     try {
-      let req = supabase.from('items').select('*')
+      let req = supabase.from('items').select('*').eq('active', true)
 
       if (q.length >= 2) {
         const safeQuery = sanitizeQuery(q)
