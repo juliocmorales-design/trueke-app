@@ -74,18 +74,39 @@ export default function Home() {
 
       // Items — independent, failure shows empty feed
       try {
-        let itemsQuery = supabase
-          .from('items')
-          .select('*')
-          .eq('active', true)
-          .order('created_at', { ascending: false })
-          .limit(12)
-
+        // Query por ciudad primero
+        let cityItems: any[] = []
         if (profile.city) {
-          itemsQuery = itemsQuery.eq('city', profile.city)
+          const { data } = await supabase
+            .from('items')
+            .select('*')
+            .eq('active', true)
+            .eq('city', profile.city)
+            .order('created_at', { ascending: false })
+            .limit(12)
+          cityItems = data || []
         }
 
-        const { data: itemsData } = await itemsQuery
+        // Si hay menos de 6 items en la ciudad, complementar con otros
+        let allItems = cityItems
+        if (cityItems.length < 6) {
+          const excludeIds = cityItems.map((i: any) => i.id)
+          let fillQuery = supabase
+            .from('items')
+            .select('*')
+            .eq('active', true)
+            .order('created_at', { ascending: false })
+            .limit(12 - cityItems.length)
+
+          if (excludeIds.length > 0) {
+            fillQuery = fillQuery.not('id', 'in', `(${excludeIds.join(',')})`)
+          }
+
+          const { data: fillItems } = await fillQuery
+          allItems = [...cityItems, ...(fillItems || [])]
+        }
+
+        const itemsData = allItems
 
         const userIds = [...new Set((itemsData || []).map((i: any) => i.user_id))]
         if (userIds.length > 0) {
