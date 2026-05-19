@@ -166,6 +166,12 @@ export default function ExchangeClient({
   const [shareError, setShareError]       = useState<string | null>(null)
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
+  const [toast,           setToast]           = useState('')
+
+  const showToast = (msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3000)
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: s }) => {
@@ -232,7 +238,7 @@ export default function ExchangeClient({
       .single()
 
     if (currentOffer?.status !== 'pending') {
-      alert('Esta oferta ya no está pendiente.')
+      showToast('Esta oferta ya no está pendiente.')
       router.refresh()
       return
     }
@@ -244,7 +250,7 @@ export default function ExchangeClient({
       .eq('from_user_id', currentUserId)
 
     if (error) {
-      alert('Error al cancelar la oferta. Intenta de nuevo.')
+      showToast('Error al cancelar la oferta. Intenta de nuevo.')
       return
     }
 
@@ -479,6 +485,20 @@ export default function ExchangeClient({
           <button className={s.btnPrimary} onClick={() => router.push(`/mensajes/${offerId}`)}>
             Ir al chat
           </button>
+        </div>
+      )}
+
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 100, left: '50%',
+          transform: 'translateX(-50%)',
+          background: '#1A2744', color: '#fff',
+          borderRadius: 99, padding: '12px 24px',
+          fontSize: 14, fontWeight: 600,
+          zIndex: 999, whiteSpace: 'nowrap',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+        }}>
+          {toast}
         </div>
       )}
 
