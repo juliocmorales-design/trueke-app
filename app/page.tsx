@@ -237,7 +237,7 @@ export default function Home() {
       <div style={styles.header}>
         {isAnon ? (
           <>
-            <img src="/images/logo.png" style={{ height: 28, display: 'block' }} alt="Trueke" />
+            <img src="/images/logo.png" style={{ height: 40, display: 'block' }} alt="Trueke" />
             <button style={styles.joinBtn} onClick={() => router.push('/onboarding')}>
               Únete gratis
             </button>
