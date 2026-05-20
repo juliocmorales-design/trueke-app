@@ -29,6 +29,7 @@ export default function BuscarPage() {
   const [city, setCity]     = useState('Todas')
   const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null)
   const [items, setItems]   = useState<any[]>([])
+  const [users, setUsers]   = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [searchError, setSearchError] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -47,43 +48,45 @@ export default function BuscarPage() {
     setLoading(true)
     setSearchError(false)
     try {
-      let req = supabase.from('items').select('*').eq('active', true)
-
-      if (q.length >= 2) {
-        const safeQuery = sanitizeQuery(q)
-        req = req.or(
-          `title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%,wanted.ilike.%${safeQuery}%,city.ilike.%${safeQuery}%`
-        )
+      if (q.startsWith('@')) {
+        const username = sanitizeQuery(q.slice(1))
+        const { data } = await supabase
+          .from('profiles').select('*').ilike('username', `%${username}%`).limit(10)
+        setUsers(data || [])
+        setItems([])
       } else {
-        req = req.order('created_at', { ascending: false }).limit(12)
+        setUsers([])
+        let req = supabase.from('items').select('*').eq('active', true)
+
+        if (q.length >= 2) {
+          const safeQuery = sanitizeQuery(q)
+          req = req.or(
+            `title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%,wanted.ilike.%${safeQuery}%,city.ilike.%${safeQuery}%`
+          )
+        } else {
+          req = req.order('created_at', { ascending: false }).limit(12)
+        }
+
+        if (selectedCity !== 'Todas') req = req.eq('city', selectedCity)
+        if (selectedCategoria)        req = req.eq('category', selectedCategoria)
+
+        const { data } = await req
+
+        const userIds = [...new Set((data || []).map((i: any) => i.user_id))]
+        const { data: profilesData } = await supabase
+          .from('profiles').select('id, username, avatar_url').in('id', userIds)
+
+        const profileMap: Record<string, any> = {}
+        profilesData?.forEach((p: any) => { profileMap[p.id] = p })
+
+        setItems((data || []).map((item: any) => ({
+          ...item, profile: profileMap[item.user_id] ?? null,
+        })))
       }
-
-      if (selectedCity !== 'Todas') {
-        req = req.eq('city', selectedCity)
-      }
-
-      if (selectedCategoria) {
-        req = req.eq('category', selectedCategoria)
-      }
-
-      const { data } = await req
-
-      const userIds = [...new Set((data || []).map((i: any) => i.user_id))]
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, username, avatar_url')
-        .in('id', userIds)
-
-      const profileMap: Record<string, any> = {}
-      profilesData?.forEach((p: any) => { profileMap[p.id] = p })
-
-      setItems((data || []).map((item: any) => ({
-        ...item,
-        profile: profileMap[item.user_id] ?? null,
-      })))
     } catch {
       setSearchError(true)
       setItems([])
+      setUsers([])
     } finally {
       setLoading(false)
     }
@@ -108,7 +111,7 @@ export default function BuscarPage() {
           <input
             autoFocus
             style={s.input}
-            placeholder="Buscar objetos, categorías, ciudades..."
+            placeholder="Buscar objetos o @usuario..."
             value={query}
             onChange={e => setQuery(e.target.value)}
           />
@@ -172,15 +175,51 @@ export default function BuscarPage() {
       <div style={s.label}>
         {searchError
           ? 'Error al buscar, intenta de nuevo'
-          : query.length >= 2
-            ? `Resultados para "${query}"`
-            : 'Sugerencias'}
+          : query.startsWith('@')
+            ? 'Personas'
+            : query.length >= 2
+              ? `Resultados para "${query}"`
+              : 'Sugerencias'}
       </div>
 
       {/* CONTENT */}
       {loading ? (
         <div style={s.grid}>
           {[0, 1, 2].map(i => <SkeletonCard key={i} />)}
+        </div>
+      ) : users.length > 0 ? (
+        <div style={{ padding: '0 16px' }}>
+          {users.map(user => (
+            <div
+              key={user.id}
+              onClick={() => router.push(`/perfil/${user.id}`)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 16px', background: '#fff',
+                borderRadius: 16, marginBottom: 8, cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              }}
+            >
+              <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', background: '#F0EAE0', flexShrink: 0, position: 'relative' }}>
+                {user.avatar_url
+                  ? <Image src={user.avatar_url} fill alt={user.username || 'avatar'} style={{ objectFit: 'cover' }} />
+                  : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: '#1A2744' }}>
+                      {(user.username || 'U').charAt(0).toUpperCase()}
+                    </div>
+                }
+              </div>
+              <div>
+                <p style={{ fontSize: 15, fontWeight: 700, color: '#1A2744', margin: 0 }}>
+                  @{user.username}
+                </p>
+                {user.city && (
+                  <p style={{ fontSize: 13, color: '#9CA3AF', margin: 0 }}>
+                    {user.city}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       ) : items.length === 0 ? (
         <EmptyState query={query} />

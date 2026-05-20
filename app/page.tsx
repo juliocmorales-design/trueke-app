@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import supabase from './lib/supabase'
@@ -9,6 +9,10 @@ import NotifBadge from './components/feed/NotifBadge'
 
 type Item  = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string; created_at: string; profile?: { username: string; avatar_url: string | null } }
 type Chain = { id: number; initial_item_id: number; created_at: string; initial_item_title: string | null; initial_item_image: string | null; final_item_title: string | null; final_item_image: string | null; creator_username: string | null; creator_avatar: string | null; steps_count: number }
+
+const CACHE_KEY = 'trueke_feed_cache'
+const CACHE_TTL = 5 * 60 * 1000
+const PAGE_SIZE = 12
 
 export default function Home() {
   const router = useRouter()
@@ -21,31 +25,55 @@ export default function Home() {
   const [showCityModal, setShowCityModal] = useState(false)
   const [cityInput,     setCityInput]     = useState('')
   const [savingCity,    setSavingCity]    = useState(false)
+  const [page,          setPage]          = useState(0)
+  const [hasMore,       setHasMore]       = useState(true)
+  const [loadingMore,   setLoadingMore]   = useState(false)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { checkFlow() }, [])
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) loadMoreItems()
+      },
+      { threshold: 0.1 }
+    )
+    if (sentinelRef.current) observer.observe(sentinelRef.current)
+    return () => observer.disconnect()
+  }, [hasMore, loadingMore])
+
   const loadPublicFeed = async () => {
     try {
+      const cached = localStorage.getItem(CACHE_KEY)
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached)
+        if (Date.now() - timestamp < CACHE_TTL) { setItems(data); return }
+      }
+    } catch {}
+    try {
       const { data: itemsData } = await supabase
-        .from('items')
-        .select('*')
-        .eq('active', true)
-        .order('created_at', { ascending: false })
-        .limit(12)
+        .from('items').select('*').eq('active', true)
+        .order('created_at', { ascending: false }).limit(PAGE_SIZE)
 
       const userIds = [...new Set((itemsData || []).map((i: any) => i.user_id))]
+      let itemsWithProfiles: Item[]
       if (userIds.length > 0) {
         const { data: profilesData } = await supabase
           .from('profiles').select('id, username, avatar_url').in('id', userIds)
         const profileMap: Record<string, any> = {}
         profilesData?.forEach((p: any) => { profileMap[p.id] = p })
-        setItems((itemsData || []).map((item: any) => ({
-          ...item,
-          profile: profileMap[item.user_id] ?? null,
-        })))
+        itemsWithProfiles = (itemsData || []).map((item: any) => ({
+          ...item, profile: profileMap[item.user_id] ?? null,
+        }))
       } else {
-        setItems(itemsData || [])
+        itemsWithProfiles = itemsData || []
       }
+      setItems(itemsWithProfiles)
+      if (itemsWithProfiles.length < PAGE_SIZE) setHasMore(false)
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ data: itemsWithProfiles, timestamp: Date.now() }))
+      } catch {}
     } catch { setItems([]) }
   }
 
@@ -75,54 +103,56 @@ export default function Home() {
 
       // Items — independent, failure shows empty feed
       try {
-        // Query por ciudad primero
-        let cityItems: any[] = []
-        if (profile.city) {
-          const { data } = await supabase
-            .from('items')
-            .select('*')
-            .eq('active', true)
-            .eq('city', profile.city)
-            .order('created_at', { ascending: false })
-            .limit(12)
-          cityItems = data || []
-        }
+        let cacheHit = false
+        try {
+          const cached = localStorage.getItem(CACHE_KEY)
+          if (cached) {
+            const { data, timestamp } = JSON.parse(cached)
+            if (Date.now() - timestamp < CACHE_TTL) { setItems(data); cacheHit = true }
+          }
+        } catch {}
 
-        // Si hay menos de 6 items en la ciudad, complementar con otros
-        let allItems = cityItems
-        if (cityItems.length < 6) {
-          const excludeIds = cityItems.map((i: any) => i.id)
-          let fillQuery = supabase
-            .from('items')
-            .select('*')
-            .eq('active', true)
-            .order('created_at', { ascending: false })
-            .limit(12 - cityItems.length)
-
-          if (excludeIds.length > 0) {
-            fillQuery = fillQuery.not('id', 'in', `(${excludeIds.join(',')})`)
+        if (!cacheHit) {
+          // Query por ciudad primero
+          let cityItems: any[] = []
+          if (profile.city) {
+            const { data } = await supabase
+              .from('items').select('*').eq('active', true)
+              .eq('city', profile.city).order('created_at', { ascending: false }).limit(PAGE_SIZE)
+            cityItems = data || []
           }
 
-          const { data: fillItems } = await fillQuery
-          allItems = [...cityItems, ...(fillItems || [])]
-        }
+          // Si hay menos de 6 items en la ciudad, complementar con otros
+          let allItems = cityItems
+          if (cityItems.length < 6) {
+            const excludeIds = cityItems.map((i: any) => i.id)
+            let fillQuery = supabase
+              .from('items').select('*').eq('active', true)
+              .order('created_at', { ascending: false }).limit(PAGE_SIZE - cityItems.length)
+            if (excludeIds.length > 0) fillQuery = fillQuery.not('id', 'in', `(${excludeIds.join(',')})`)
+            const { data: fillItems } = await fillQuery
+            allItems = [...cityItems, ...(fillItems || [])]
+          }
 
-        const itemsData = allItems
-
-        const userIds = [...new Set((itemsData || []).map((i: any) => i.user_id))]
-        if (userIds.length > 0) {
-          const { data: profilesData } = await supabase
-            .from('profiles')
-            .select('id, username, avatar_url')
-            .in('id', userIds)
-          const profileMap: Record<string, any> = {}
-          profilesData?.forEach((p: any) => { profileMap[p.id] = p })
-          setItems((itemsData || []).map((item: any) => ({
-            ...item,
-            profile: profileMap[item.user_id] ?? null,
-          })))
-        } else {
-          setItems(itemsData || [])
+          const itemsData = allItems
+          const userIds = [...new Set((itemsData || []).map((i: any) => i.user_id))]
+          let itemsWithProfiles: Item[]
+          if (userIds.length > 0) {
+            const { data: profilesData } = await supabase
+              .from('profiles').select('id, username, avatar_url').in('id', userIds)
+            const profileMap: Record<string, any> = {}
+            profilesData?.forEach((p: any) => { profileMap[p.id] = p })
+            itemsWithProfiles = (itemsData || []).map((item: any) => ({
+              ...item, profile: profileMap[item.user_id] ?? null,
+            }))
+          } else {
+            itemsWithProfiles = itemsData || []
+          }
+          setItems(itemsWithProfiles)
+          if (itemsWithProfiles.length < PAGE_SIZE) setHasMore(false)
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ data: itemsWithProfiles, timestamp: Date.now() }))
+          } catch {}
         }
       } catch { setItems([]) }
 
@@ -226,6 +256,33 @@ export default function Home() {
     } finally {
       setSavingCity(false)
       setShowCityModal(false)
+    }
+  }
+
+  const loadMoreItems = async () => {
+    if (loadingMore || !hasMore) return
+    setLoadingMore(true)
+    try {
+      const nextPage = page + 1
+      const { data } = await supabase
+        .from('items').select('*').eq('active', true)
+        .order('created_at', { ascending: false })
+        .range(nextPage * PAGE_SIZE, (nextPage + 1) * PAGE_SIZE - 1)
+
+      if (!data || data.length === 0) { setHasMore(false); return }
+      if (data.length < PAGE_SIZE) setHasMore(false)
+
+      const userIds = [...new Set(data.map((i: any) => i.user_id))]
+      const profileMap: Record<string, any> = {}
+      if (userIds.length > 0) {
+        const { data: pd } = await supabase
+          .from('profiles').select('id, username, avatar_url').in('id', userIds as string[])
+        pd?.forEach((p: any) => { profileMap[p.id] = p })
+      }
+      setItems(prev => [...prev, ...data.map((item: any) => ({ ...item, profile: profileMap[item.user_id] ?? null }))])
+      setPage(nextPage)
+    } catch {} finally {
+      setLoadingMore(false)
     }
   }
 
@@ -337,20 +394,20 @@ export default function Home() {
             href="/buscar"
           />
           <div style={styles.grid2}>
-            {items.slice(0, 6).map(item => (
+            {items.map(item => (
               <Card key={item.id} router={router} item={item} isOwn={item.user_id === currentUserId} />
             ))}
           </div>
-
-          {items.length > 6 && (
-            <>
-              <Section title="Recomendados" href="/buscar" badge="Nuevo" />
-              <div style={styles.scrollRow}>
-                {items.slice(6, 12).map(item => (
-                  <Card key={item.id} router={router} item={item} small isOwn={item.user_id === currentUserId} />
-                ))}
-              </div>
-            </>
+          <div ref={sentinelRef} style={{ height: 20 }} />
+          {loadingMore && (
+            <p style={{ textAlign: 'center', color: '#9CA3AF', fontSize: 14, padding: 16 }}>
+              Cargando más...
+            </p>
+          )}
+          {!hasMore && items.length > 0 && (
+            <p style={{ textAlign: 'center', color: '#9CA3AF', fontSize: 13, padding: 16 }}>
+              Ya viste todo 👀
+            </p>
           )}
         </>
       )}
