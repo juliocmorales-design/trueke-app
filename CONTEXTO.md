@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 19 Mayo 2026 (sesión 12)
+> Última actualización: 20 Mayo 2026 (sesión 13)
 
 ---
 
@@ -397,9 +397,28 @@ rating/[offerId] → calificación 1-5 + comentario
 
 ---
 
+## ✅ Completado sesión 13
+
+### Migración a `next/image`
+
+- **`next.config.ts`** — `remotePatterns` para `**.supabase.co` y `images.unsplash.com`; Next.js ahora sirve imágenes externas optimizadas
+- **7 archivos migrados** — todas las `<img>` de items y avatares reemplazadas por `<Image>` de `next/image`:
+  - `app/page.tsx` — logo header (`width={120} height={40}`), cards de items (`fill`), avatares de dueño (`width={20} height={20}`)
+  - `app/buscar/page.tsx` — cards de items (`fill`), avatares de dueño (`width={20} height={20}`)
+  - `app/cadenas/page.tsx` — thumbs de cadena (`fill` en contenedor 56×56), avatar del creador (`fill` en contenedor 20×20)
+  - `app/perfil/publicaciones/page.tsx` — cards de items (`fill`)
+  - `app/item/[id]/page.tsx` — slides del carrusel (`fill` en contenedor `height: 280`), avatar del dueño (`width={48} height={48}`)
+  - `app/perfil/page.tsx` — avatar del perfil propio (`fill` en `avatarWrap` 72×72 con `position: 'relative'`)
+  - `app/perfil/[userId]/page.tsx` — avatar del perfil público (`fill`), cards de items (`fill`)
+- **Patrón `fill`** — contenedores con `position: 'relative'` + `aspectRatio` o tamaño fijo; imagen con `style={{ objectFit: 'cover' }}`
+- **`onError` con innerHTML** — eliminado; reemplazado por `const [imgError, setImgError] = useState(false)` + fallback SVG declarativo en componentes client
+- **`loading="lazy"`/`"eager"`** — mantenido igual que antes (primer slide del carrusel sigue siendo `eager`)
+- **Beneficio** — Next.js convierte automáticamente a WebP, redimensiona según viewport, y aplica lazy loading con blur placeholder
+
+---
+
 ## ⏳ Pendiente post-lanzamiento
 
-- **`next/image` optimización** — lazy loading nativo ya implementado; pendiente migrar a `next/image` para WebP y LCP automático
 - **V6** — Toast "¡Copiado!" al compartir link en tarjetas
 - **V8** — Typing indicator en chat ("Escribiendo...")
 - **V9** — Score de confianza con explicación (tooltip o subtítulo "¿Cómo se calcula?")
