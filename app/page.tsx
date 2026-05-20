@@ -407,6 +407,15 @@ export default function Home() {
           >
             Únete gratis →
           </button>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: '12px 0 0' }}>
+            ¿Ya tienes cuenta?{' '}
+            <span
+              onClick={() => router.push('/login')}
+              style={{ color: '#fff', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              Inicia sesión
+            </span>
+          </p>
         </div>
       )}
 
