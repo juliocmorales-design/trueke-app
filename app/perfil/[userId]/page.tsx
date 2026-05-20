@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default async function PerfilPublicoPage({
   params,
@@ -52,11 +53,11 @@ export default async function PerfilPublicoPage({
       <div style={s.contentCard}>
         <div style={s.topSection}>
           <div style={s.avatarWrap}>
-            <img
+            <Image
               src={profile.avatar_url || '/images/avatar.svg'}
-              style={s.avatar}
+              fill
               alt="avatar"
-              onError={e => { e.currentTarget.src = '/images/avatar.svg' }}
+              style={{ objectFit: 'cover' }}
             />
           </div>
           <div style={{ flex: 1 }}>
@@ -122,7 +123,7 @@ function ItemCard({ item }: { item: any }) {
     <Link href={`/item/${item.id}`} style={s.card}>
       <div style={s.cardImg}>
         {image
-          ? <img src={image} style={s.imgEl} alt={item.title} />
+          ? <Image src={image} fill alt={item.title} loading="lazy" style={{ objectFit: 'cover' }} />
           : <div style={s.imgFallback} />
         }
       </div>
@@ -191,6 +192,7 @@ const s: any = {
     overflow: 'hidden',
     flexShrink: 0,
     background: '#EDE7DF',
+    position: 'relative',
   },
 
   avatar: {
@@ -317,6 +319,7 @@ const s: any = {
     aspectRatio: '1 / 1',
     overflow: 'hidden',
     background: '#EDE7DF',
+    position: 'relative',
   },
 
   imgEl: {

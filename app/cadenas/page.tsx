@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import supabase from '@/app/lib/supabase'
 
 type ChainItem = { id: number; title: string; images: string[] | null }
@@ -237,9 +238,9 @@ function Badge({ steps }: { steps: number }) {
 /* ── Thumb ─────────────────────────────────────────────────────────── */
 function Thumb({ src, alt }: { src?: string | null; alt: string }) {
   return (
-    <div style={{ width: 56, height: 56, borderRadius: 12, overflow: 'hidden', background: '#EDE7DF', flexShrink: 0 }}>
+    <div style={{ width: 56, height: 56, borderRadius: 12, overflow: 'hidden', background: '#EDE7DF', flexShrink: 0, position: 'relative' }}>
       {src
-        ? <img src={src} alt={alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        ? <Image src={src} fill alt={alt} loading="lazy" style={{ objectFit: 'cover' }} />
         : <div style={{ width: '100%', height: '100%', background: '#E0D8D0' }} />
       }
     </div>
@@ -317,9 +318,9 @@ function ChainCard({ chain, onClick }: { chain: Chain; onClick: () => void }) {
           {chain.steps_count} intercambio{chain.steps_count !== 1 ? 's' : ''}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 20, height: 20, borderRadius: '50%', overflow: 'hidden', background: '#EDE7DF', flexShrink: 0 }}>
+          <div style={{ width: 20, height: 20, borderRadius: '50%', overflow: 'hidden', background: '#EDE7DF', flexShrink: 0, position: 'relative' }}>
             {chain.creator?.avatar_url
-              ? <img src={chain.creator.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              ? <Image src={chain.creator.avatar_url} fill alt="" style={{ objectFit: 'cover' }} />
               : <div style={{
                   width: '100%', height: '100%', background: '#F0EAE0',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import supabase from './lib/supabase'
 import FeaturedChains from './components/feed/FeaturedChains'
 import NotifBadge from './components/feed/NotifBadge'
@@ -237,7 +238,7 @@ export default function Home() {
       <div style={styles.header}>
         {isAnon ? (
           <>
-            <img src="/images/logo.png" style={{ height: 40, display: 'block' }} alt="Trueke" />
+            <Image src="/images/logo.png" width={120} height={40} alt="Trueke" style={{ display: 'block' }} />
             <button style={styles.joinBtn} onClick={() => router.push('/onboarding')}>
               Únete gratis
             </button>
@@ -428,6 +429,7 @@ function Section({ title, href, badge }: { title: string; href?: string; badge?:
 
 function Card({ router, item, small = false, isOwn = false }: any) {
   const image = item?.images?.[0] ?? null
+  const [imgError, setImgError] = useState(false)
   return (
     <div
       style={{ ...styles.card, ...(small ? styles.cardSmall : {}) }}
@@ -443,16 +445,14 @@ function Card({ router, item, small = false, isOwn = false }: any) {
             Tuyo
           </div>
         )}
-        {image
-          ? <img
+        {image && !imgError
+          ? <Image
               src={image}
-              style={styles.imgEl}
+              fill
+              style={{ objectFit: 'cover' }}
               alt={item.title}
               loading="lazy"
-              onError={e => {
-                e.currentTarget.style.display = 'none'
-                e.currentTarget.parentElement!.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#F0EAE0"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C4BAB1" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>'
-              }}
+              onError={() => setImgError(true)}
             />
           : <div style={{ ...styles.imgFallback, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
@@ -469,7 +469,7 @@ function Card({ router, item, small = false, isOwn = false }: any) {
         <div style={styles.exchange}>por {item.wanted || 'algo'}</div>
         <div style={styles.ownerRow}>
           {item.profile?.avatar_url ? (
-            <img src={item.profile.avatar_url} style={styles.ownerAvatar} alt={`Avatar de ${item.profile?.username || 'usuario'}`} />
+            <Image src={item.profile.avatar_url} width={20} height={20} alt={`Avatar de ${item.profile?.username || 'usuario'}`} style={{ borderRadius: '50%', objectFit: 'cover' }} />
           ) : (
             <div style={styles.ownerAvatarFallback}>
               {(item.profile?.username || 'U').charAt(0).toUpperCase()}

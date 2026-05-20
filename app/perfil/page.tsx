@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import Image from 'next/image'
 import supabase from '@/app/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -98,11 +99,11 @@ export default function PerfilPage() {
       <div style={styles.contentCard}>
       <div style={styles.topSection}>
         <div style={styles.avatarWrap}>
-          <img
+          <Image
             src={profile?.avatar_url || '/images/avatar.svg'}
-            style={styles.avatar}
+            fill
             alt="avatar"
-            onError={e => { e.currentTarget.src = '/images/avatar.svg' }}
+            style={{ objectFit: 'cover' }}
           />
         </div>
 
@@ -362,6 +363,7 @@ const styles: any = {
     overflow: 'hidden',
     flexShrink: 0,
     background: '#EDE7DF',
+    position: 'relative',
   },
 
   avatar: {

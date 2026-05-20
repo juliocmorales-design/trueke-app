@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import supabase from '../lib/supabase'
 
 const sanitizeQuery = (q: string) => q.replace(/[%_\\]/g, '\\$&')
@@ -197,19 +198,18 @@ export default function BuscarPage() {
 
 function ItemCard({ item, router }: any) {
   const image = item?.images?.[0] || null
+  const [imgError, setImgError] = useState(false)
   return (
     <div style={s.card} onClick={() => router.push(`/item/${item.id}`)}>
-      <div style={s.cardImg}>
-        {image
-          ? <img
+      <div style={{ ...s.cardImg, position: 'relative' }}>
+        {image && !imgError
+          ? <Image
               src={image}
-              style={s.imgEl}
+              fill
+              style={{ objectFit: 'cover' }}
               alt={item.title}
               loading="lazy"
-              onError={e => {
-                e.currentTarget.style.display = 'none'
-                e.currentTarget.parentElement!.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#F0EAE0"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C4BAB1" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>'
-              }}
+              onError={() => setImgError(true)}
             />
           : <div style={{ ...s.imgFallback, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
@@ -226,7 +226,7 @@ function ItemCard({ item, router }: any) {
         <div style={s.cardWanted}>por {item.wanted || 'algo'}</div>
         <div style={s.ownerRow}>
           {item.profile?.avatar_url ? (
-            <img src={item.profile.avatar_url} style={s.ownerAvatar} alt={`Avatar de ${item.profile?.username || 'usuario'}`} />
+            <Image src={item.profile.avatar_url} width={20} height={20} alt={`Avatar de ${item.profile?.username || 'usuario'}`} style={{ borderRadius: '50%', objectFit: 'cover' }} />
           ) : (
             <div style={s.ownerAvatarFallback}>
               {(item.profile?.username || 'U').charAt(0).toUpperCase()}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import supabase from '@/app/lib/supabase'
 
 // NOTE: if the `active` column doesn't exist in Supabase, run:
@@ -261,10 +262,11 @@ export default function ItemDetail() {
                 }}
               >
                 {images.map((img: string, i: number) => (
-                  <div key={i} style={styles.slide}>
-                    <img
+                  <div key={i} style={{ ...styles.slide, position: 'relative', height: 280 }}>
+                    <Image
                       src={img}
-                      style={styles.image}
+                      fill
+                      style={{ objectFit: 'cover' }}
                       loading={i === 0 ? 'eager' : 'lazy'}
                       alt={item.title}
                     />
@@ -325,9 +327,12 @@ export default function ItemDetail() {
           {owner && (
             <div style={styles.userRow} onClick={() => router.push(`/perfil/${owner.id}`)}>
               <div style={styles.userLeft}>
-                <img
+                <Image
                   src={owner.avatar_url || '/images/avatar.svg'}
-                  style={styles.avatar}
+                  width={48}
+                  height={48}
+                  alt={owner.username || 'avatar'}
+                  style={{ borderRadius: '50%', objectFit: 'cover' }}
                 />
                 <div>
                   <div style={styles.userName}>{owner.username || owner.name || 'Usuario'}</div>
