@@ -29,7 +29,8 @@ export default function Home() {
   const [loadingMore,   setLoadingMore]   = useState(false)
   const sentinelRef = useRef<HTMLDivElement>(null)
   const scrollRef   = useRef(0)
-  const [initialLoadDone, setInitialLoadDone] = useState(false)
+  const [initialLoadDone,       setInitialLoadDone]       = useState(false)
+  const [hasSeenChainsExplainer, setHasSeenChainsExplainer] = useState(true)
 
   useEffect(() => { checkFlow() }, [])
 
@@ -37,6 +38,10 @@ export default function Home() {
     try {
       const saved = sessionStorage.getItem('home_scroll')
       if (saved) { window.scrollTo(0, parseInt(saved, 10)); sessionStorage.removeItem('home_scroll') }
+    } catch {}
+    try {
+      const seen = localStorage.getItem('trueke_chains_explainer')
+      setHasSeenChainsExplainer(!!seen)
     } catch {}
   }, [])
 
@@ -374,6 +379,63 @@ export default function Home() {
         </svg>
         <span>Buscar objetos o personas...</span>
       </div>
+
+      {/* VALUE PROP — solo anónimos */}
+      {isAnon && (
+        <div style={{
+          background: 'linear-gradient(135deg, #1A2744 0%, #2D3F6B 100%)',
+          borderRadius: 20,
+          padding: '20px 20px',
+          marginBottom: 20,
+          textAlign: 'center',
+        }}>
+          <p style={{ fontSize: 18, fontWeight: 700, color: '#FFFFFF', margin: '0 0 6px', lineHeight: 1.3 }}>
+            Publica lo que tienes.<br/>
+            Consigue lo que quieres.
+          </p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', margin: '0 0 16px' }}>
+            Sin dinero. Solo intercambios.
+          </p>
+          <button
+            onClick={() => router.push('/onboarding')}
+            style={{
+              background: '#F97316', color: '#fff', border: 'none',
+              borderRadius: 99, padding: '10px 24px',
+              fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+            }}
+          >
+            Únete gratis →
+          </button>
+        </div>
+      )}
+
+      {/* EXPLAINER CADENAS */}
+      {!hasSeenChainsExplainer && chains.length > 0 && (
+        <div style={{
+          background: '#FFF5F0', border: '1.5px solid #F97316',
+          borderRadius: 12, padding: '12px 14px', marginBottom: 12,
+          display: 'flex', gap: 10, alignItems: 'flex-start',
+        }}>
+          <span style={{ fontSize: 20 }}>🔗</span>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#1A2744', margin: '0 0 2px' }}>
+              ¿Qué es una cadena?
+            </p>
+            <p style={{ fontSize: 12, color: '#6B7280', margin: 0, lineHeight: 1.5 }}>
+              Intercambia algo → consigue algo mejor → intercámbialo de nuevo. Cada paso te acerca a lo que realmente quieres.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              try { localStorage.setItem('trueke_chains_explainer', '1') } catch {}
+              setHasSeenChainsExplainer(true)
+            }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', fontSize: 18, padding: 0, flexShrink: 0 }}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* CADENAS DESTACADAS */}
       <FeaturedChains chains={chains} />

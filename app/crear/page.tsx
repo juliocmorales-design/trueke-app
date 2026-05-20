@@ -35,8 +35,9 @@ function CrearForm() {
   const [files,    setFiles]    = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
 
-  const [loading,   setLoading]   = useState(false)
-  const [errorMsg,  setErrorMsg]  = useState<string | null>(null)
+  const [openToOffers, setOpenToOffers] = useState(false)
+  const [loading,      setLoading]      = useState(false)
+  const [errorMsg,     setErrorMsg]     = useState<string | null>(null)
 
   // City step
   const [needsCityStep,    setNeedsCityStep]    = useState(false)
@@ -133,9 +134,10 @@ function CrearForm() {
         uploadedUrls.push(data.publicUrl)
       }
 
+      const wantedValue = openToOffers ? 'Abierto a cualquier oferta' : (wanted.trim() || null)
       const { data: newItem, error } = await supabase
         .from('items')
-        .insert([{ title, description, wanted, city, category, user_id: user.id, images: uploadedUrls }])
+        .insert([{ title, description, wanted: wantedValue, city, category, user_id: user.id, images: uploadedUrls }])
         .select('id')
         .single()
 
@@ -320,16 +322,52 @@ function CrearForm() {
       </div>
 
       {/* BUSCAS */}
-      <div style={styles.group}>
-        <div style={styles.label}>¿Qué buscas a cambio?</div>
-        <input
-          className="crear-input"
-          placeholder="Ej: Bicicleta, guitarra o nada en particular..."
-          value={wanted}
-          onChange={e => setWanted(e.target.value)}
-          style={styles.input}
-          maxLength={100}
-        />
+      <div style={{ marginBottom: 16 }}>
+        <label style={{ fontSize: 16, fontWeight: 700, color: '#1A2744', display: 'block', marginBottom: 8 }}>
+          ¿Qué buscas a cambio?
+          <span style={{ fontWeight: 400, color: '#9CA3AF', fontSize: 13, marginLeft: 6 }}>(opcional)</span>
+        </label>
+
+        <div
+          onClick={() => setOpenToOffers(!openToOffers)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '12px 16px',
+            background: openToOffers ? '#FFF5F0' : '#F0EAE0',
+            borderRadius: 12,
+            border: openToOffers ? '1.5px solid #F97316' : '1.5px solid transparent',
+            cursor: 'pointer',
+            marginBottom: 10,
+          }}
+        >
+          <div style={{
+            width: 20, height: 20, borderRadius: '50%',
+            border: '2px solid #F97316',
+            background: openToOffers ? '#F97316' : 'transparent',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}>
+            {openToOffers && (
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </div>
+          <span style={{ fontSize: 14, color: '#1A2744', fontWeight: 500 }}>
+            Estoy abierto a cualquier oferta
+          </span>
+        </div>
+
+        {!openToOffers && (
+          <input
+            className="crear-input"
+            value={wanted}
+            onChange={e => setWanted(e.target.value)}
+            placeholder="Ej: bicicleta, ropa deportiva, herramientas..."
+            maxLength={100}
+            style={styles.input}
+          />
+        )}
       </div>
 
       {/* CATEGORÍA */}
