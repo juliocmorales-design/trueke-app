@@ -95,16 +95,17 @@ export default function Home() {
   const checkFlow = async () => {
     const timeoutId = setTimeout(() => { setReady(true) }, 10000)
     try {
-      const { data: sessionData } = await supabase.auth.getSession()
-      const user = sessionData.session?.user
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
 
-      if (!user) {
+      if (sessionError || !sessionData.session) {
         setIsAnon(true)
         await loadPublicFeed()
         clearTimeout(timeoutId)
         setReady(true)
         return
       }
+
+      const user = sessionData.session.user
 
       setCurrentUserId(user.id)
 

@@ -31,9 +31,20 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       setIsLoggedIn(!!data.session?.user)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsLoggedIn(!!session?.user)
-    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'SIGNED_OUT') {
+          setIsLoggedIn(false)
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('trueke_feed_cache')) {
+              localStorage.removeItem(key)
+            }
+          })
+        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          setIsLoggedIn(!!session?.user)
+        }
+      }
+    )
 
     return () => subscription.unsubscribe()
   }, [])
