@@ -460,12 +460,12 @@ const styles: any = {
 
   input: {
     width: '100%', padding: 14, borderRadius: 12, border: 'none',
-    fontSize: 14, background: '#F0EAE0', boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none',
+    fontSize: 16, background: '#F0EAE0', boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none',
   },
 
   textarea: {
     width: '100%', padding: 14, borderRadius: 12, border: 'none',
-    fontSize: 14, minHeight: 100, resize: 'none', background: '#F0EAE0',
+    fontSize: 16, minHeight: 100, resize: 'none', background: '#F0EAE0',
     boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none',
   },
 

@@ -10,7 +10,6 @@ import NotifBadge from './components/feed/NotifBadge'
 type Item  = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string; created_at: string; profile?: { username: string; avatar_url: string | null } }
 type Chain = { id: number; initial_item_id: number; created_at: string; initial_item_title: string | null; initial_item_image: string | null; final_item_title: string | null; final_item_image: string | null; creator_username: string | null; creator_avatar: string | null; steps_count: number }
 
-const CACHE_KEY = 'trueke_feed_cache'
 const CACHE_TTL = 5 * 60 * 1000
 const PAGE_SIZE = 12
 
@@ -29,26 +28,28 @@ export default function Home() {
   const [hasMore,       setHasMore]       = useState(true)
   const [loadingMore,   setLoadingMore]   = useState(false)
   const sentinelRef = useRef<HTMLDivElement>(null)
+  const [initialLoadDone, setInitialLoadDone] = useState(false)
 
   useEffect(() => { checkFlow() }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore) loadMoreItems()
+        if (entries[0].isIntersecting && hasMore && !loadingMore && initialLoadDone) loadMoreItems()
       },
       { threshold: 0.1 }
     )
     if (sentinelRef.current) observer.observe(sentinelRef.current)
     return () => observer.disconnect()
-  }, [hasMore, loadingMore])
+  }, [hasMore, loadingMore, initialLoadDone])
 
   const loadPublicFeed = async () => {
+    const CACHE_KEY = 'trueke_feed_cache_anon'
     try {
       const cached = localStorage.getItem(CACHE_KEY)
       if (cached) {
         const { data, timestamp } = JSON.parse(cached)
-        if (Date.now() - timestamp < CACHE_TTL) { setItems(data); return }
+        if (Date.now() - timestamp < CACHE_TTL) { setItems(data); setInitialLoadDone(true); return }
       }
     } catch {}
     try {
@@ -74,7 +75,8 @@ export default function Home() {
       try {
         localStorage.setItem(CACHE_KEY, JSON.stringify({ data: itemsWithProfiles, timestamp: Date.now() }))
       } catch {}
-    } catch { setItems([]) }
+      setInitialLoadDone(true)
+    } catch { setItems([]); setInitialLoadDone(true) }
   }
 
   const checkFlow = async () => {
@@ -102,6 +104,7 @@ export default function Home() {
       localStorage.setItem('onboarding_seen', 'true')
 
       // Items — independent, failure shows empty feed
+      const CACHE_KEY = `trueke_feed_cache_${user.id}`
       try {
         let cacheHit = false
         try {
@@ -154,7 +157,8 @@ export default function Home() {
             localStorage.setItem(CACHE_KEY, JSON.stringify({ data: itemsWithProfiles, timestamp: Date.now() }))
           } catch {}
         }
-      } catch { setItems([]) }
+        setInitialLoadDone(true)
+      } catch { setItems([]); setInitialLoadDone(true) }
 
       // Chains — independent, failure shows empty chains section
       try {
@@ -590,7 +594,7 @@ const styles: any = {
 
   modalInput: {
     background: '#F0EAE0', borderRadius: 12, border: 'none',
-    padding: 14, fontSize: 15, fontFamily: 'inherit', outline: 'none',
+    padding: 14, fontSize: 16, fontFamily: 'inherit', outline: 'none',
   },
 
   modalSave: {

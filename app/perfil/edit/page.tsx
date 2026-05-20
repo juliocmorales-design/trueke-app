@@ -325,7 +325,7 @@ const s: any = {
     borderRadius: 12,
     border: 'none',
     background: '#F0EAE0',
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'inherit',
     boxSizing: 'border-box',
     outline: 'none',

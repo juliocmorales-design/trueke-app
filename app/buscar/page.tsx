@@ -353,7 +353,7 @@ const s: any = {
     flex: 1,
     border: 'none',
     background: 'transparent',
-    fontSize: 15,
+    fontSize: 16,
     color: '#1A2744',
     outline: 'none',
   },

@@ -680,7 +680,7 @@ const s: any = {
     padding: '11px 16px',
     borderRadius: 16,
     border: '1.5px solid #E0DAD5',
-    fontSize: 14,
+    fontSize: 16,
     outline: 'none',
     background: '#FDF8F3',
   },
