@@ -4,19 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import supabase from '../lib/supabase'
+import { CATEGORIAS } from '../lib/constants'
 
 const sanitizeQuery = (q: string) => q.replace(/[%_\\]/g, '\\$&')
-
-const CATEGORIAS = [
-  { id: 'electronica', emoji: '📱', label: 'Electrónica' },
-  { id: 'ropa',        emoji: '👕', label: 'Ropa' },
-  { id: 'hogar',       emoji: '🏠', label: 'Hogar' },
-  { id: 'deportes',    emoji: '⚽', label: 'Deportes' },
-  { id: 'libros',      emoji: '📚', label: 'Libros' },
-  { id: 'juguetes',    emoji: '🧸', label: 'Juguetes' },
-  { id: 'musica',      emoji: '🎸', label: 'Música' },
-  { id: 'otros',       emoji: '📦', label: 'Otros' },
-]
 
 const CITIES = [
   'Todas', 'Monterrey', 'CDMX', 'Guadalajara', 'Tijuana', 'Puebla',
@@ -412,7 +402,7 @@ const s: any = {
 
   cardImg: {
     width: '100%',
-    aspectRatio: '1 / 1',
+    aspectRatio: '3 / 2',
     overflow: 'hidden',
     background: '#EDE7DF',
   },

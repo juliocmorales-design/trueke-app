@@ -28,9 +28,17 @@ export default function Home() {
   const [hasMore,       setHasMore]       = useState(true)
   const [loadingMore,   setLoadingMore]   = useState(false)
   const sentinelRef = useRef<HTMLDivElement>(null)
+  const scrollRef   = useRef(0)
   const [initialLoadDone, setInitialLoadDone] = useState(false)
 
   useEffect(() => { checkFlow() }, [])
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('home_scroll')
+      if (saved) { window.scrollTo(0, parseInt(saved, 10)); sessionStorage.removeItem('home_scroll') }
+    } catch {}
+  }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -399,7 +407,13 @@ export default function Home() {
           />
           <div style={styles.grid2}>
             {items.map(item => (
-              <Card key={item.id} router={router} item={item} isOwn={item.user_id === currentUserId} />
+              <Card
+                key={item.id}
+                router={router}
+                item={item}
+                isOwn={item.user_id === currentUserId}
+                onNavigate={() => { scrollRef.current = window.scrollY; try { sessionStorage.setItem('home_scroll', String(window.scrollY)) } catch {} }}
+              />
             ))}
           </div>
           <div ref={sentinelRef} style={{ height: 20 }} />
@@ -488,13 +502,13 @@ function Section({ title, href, badge }: { title: string; href?: string; badge?:
   )
 }
 
-function Card({ router, item, small = false, isOwn = false }: any) {
+function Card({ router, item, small = false, isOwn = false, onNavigate }: any) {
   const image = item?.images?.[0] ?? null
   const [imgError, setImgError] = useState(false)
   return (
     <div
       style={{ ...styles.card, ...(small ? styles.cardSmall : {}) }}
-      onClick={() => router.push(`/item/${item.id}`)}
+      onClick={() => { onNavigate?.(); router.push(`/item/${item.id}`) }}
     >
       <div style={{ ...styles.cardImg, position: 'relative' }}>
         {isOwn && (
@@ -626,11 +640,6 @@ const styles: any = {
 
   grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
 
-  scrollRow: {
-    display: 'flex', overflowX: 'auto', gap: 12, paddingBottom: 4,
-    marginLeft: -16, marginRight: -16, paddingLeft: 16, paddingRight: 16,
-  },
-
   card: {
     background: '#FFFFFF', border: '1px solid #F0EBE3',
     borderRadius: 16, overflow: 'hidden', cursor: 'pointer',
@@ -640,8 +649,6 @@ const styles: any = {
   cardSmall: { minWidth: 140, maxWidth: 160, flexShrink: 0 },
 
   cardImg: { width: '100%', aspectRatio: '3 / 2', overflow: 'hidden', background: '#EDE7DF' },
-
-  imgEl: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
 
   imgFallback: { width: '100%', height: '100%', background: '#E8E0D8' },
 
@@ -655,8 +662,6 @@ const styles: any = {
   exchange: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
 
   ownerRow: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 },
-
-  ownerAvatar: { width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' },
 
   ownerAvatarFallback: {
     width: 20, height: 20, borderRadius: '50%', background: '#F0EAE0',

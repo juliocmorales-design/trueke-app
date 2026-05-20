@@ -4,17 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import supabase from '../lib/supabase'
 import { compressImage } from '../lib/compressImage'
-
-const CATEGORIAS = [
-  { id: 'electronica', emoji: '📱', label: 'Electrónica' },
-  { id: 'ropa',        emoji: '👕', label: 'Ropa' },
-  { id: 'hogar',       emoji: '🏠', label: 'Hogar' },
-  { id: 'deportes',    emoji: '⚽', label: 'Deportes' },
-  { id: 'libros',      emoji: '📚', label: 'Libros' },
-  { id: 'juguetes',    emoji: '🧸', label: 'Juguetes' },
-  { id: 'musica',      emoji: '🎸', label: 'Música' },
-  { id: 'otros',       emoji: '📦', label: 'Otros' },
-]
+import { CATEGORIAS } from '../lib/constants'
 
 const INTERESTS_LIST = [
   'Electrónica', 'Ropa', 'Libros', 'Muebles',
