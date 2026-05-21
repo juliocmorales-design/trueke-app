@@ -87,6 +87,7 @@ const styles: any = {
   navWrapper: {
     position: 'sticky',
     bottom: 0,
+    zIndex: 10,
     padding: '10px 16px',
     background: 'transparent',
   },

@@ -2,13 +2,19 @@ import type { Metadata } from 'next'
 import './globals.css'
 import ClientLayout from './components/layout/ClientLayout'
 
+const TITLE = 'De lo que tienes a lo que quieres — Trueke'
+const DESCRIPTION = 'Publica lo que tienes e intercambia con personas cerca de ti. Consigue lo que quieres sin gastar dinero. Trueque en México.'
+
 export const metadata: Metadata = {
-  title: 'Trueke.app — De lo que tienes a lo que quieres',
-  description: 'Convierte tus objetos en algo mejor con Trueke.app. Publica lo que tienes, intercambia con personas cerca de ti y consigue lo que quieres sin gastar dinero. La comunidad de trueque en México.',
+  title: TITLE,
+  description: DESCRIPTION,
   keywords: 'trueque, intercambio, objetos, Monterrey, México',
+  alternates: {
+    canonical: 'https://www.trueke.app',
+  },
   openGraph: {
-    title: 'Trueke.app — De lo que tienes a lo que quieres',
-    description: 'Convierte tus objetos en algo mejor con Trueke.app. Publica lo que tienes, intercambia con personas cerca de ti y consigue lo que quieres sin gastar dinero. La comunidad de trueque en México.',
+    title: TITLE,
+    description: DESCRIPTION,
     url: 'https://www.trueke.app',
     siteName: 'Trueke.app',
     images: [
@@ -24,8 +30,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Trueke.app — De lo que tienes a lo que quieres',
-    description: 'Convierte tus objetos en algo mejor con Trueke.app. Publica lo que tienes, intercambia con personas cerca de ti y consigue lo que quieres sin gastar dinero. La comunidad de trueque en México.',
+    title: TITLE,
+    description: DESCRIPTION,
     images: ['https://www.trueke.app/images/og-image.png'],
   },
   icons: {
