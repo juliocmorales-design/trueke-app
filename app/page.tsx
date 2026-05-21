@@ -387,6 +387,7 @@ export default function Home() {
           background: 'linear-gradient(135deg, #1A2744 0%, #2D3F6B 100%)',
           borderRadius: 20,
           padding: '20px 20px',
+          marginTop: 12,
           marginBottom: 20,
           textAlign: 'center',
         }}>
