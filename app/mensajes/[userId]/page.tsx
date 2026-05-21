@@ -36,10 +36,6 @@ export default function OfferChatPage() {
   const bottomRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    init()
-  }, [])
-
-  useEffect(() => {
     if (!offerId) return
     const channel = supabase.channel(`chat-offer-${offerId}`)
     channel
@@ -110,6 +106,8 @@ export default function OfferChatPage() {
       .eq('receiver', user.id)
       .eq('is_read', false)
   }
+
+  useEffect(() => { init() }, [])
 
   const sendMessage = async () => {
     if (!text.trim() || !currentUser || !offer) return

@@ -90,8 +90,6 @@ export default function NotificacionesClient() {
   const [notifs, setNotifs]   = useState<Notif[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => { load() }, [])
-
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { router.replace('/login'); return }
@@ -116,6 +114,8 @@ export default function NotificacionesClient() {
       })
     }
   }
+
+  useEffect(() => { load() }, [])
 
   const handlePress = (n: Notif) => {
     const dest = TYPE_DEST[n.type] ?? DEFAULT_DEST

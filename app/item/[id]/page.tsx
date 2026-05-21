@@ -23,10 +23,6 @@ export default function ItemDetail() {
   const [menuDeleting,  setMenuDeleting]  = useState(false)
   const [menuDeleteErr, setMenuDeleteErr] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadItem()
-  }, [])
-
   const loadItem = async () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession()
@@ -72,6 +68,8 @@ export default function ItemDetail() {
       router.push('/')
     }
   }
+
+  useEffect(() => { loadItem() }, [])
 
   const handleDeleteItem = async () => {
     if (!item) return

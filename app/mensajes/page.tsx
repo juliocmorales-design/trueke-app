@@ -20,46 +20,7 @@ export default function MessagesPage() {
 
   const channelRef = useRef<RealtimeChannel | null>(null)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    const init = async () => {
-      const { data } = await supabase.auth.getSession()
-      const user = data.session?.user
-      if (!user) return
-
-      setCurrentUser(user)
-      await loadConversations(user.id)
-
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current)
-        channelRef.current = null
-      }
-
-      const channel = supabase.channel(`messages-list-${user.id}`)
-      channel
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-          filter: `receiver=eq.${user.id}`,
-        }, () => loadConversations(user.id))
-        .subscribe()
-
-      channelRef.current = channel
-    }
-
-    init()
-
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current)
-        channelRef.current = null
-      }
-    }
-  }, [])
+  useEffect(() => { setMounted(true) }, [])
 
   const loadConversations = async (myId: string) => {
     const { data: offersData } = await supabase
@@ -135,6 +96,43 @@ export default function MessagesPage() {
     setConversations(final)
     setLoading(false)
   }
+
+  useEffect(() => {
+    const init = async () => {
+      const { data } = await supabase.auth.getSession()
+      const user = data.session?.user
+      if (!user) return
+
+      setCurrentUser(user)
+      await loadConversations(user.id)
+
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
+
+      const channel = supabase.channel(`messages-list-${user.id}`)
+      channel
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver=eq.${user.id}`,
+        }, () => loadConversations(user.id))
+        .subscribe()
+
+      channelRef.current = channel
+    }
+
+    init()
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
+    }
+  }, [])
 
   const formatTime = (dateString: string) => {
     if (!dateString) return ''

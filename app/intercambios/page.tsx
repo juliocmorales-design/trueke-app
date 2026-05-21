@@ -20,8 +20,6 @@ export default function IntercambiosPage() {
   const [anim, setAnim] = useState('')
   const touchStartX = useRef(0)
 
-  useEffect(() => { load() }, [])
-
   const changeTab = (index: number) => {
     setAnim('out')
     setTimeout(() => { setTabIndex(index); setAnim('in') }, 120)
@@ -117,6 +115,8 @@ export default function IntercambiosPage() {
     setOffers(final)
     setLoading(false)
   }
+
+  useEffect(() => { load() }, [])
 
   const currentKey = TAB_KEYS[tabIndex]
   const filtered = offers.filter(o => {

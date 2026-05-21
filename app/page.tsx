@@ -32,8 +32,6 @@ export default function Home() {
   const [initialLoadDone,       setInitialLoadDone]       = useState(false)
   const [hasSeenChainsExplainer, setHasSeenChainsExplainer] = useState(true)
 
-  useEffect(() => { checkFlow() }, [])
-
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem('home_scroll')
@@ -44,17 +42,6 @@ export default function Home() {
       setHasSeenChainsExplainer(!!seen)
     } catch {}
   }, [])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore && initialLoadDone) loadMoreItems()
-      },
-      { threshold: 0.1 }
-    )
-    if (sentinelRef.current) observer.observe(sentinelRef.current)
-    return () => observer.disconnect()
-  }, [hasMore, loadingMore, initialLoadDone])
 
   const loadPublicFeed = async () => {
     const CACHE_KEY = 'trueke_feed_cache_anon'
@@ -303,6 +290,19 @@ export default function Home() {
       setLoadingMore(false)
     }
   }
+
+  useEffect(() => { checkFlow() }, [])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && initialLoadDone) loadMoreItems()
+      },
+      { threshold: 0.1 }
+    )
+    if (sentinelRef.current) observer.observe(sentinelRef.current)
+    return () => observer.disconnect()
+  }, [hasMore, loadingMore, initialLoadDone])
 
   if (!ready) return <HomeSkeleton />
 

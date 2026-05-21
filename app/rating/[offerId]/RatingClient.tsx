@@ -57,8 +57,6 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
   const [ratedProfile,  setRatedProfile]  = useState<Profile>(null)
   const [raterId,       setRaterId]       = useState<string | null>(null)
 
-  useEffect(() => { init() }, [])
-
   const init = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.replace('/login'); return }
@@ -87,6 +85,8 @@ export default function RatingClient({ offerId, data }: { offerId: string; data:
     setRaterId(user.id)
     setReady(true)
   }
+
+  useEffect(() => { init() }, [])
 
   const handleSave = async () => {
     if (!stars || !raterId || !ratedProfile || saving) return

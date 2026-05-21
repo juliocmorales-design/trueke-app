@@ -5,8 +5,27 @@ import supabase from '@/app/lib/supabase'
 
 export default function useUnreadMessages() {
   const [unread, setUnread] = useState(0)
-  const channelRef = useRef<any>(null)
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
   const userIdRef = useRef<string | null>(null)
+
+  const loadUnread = async (userId: string) => {
+    if (!userId) return
+
+    const { count, error } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('receiver', userId)
+      .eq('is_read', false)
+
+    console.log('[unread] userId:', userId, 'count:', count)
+
+    if (error) {
+      console.log('❌ unread error', error)
+      return
+    }
+
+    setUnread(count ?? 0)
+  }
 
   useEffect(() => {
     const init = async () => {
@@ -56,25 +75,6 @@ export default function useUnreadMessages() {
       }
     }
   }, [])
-
-  const loadUnread = async (userId: string) => {
-    if (!userId) return
-
-    const { count, error } = await supabase
-      .from('messages')
-      .select('*', { count: 'exact', head: true })
-      .eq('receiver', userId)
-      .eq('is_read', false)
-
-    console.log('[unread] userId:', userId, 'count:', count)
-
-    if (error) {
-      console.log('❌ unread error', error)
-      return
-    }
-
-    setUnread(count ?? 0)
-  }
 
   return unread
 }

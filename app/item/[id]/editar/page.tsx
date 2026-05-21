@@ -36,8 +36,6 @@ export default function EditarItem() {
   const [newFiles,    setNewFiles]    = useState<File[]>([])
   const [newPreviews, setNewPreviews] = useState<string[]>([])
 
-  useEffect(() => { loadItem() }, [])
-
   const loadItem = async () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession()
@@ -65,6 +63,8 @@ export default function EditarItem() {
       setLoading(false)
     }
   }
+
+  useEffect(() => { loadItem() }, [])
 
   const totalCount = existingImages.length + newFiles.length
 

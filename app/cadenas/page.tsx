@@ -38,8 +38,6 @@ export default function CadenasPage() {
   const [loading, setLoading] = useState(true)
   const [filter,  setFilter]  = useState<Filter>('populares')
 
-  useEffect(() => { loadChains() }, [])
-
   const loadChains = async () => {
     const { data: rawChains } = await supabase
       .from('chains')
@@ -103,6 +101,8 @@ export default function CadenasPage() {
     setChains(enriched)
     setLoading(false)
   }
+
+  useEffect(() => { loadChains() }, [])
 
   const filtered = (() => {
     let list = [...chains]

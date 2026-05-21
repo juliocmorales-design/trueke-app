@@ -23,6 +23,15 @@ const AVATARS = [
   { file: 'avatar_15_conejo.png',    label: 'Conejo' },
 ]
 
+function ChainLink() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
 export default function Onboarding() {
   const router = useRouter()
 
@@ -206,13 +215,6 @@ export default function Onboarding() {
   if (loading) {
     return <div style={{ padding: 20, color: '#6B7680' }}>Cargando...</div>
   }
-
-  const ChainLink = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
-    </svg>
-  )
 
   /* ── Email confirmación enviada ── */
   if (emailSent) {

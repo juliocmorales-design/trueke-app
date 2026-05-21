@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import s from './chain.module.css'
 
@@ -283,7 +283,7 @@ function ShareCardV1({
         ? (
           <div style={{ padding: '12px 16px', background: '#F0EAE0', borderRadius: 12, borderLeft: '3px solid #F97316' }}>
             <p style={{ margin: 0, fontSize: 13, color: '#6B7680', fontStyle: 'italic', lineHeight: 1.5 }}>
-              "{personalQuote}"
+              {'"'}{personalQuote}{'"'}
             </p>
           </div>
         )
@@ -317,9 +317,9 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
   const lastStep    = steps[steps.length - 1]
   const lastItem    = lastStep ? itemMap[lastStep.item_id] : initialItem
 
-  const days = Math.max(1, Math.round(
+  const days = useMemo(() => Math.max(1, Math.round(
     (Date.now() - new Date(chain.created_at).getTime()) / 86_400_000,
-  ))
+  )), [chain.created_at])
 
   const cardProps   = { initialItem, lastItem, stepsCount: chain.steps_count, days, logoSrc }
   const v1CardProps = { ...cardProps, personalQuote: chain.personal_quote, logoSrc }

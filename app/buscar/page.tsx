@@ -24,16 +24,6 @@ export default function BuscarPage() {
   const [searchError, setSearchError] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-
-    debounceRef.current = setTimeout(() => {
-      search(query, city, categoriaActiva)
-    }, query.length >= 2 ? 300 : 0)
-
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
-  }, [query, city, categoriaActiva])
-
   const search = async (q: string, selectedCity: string, selectedCategoria: string | null) => {
     setLoading(true)
     setSearchError(false)
@@ -81,6 +71,16 @@ export default function BuscarPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+
+    debounceRef.current = setTimeout(() => {
+      search(query, city, categoriaActiva)
+    }, query.length >= 2 ? 300 : 0)
+
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [query, city, categoriaActiva])
 
   return (
     <div style={s.container}>

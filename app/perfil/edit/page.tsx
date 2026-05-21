@@ -20,8 +20,6 @@ export default function EditProfile() {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => { loadProfile() }, [])
-
   const loadProfile = async () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession()
@@ -47,6 +45,8 @@ export default function EditProfile() {
       router.replace('/')
     }
   }
+
+  useEffect(() => { loadProfile() }, [])
 
   const handleFile = (e: any) => {
     const file = e.target.files[0]

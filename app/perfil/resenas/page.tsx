@@ -37,8 +37,6 @@ export default function MisResenasPage() {
   const [ratings, setRatings] = useState<Rating[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => { load() }, [])
-
   const load = async () => {
     const { data: sessionData } = await supabase.auth.getSession()
     const user = sessionData.session?.user
@@ -72,6 +70,8 @@ export default function MisResenasPage() {
     })))
     setLoading(false)
   }
+
+  useEffect(() => { load() }, [])
 
   return (
     <div style={styles.container}>

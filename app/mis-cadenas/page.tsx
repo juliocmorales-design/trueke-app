@@ -19,8 +19,6 @@ export default function MisCadenasPage() {
   const [chains, setChains] = useState<Chain[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => { load() }, [])
-
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.replace('/login'); return }
@@ -59,7 +57,7 @@ export default function MisCadenasPage() {
 
     /* Fetch initial items */
     const itemIds = [...new Set(all.map(c => c.initial_item_id).filter(Boolean))] as number[]
-    let itemsMap: Record<number, { title: string; images: string[] | null }> = {}
+    const itemsMap: Record<number, { title: string; images: string[] | null }> = {}
     if (itemIds.length > 0) {
       const { data: items } = await supabase
         .from('items')
@@ -77,6 +75,8 @@ export default function MisCadenasPage() {
     setChains(enriched)
     setLoading(false)
   }
+
+  useEffect(() => { load() }, [])
 
   const formatDate = (iso: string) => {
     return new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })

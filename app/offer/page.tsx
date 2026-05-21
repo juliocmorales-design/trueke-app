@@ -25,10 +25,6 @@ function OfferForm() {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
   const fetchData = async () => {
     const { data: sessionData } = await supabase.auth.getSession()
     const user = sessionData.session?.user
@@ -45,6 +41,8 @@ function OfferForm() {
     setMyItems(mine || [])
     setLoading(false)
   }
+
+  useEffect(() => { fetchData() }, [])
 
   const handleSend = async () => {
     if (!selected || !currentUser || !targetItem) return

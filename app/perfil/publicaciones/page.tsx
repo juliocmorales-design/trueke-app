@@ -25,8 +25,6 @@ export default function MisPublicacionesPage() {
   const [deleting,    setDeleting]    = useState<number | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
-  useEffect(() => { load() }, [])
-
   const load = async () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession()
@@ -46,6 +44,8 @@ export default function MisPublicacionesPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => { load() }, [])
 
   const handleDelete = async (itemId: number) => {
     setDeleting(itemId)

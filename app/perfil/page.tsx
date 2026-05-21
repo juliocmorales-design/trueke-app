@@ -17,8 +17,6 @@ export default function PerfilPage() {
   const [showComingSoon,  setShowComingSoon]  = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
-  useEffect(() => { loadData() }, [])
-
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.replace('/login')
@@ -72,6 +70,8 @@ export default function PerfilPage() {
     setItems(itemsData || [])
     setLoading(false)
   }
+
+  useEffect(() => { loadData() }, [])
 
   if (loading) return <div style={{ padding: 20, background: '#FDF8F3', minHeight: '100vh' }}>Cargando...</div>
 

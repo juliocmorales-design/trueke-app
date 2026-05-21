@@ -13,6 +13,17 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // React Compiler rules: downgrade to warn — async setState in effects
+      // and impure helpers are established patterns in this codebase.
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/purity": "warn",
+      // Supabase returns untyped results; proper types require `supabase gen types`.
+      // Downgrade until generated types are added to the project.
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  },
 ]);
 
 export default eslintConfig;

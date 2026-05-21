@@ -30,10 +30,6 @@ function OfferNewForm() {
   const [sending,    setSending]    = useState(false)
   const [sendError,  setSendError]  = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
   const fetchData = async () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession()
@@ -76,6 +72,8 @@ function OfferNewForm() {
       router.replace('/')
     }
   }
+
+  useEffect(() => { fetchData() }, [])
 
   const handleSend = async () => {
     if (!selected || !currentUser || !targetItem || sending) return
