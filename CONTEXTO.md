@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 20 Mayo 2026 (sesión 13)
+> Última actualización: 21 Mayo 2026 (sesión 13)
 
 ---
 
@@ -403,31 +403,50 @@ rating/[offerId] → calificación 1-5 + comentario
 
 - **`next.config.ts`** — `remotePatterns` para `**.supabase.co` y `images.unsplash.com`; Next.js ahora sirve imágenes externas optimizadas
 - **7 archivos migrados** — todas las `<img>` de items y avatares reemplazadas por `<Image>` de `next/image`:
-  - `app/page.tsx` — logo header (`width={120} height={40}`), cards de items (`fill`), avatares de dueño (`width={20} height={20}`)
-  - `app/buscar/page.tsx` — cards de items (`fill`), avatares de dueño (`width={20} height={20}`)
-  - `app/cadenas/page.tsx` — thumbs de cadena (`fill` en contenedor 56×56), avatar del creador (`fill` en contenedor 20×20)
+  - `app/page.tsx` — logo header, cards de items (`fill`), avatares de dueño (`width={20} height={20}`)
+  - `app/buscar/page.tsx` — cards de items (`fill`), avatares de dueño
+  - `app/cadenas/page.tsx` — thumbs de cadena (`fill`), avatar del creador
   - `app/perfil/publicaciones/page.tsx` — cards de items (`fill`)
-  - `app/item/[id]/page.tsx` — slides del carrusel (`fill` en contenedor `height: 280`), avatar del dueño (`width={48} height={48}`)
-  - `app/perfil/page.tsx` — avatar del perfil propio (`fill` en `avatarWrap` 72×72 con `position: 'relative'`)
+  - `app/item/[id]/page.tsx` — slides del carrusel (`fill`), avatar del dueño (`width={48} height={48}`)
+  - `app/perfil/page.tsx` — avatar del perfil propio (`fill` en `avatarWrap` 72×72)
   - `app/perfil/[userId]/page.tsx` — avatar del perfil público (`fill`), cards de items (`fill`)
 - **Patrón `fill`** — contenedores con `position: 'relative'` + `aspectRatio` o tamaño fijo; imagen con `style={{ objectFit: 'cover' }}`
-- **`onError` con innerHTML** — eliminado; reemplazado por `const [imgError, setImgError] = useState(false)` + fallback SVG declarativo en componentes client
-- **`loading="lazy"`/`"eager"`** — mantenido igual que antes (primer slide del carrusel sigue siendo `eager`)
-- **Beneficio** — Next.js convierte automáticamente a WebP, redimensiona según viewport, y aplica lazy loading con blur placeholder
+- **`onError` con innerHTML** — eliminado; reemplazado por `const [imgError, setImgError] = useState(false)` + fallback SVG declarativo
+- **Beneficio** — Next.js convierte automáticamente a WebP, redimensiona según viewport, lazy loading automático
+
+### Cambios grandes adicionales
+
+- **Infinite scroll con caché** — `page.tsx`: scroll infinito con `IntersectionObserver` (sentinel guard para evitar doble disparo); caché de feed en `localStorage` con clave `trueke_feed_cache_${userId}` (5 min TTL, keyed por usuario — no global)
+- **Búsqueda por @username** — `buscar/page.tsx`: si el query empieza con `@`, busca en `profiles.username` en lugar de `items.title`
+- **Propuesta de valor en home anónimo** — banner azul navy con gradiente, texto "Publica lo que tienes. Consigue lo que quieres.", CTA naranja "Únete gratis →" y link "Inicia sesión"; separado del buscador con `marginTop: 12` (mismo gap que grid de items)
+- **Banner explicativo de cadenas (descartable)** — `page.tsx`: banner naranja suave en sección cadenas; se descarta con ✕ y se guarda en `localStorage` para no volver a mostrar
+- **Campo `wanted` opcional con toggle** — `crear/page.tsx` y `editar/page.tsx`: checkbox "Abierto a cualquier oferta" oculta/muestra el campo wanted; si está activado se guarda `wanted = null`
+- **Logo SVG en home anónimo** — `public/svg/Logo_Trueke.svg` commiteado al repo; `<img>` con `width: 190, height: 32` (dimensiones explícitas necesarias porque el SVG tiene `width="100%"`)
+
+### Fixes críticos
+
+- **iOS Safari zoom** — `fontSize: 16` en todos los inputs de la app (iOS hace zoom automático en inputs < 16px)
+- **Sesión expirada** — `page.tsx`: `onAuthStateChange` con `TOKEN_REFRESHED` para auto-refresh; si falla, redirige al home público en lugar de login loop
+- **Guard infinite scroll sentinel** — `IntersectionObserver` desconectado al cargar más items para evitar doble disparo
+- **Badge "Tuyo" no tapa navbar** — `ClientLayout.tsx`: `navWrapper` con `zIndex: 10`; el badge absoluto ya no se superpone al nav sticky
+- **0 errores lint** — de 175 errores a 0: hoisting fixes en 19 archivos, `prefer-const`, `useMemo` para `Date.now()`, `ChainLink` movido fuera del componente padre, quotes escapadas en JSX. `eslint.config.mjs`: `react-hooks/set-state-in-effect`, `react-hooks/purity` y `@typescript-eslint/no-explicit-any` bajados a `"warn"` (237 warnings — todos informativos)
+- **SEO** — `app/layout.tsx`: título `'De lo que tienes a lo que quieres — Trueke'`, descripción ≤155 chars orientada a beneficio, `alternates.canonical: 'https://www.trueke.app'`; `lang="es"` ya estaba correcto
 
 ---
 
 ## ⏳ Pendiente post-lanzamiento
 
-- **V6** — Toast "¡Copiado!" al compartir link en tarjetas
-- **V8** — Typing indicator en chat ("Escribiendo...")
+- PWA / Push notifications
+- Typing indicator en chat ("Escribiendo...")
+- Toast "¡Copiado!" al compartir link en tarjetas
+- OG tags dinámicos por item
+- Schema.org markup
+- Scroll restoration al volver de item
 - **V9** — Score de confianza con explicación (tooltip o subtítulo "¿Cómo se calcula?")
 - **V12** — Log de errores centralizado (Sentry o Vercel Analytics)
 - Crop circular al subir foto de perfil
-- PWA / Push notifications
 - Tarjetas compartibles V2 y V3
 - Niveles de usuario / logros
-- Paginación / infinite scroll
 - Ranking social
 
 ---
