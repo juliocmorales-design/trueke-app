@@ -313,7 +313,7 @@ export default function Home() {
       <div style={styles.header}>
         {isAnon ? (
           <>
-            <Image src="/svg/Logo_Trueke.svg" width={120} height={40} alt="Trueke" style={{ display: 'block' }} />
+            <img src="/svg/Logo_Trueke.svg" width={120} height={40} alt="Trueke" style={{ display: 'block' }} />
             <button style={styles.joinBtn} onClick={() => router.push('/onboarding')}>
               Únete gratis
             </button>
