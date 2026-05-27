@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import supabase from '../lib/supabase'
 import { compressImage } from '../lib/compressImage'
 import { CATEGORIAS } from '../lib/constants'
+import ImageCropper from '../components/ImageCropper'
 
 const INTERESTS_LIST = [
   'Electrónica', 'Ropa', 'Libros', 'Muebles',
@@ -38,6 +39,8 @@ function CrearForm() {
   const [openToOffers, setOpenToOffers] = useState(false)
   const [loading,      setLoading]      = useState(false)
   const [errorMsg,     setErrorMsg]     = useState<string | null>(null)
+  const [cropSrc,      setCropSrc]      = useState<string | null>(null)
+  const [showCropper,  setShowCropper]  = useState(false)
 
   // City step
   const [needsCityStep,    setNeedsCityStep]    = useState(false)
@@ -91,13 +94,15 @@ function CrearForm() {
   const MAX_SIZE = 5 * 1024 * 1024
 
   const handleImages = (e: any) => {
-    const selected = Array.from(e.target.files || []) as File[]
-    for (const file of selected) {
-      if (file.size > MAX_SIZE) { setErrorMsg('Cada foto debe pesar menos de 5MB.'); return }
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > MAX_SIZE) {
+      setErrorMsg('La foto debe pesar menos de 5MB.')
+      return
     }
-    const total = [...files, ...selected].slice(0, 5)
-    setFiles(total)
-    setPreviews(total.map(f => URL.createObjectURL(f as Blob)))
+    const url = URL.createObjectURL(file)
+    setCropSrc(url)
+    setShowCropper(true)
   }
 
   const removeImage = (index: number) => {
@@ -261,6 +266,24 @@ function CrearForm() {
   /* ── Main form ── */
   return (
     <div style={styles.container}>
+
+      {showCropper && cropSrc && (
+        <ImageCropper
+          imageSrc={cropSrc}
+          circular={false}
+          aspectRatio={4/3}
+          onComplete={file => {
+            setFiles(prev => [...prev, file])
+            setPreviews(prev => [...prev, URL.createObjectURL(file)])
+            setShowCropper(false)
+            setCropSrc(null)
+          }}
+          onCancel={() => {
+            setShowCropper(false)
+            setCropSrc(null)
+          }}
+        />
+      )}
       <style>{`
         .crear-input::placeholder,
         .crear-textarea::placeholder { color: #9CA3AF; }
@@ -296,7 +319,7 @@ function CrearForm() {
           {previews.length < 5 && (
             <label style={styles.addPhoto}>
               <span style={{ fontSize: 28, color: '#F97316', lineHeight: 1 }}>+</span>
-              <input type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={handleImages} />
+              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImages} />
             </label>
           )}
           {previews.map((p, i) => (

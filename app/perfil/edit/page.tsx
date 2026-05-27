@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import supabase from '@/app/lib/supabase'
 import { useRouter } from 'next/navigation'
+import ImageCropper from '@/app/components/ImageCropper'
 
 export default function EditProfile() {
   const router = useRouter()
@@ -17,6 +18,8 @@ export default function EditProfile() {
   const [preview,    setPreview]    = useState<string | null>(null)
   const [saving,     setSaving]     = useState(false)
   const [saveError,  setSaveError]  = useState<string | null>(null)
+  const [cropSrc,    setCropSrc]    = useState<string | null>(null)
+  const [showCropper, setShowCropper] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -49,10 +52,11 @@ export default function EditProfile() {
   useEffect(() => { loadProfile() }, [])
 
   const handleFile = (e: any) => {
-    const file = e.target.files[0]
+    const file = e.target.files?.[0]
     if (!file) return
-    setAvatarFile(file)
-    setPreview(URL.createObjectURL(file))
+    const url = URL.createObjectURL(file)
+    setCropSrc(url)
+    setShowCropper(true)
   }
 
   const uploadAvatar = async (userId: string) => {
@@ -126,6 +130,20 @@ export default function EditProfile() {
 
   return (
     <div style={s.container}>
+
+      {showCropper && cropSrc && (
+        <ImageCropper
+          imageSrc={cropSrc}
+          circular={true}
+          aspectRatio={1}
+          onComplete={file => {
+            setAvatarFile(file)
+            setPreview(URL.createObjectURL(file))
+            setShowCropper(false)
+          }}
+          onCancel={() => setShowCropper(false)}
+        />
+      )}
 
       {/* HEADER */}
       <div style={s.header}>

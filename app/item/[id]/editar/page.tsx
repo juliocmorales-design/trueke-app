@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 import { compressImage } from '@/app/lib/compressImage'
+import ImageCropper from '@/app/components/ImageCropper'
 
 const CATEGORIAS = [
   { id: 'electronica', label: '📱 Electrónica' },
@@ -35,6 +36,8 @@ export default function EditarItem() {
   // Fotos nuevas seleccionadas por el usuario
   const [newFiles,    setNewFiles]    = useState<File[]>([])
   const [newPreviews, setNewPreviews] = useState<string[]>([])
+  const [cropSrc,     setCropSrc]     = useState<string | null>(null)
+  const [showCropper, setShowCropper] = useState(false)
 
   const loadItem = async () => {
     try {
@@ -71,19 +74,15 @@ export default function EditarItem() {
   const MAX_SIZE = 5 * 1024 * 1024 // 5MB
 
   const handleImages = (e: any) => {
-    const selected = Array.from(e.target.files || []) as File[]
-
-    for (const file of selected) {
-      if (file.size > MAX_SIZE) {
-        setErrorMsg('Cada foto debe pesar menos de 5MB.')
-        return
-      }
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > MAX_SIZE) {
+      setErrorMsg('La foto debe pesar menos de 5MB.')
+      return
     }
-
-    const slots = 5 - existingImages.length
-    const combined = [...newFiles, ...selected].slice(0, slots)
-    setNewFiles(combined)
-    setNewPreviews(combined.map(f => URL.createObjectURL(f as Blob)))
+    const url = URL.createObjectURL(file)
+    setCropSrc(url)
+    setShowCropper(true)
   }
 
   const removeExisting = (index: number) => {
@@ -199,6 +198,24 @@ export default function EditarItem() {
         .edit-textarea::placeholder { color: #9CA3AF; }
       `}</style>
 
+      {showCropper && cropSrc && (
+        <ImageCropper
+          imageSrc={cropSrc}
+          circular={false}
+          aspectRatio={4/3}
+          onComplete={file => {
+            setNewFiles(prev => [...prev, file])
+            setNewPreviews(prev => [...prev, URL.createObjectURL(file)])
+            setShowCropper(false)
+            setCropSrc(null)
+          }}
+          onCancel={() => {
+            setShowCropper(false)
+            setCropSrc(null)
+          }}
+        />
+      )}
+
       {/* HEADER */}
       <div style={styles.header}>
         <button onClick={() => router.back()} style={styles.backBtn}>
@@ -223,7 +240,6 @@ export default function EditarItem() {
               <span style={{ fontSize: 28, color: '#F97316', lineHeight: 1 }}>+</span>
               <input
                 type="file"
-                multiple
                 accept="image/*"
                 style={{ display: 'none' }}
                 onChange={handleImages}
