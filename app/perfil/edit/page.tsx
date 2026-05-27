@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import supabase from '@/app/lib/supabase'
 import { useRouter } from 'next/navigation'
 import ImageCropper from '@/app/components/ImageCropper'
+import { compressImage } from '@/app/lib/compressImage'
 
 export default function EditProfile() {
   const router = useRouter()
@@ -62,17 +63,19 @@ export default function EditProfile() {
   const uploadAvatar = async (userId: string) => {
     if (!avatarFile) return profile?.avatar_url
 
-    const fileExt = avatarFile.name.split('.').pop()
-    const fileName = `${userId}.${fileExt}`
+    // Comprimir a máx 400 px — foto de perfil no necesita más
+    const compressed = await compressImage(avatarFile, 400, 0.82)
+    const fileName = `${userId}.jpg`
 
     const { error } = await supabase.storage
       .from('avatars')
-      .upload(fileName, avatarFile, { upsert: true })
+      .upload(fileName, compressed, { upsert: true, contentType: 'image/jpeg' })
 
     if (error) { console.error(error); return null }
 
     const { data } = supabase.storage.from('avatars').getPublicUrl(fileName)
-    return data.publicUrl
+    // Cache-buster: fuerza al navegador y al CDN a cargar la imagen nueva
+    return `${data.publicUrl}?t=${Date.now()}`
   }
 
   const handleSave = async () => {
