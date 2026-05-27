@@ -79,6 +79,14 @@ export default function ImageCropper({
             style={{ width: '100%' }}
           />
         </div>
+        <p style={{
+          fontSize: 12,
+          color: 'rgba(255,255,255,0.5)',
+          textAlign: 'center',
+          margin: '0 0 12px',
+        }}>
+          Ajusta el encuadre y toca "Listo"
+        </p>
         <div style={{ display: 'flex', gap: 12 }}>
           <button onClick={onCancel}
             style={{ flex: 1, background: 'rgba(255,255,255,0.1)',
@@ -92,7 +100,7 @@ export default function ImageCropper({
               borderRadius: 16, padding: 14, color: '#fff',
               fontSize: 15, fontWeight: 700, cursor: 'pointer',
               fontFamily: 'inherit', opacity: saving ? 0.7 : 1 }}>
-            {saving ? 'Procesando...' : 'Usar esta foto'}
+            {saving ? 'Procesando...' : 'Listo ✓'}
           </button>
         </div>
       </div>
