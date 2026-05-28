@@ -31,6 +31,14 @@ export default function Home() {
   const scrollRef   = useRef(0)
   const [initialLoadDone,       setInitialLoadDone]       = useState(false)
   const [hasSeenChainsExplainer, setHasSeenChainsExplainer] = useState(true)
+  const [isDesktop, setIsDesktop] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     try {
@@ -307,7 +315,10 @@ export default function Home() {
   if (!ready) return <HomeSkeleton />
 
   return (
-    <div style={styles.container}>
+    <div style={{
+      ...styles.container,
+      ...(isDesktop ? { maxWidth: 960, margin: '0 auto', padding: '24px 32px' } : {}),
+    }}>
 
       {/* HEADER */}
       <div style={styles.header}>
@@ -478,7 +489,7 @@ export default function Home() {
             title={isAnon ? 'Publicaciones recientes' : (userCity ? `Cerca de ti en ${userCity}` : 'Publicaciones recientes')}
             href="/buscar"
           />
-          <div style={styles.grid2}>
+          <div style={{ ...styles.grid2, gridTemplateColumns: isDesktop ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}>
             {items.map(item => (
               <Card
                 key={item.id}

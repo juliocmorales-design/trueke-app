@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import BottomNav from './BottomNav'
+import DesktopSidebar from './DesktopSidebar'
 import supabase from '@/app/lib/supabase'
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
 
   const isItemPage =
     pathname.startsWith('/item') ||
@@ -25,6 +27,15 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     pathname.startsWith('/perfil/setup') ||
     pathname.startsWith('/auth/reset-password') ||
     isItemPage
+
+  const showNav = !hideNav
+
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -50,33 +61,37 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   }, [])
 
   return (
-    <div style={styles.app}>
-      <div style={isItemPage ? styles.full : styles.centered}>
-        {children}
-      </div>
-      {!hideNav && (
-        <div style={styles.navWrapper}>
-          <BottomNav />
-        </div>
-      )}
+    <div style={{ display: 'flex' }}>
+      {isDesktop && isLoggedIn && <DesktopSidebar />}
+      <main style={{
+        flex: 1,
+        marginLeft: isDesktop && isLoggedIn ? 240 : 0,
+        minHeight: '100vh',
+      }}>
+        {isDesktop ? (
+          children
+        ) : (
+          <div style={isItemPage ? styles.full : styles.centered}>
+            {children}
+          </div>
+        )}
+        {!isDesktop && showNav && (
+          <div style={styles.navWrapper}>
+            <BottomNav />
+          </div>
+        )}
+      </main>
     </div>
   )
 }
 
 const styles: any = {
-  app: {
-    width: '100%',
-    maxWidth: 500,
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    background: '#FDF8F3',
-  },
-
   centered: {
     flex: 1,
     padding: 16,
     paddingBottom: 100,
+    background: '#FDF8F3',
+    minHeight: '100vh',
   },
 
   full: {

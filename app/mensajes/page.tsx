@@ -5,6 +5,17 @@ import { useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isDesktop
+}
+
 type AuthUser    = { id: string; email?: string }
 type Item        = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string }
 type Profile     = { id: string; name: string; username: string | null; avatar_url: string | null }
@@ -12,6 +23,7 @@ type Conversation = { offerId: number; otherUser: Profile; myItem: Item | null; 
 
 export default function MessagesPage() {
   const router = useRouter()
+  const isDesktop = useIsDesktop()
 
   const [currentUser, setCurrentUser]     = useState<AuthUser | null>(null)
   const [conversations, setConversations] = useState<Conversation[]>([])
@@ -154,7 +166,7 @@ export default function MessagesPage() {
     borderRadius: 8,
   }
 
-  return (
+  const conversationList = (
     <div style={styles.container}>
       <h2 style={styles.title}>Mensajes</h2>
 
@@ -236,6 +248,23 @@ export default function MessagesPage() {
       ))}
     </div>
   )
+
+  if (isDesktop) {
+    return (
+      <div style={{ display: 'flex', height: '100vh' }}>
+        <div style={{ width: 320, borderRight: '1px solid #F0EAE0', overflowY: 'auto' }}>
+          {conversationList}
+        </div>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF3ED' }}>
+          <p style={{ color: '#9CA3AF', fontSize: 15 }}>
+            Selecciona una conversación
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return conversationList
 }
 
 const styles: any = {
