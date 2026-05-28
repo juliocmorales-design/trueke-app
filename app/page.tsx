@@ -435,7 +435,7 @@ export default function Home() {
       {!hasSeenChainsExplainer && chains.length > 0 && (
         <div style={{
           background: '#FFF5F0', border: '1.5px solid #F97316',
-          borderRadius: 12, padding: '12px 14px', marginBottom: 12,
+          borderRadius: 12, padding: '12px 14px', marginTop: 16, marginBottom: 12,
           display: 'flex', gap: 10, alignItems: 'flex-start',
         }}>
           <span style={{ fontSize: 20 }}>🔗</span>

@@ -1,8 +1,29 @@
 'use client'
 import { useRouter, usePathname } from 'next/navigation'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import supabase from '@/app/lib/supabase'
+
+function NavIcon({ name, color }: { name: string; color: string }) {
+  const props = {
+    width: 20, height: 20, viewBox: '0 0 24 24',
+    fill: 'none', stroke: color, strokeWidth: 2,
+    strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
+  }
+  switch (name) {
+    case 'home':
+      return <svg {...props}><path d="M3 10.5L12 3l9 7.5" /><path d="M5 10v10h5v-6h4v6h5V10" /></svg>
+    case 'swap':
+      return <svg {...props}><path d="M7 7h10M17 7l-3-3M17 7l-3 3" /><path d="M17 17H7M7 17l3-3M7 17l3 3" /></svg>
+    case 'chat':
+      return <svg {...props}><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" /></svg>
+    case 'chain':
+      return <svg {...props}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+    case 'bell':
+      return <svg {...props}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    default:
+      return null
+  }
+}
 
 export default function DesktopSidebar() {
   const router = useRouter()
@@ -25,11 +46,11 @@ export default function DesktopSidebar() {
   }, [])
 
   const navItems = [
-    { href: '/', icon: '🏠', label: 'Inicio' },
-    { href: '/intercambios', icon: '⇄', label: 'Intercambios' },
-    { href: '/mensajes', icon: '💬', label: 'Mensajes', badge: unread },
-    { href: '/cadenas', icon: '🔗', label: 'Cadenas' },
-    { href: '/notificaciones', icon: '🔔', label: 'Notificaciones' },
+    { href: '/', iconName: 'home', label: 'Inicio' },
+    { href: '/intercambios', iconName: 'swap', label: 'Intercambios' },
+    { href: '/mensajes', iconName: 'chat', label: 'Mensajes', badge: unread },
+    { href: '/cadenas', iconName: 'chain', label: 'Cadenas' },
+    { href: '/notificaciones', iconName: 'bell', label: 'Notificaciones' },
   ]
 
   return (
@@ -45,9 +66,16 @@ export default function DesktopSidebar() {
       left: 0,
       zIndex: 40,
     }}>
+      {/* FIX 1 — logo como texto */}
       <div style={{ padding: '0 20px 24px' }}>
-        <Image src="/images/logo.png" width={130} height={44} alt="Trueke.app"
-          style={{ objectFit: 'contain' }} />
+        <span style={{
+          fontSize: 22,
+          fontWeight: 800,
+          color: '#FFFFFF',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+        }}>
+          Trueke<span style={{ color: '#F97316' }}>.app</span>
+        </span>
       </div>
 
       <div style={{ padding: '0 12px', marginBottom: 16 }}>
@@ -60,7 +88,11 @@ export default function DesktopSidebar() {
           gap: 8,
           cursor: 'pointer',
         }} onClick={() => router.push('/buscar')}>
-          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 16 }}>🔍</span>
+          <svg width={16} height={16} viewBox="0 0 24 24" fill="none"
+            stroke="rgba(255,255,255,0.4)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="7" />
+            <line x1="16.5" y1="16.5" x2="21" y2="21" />
+          </svg>
           <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>
             Buscar objetos...
           </span>
@@ -70,6 +102,7 @@ export default function DesktopSidebar() {
       <nav style={{ padding: '0 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
         {navItems.map(item => {
           const isActive = pathname === item.href
+          const iconColor = isActive ? '#F97316' : 'rgba(255,255,255,0.7)'
           return (
             <div
               key={item.href}
@@ -85,9 +118,9 @@ export default function DesktopSidebar() {
                 transition: 'background 0.15s',
               }}
             >
-              <span style={{ fontSize: 20 }}>{item.icon}</span>
+              <NavIcon name={item.iconName} color={iconColor} />
               <span style={{
-                color: isActive ? '#F97316' : 'rgba(255,255,255,0.7)',
+                color: iconColor,
                 fontSize: 14,
                 fontWeight: isActive ? 600 : 400,
                 flex: 1,
