@@ -325,7 +325,7 @@ export default function Home() {
     }}>
 
       {/* HEADER */}
-      <div style={{ padding: isDesktop ? '0' : '16px 16px 0', boxSizing: 'border-box' as const }}>
+      <div style={{ padding: isDesktop ? '0' : '16px 0 0', boxSizing: 'border-box' as const }}>
       <div style={styles.header}>
         {isAnon ? (
           <>
@@ -390,7 +390,7 @@ export default function Home() {
       )}
 
       {/* SEARCH */}
-      <div style={{ padding: isDesktop ? '0' : '0 16px', boxSizing: 'border-box' as const }}>
+      <div style={{ padding: '0', boxSizing: 'border-box' as const }}>
         <div style={{ ...styles.search, cursor: 'pointer' }} onClick={() => router.push('/buscar')}>
           <svg viewBox="0 0 24 24" width={16} height={16} style={{ flexShrink: 0 }}>
             <circle cx="11" cy="11" r="7" stroke="#9AA3AB" strokeWidth="2" fill="none"/>
@@ -402,7 +402,7 @@ export default function Home() {
 
       {/* VALUE PROP — solo anónimos */}
       {isAnon && (
-        <div style={{ padding: isDesktop ? '0' : '0 16px', boxSizing: 'border-box' as const }}>
+        <div style={{ padding: '0', boxSizing: 'border-box' as const }}>
         <div style={{
           background: 'linear-gradient(135deg, #1A2744 0%, #2D3F6B 100%)',
           borderRadius: 20,
@@ -443,7 +443,7 @@ export default function Home() {
 
       {/* EXPLAINER CADENAS */}
       {!hasSeenChainsExplainer && chains.length > 0 && (
-        <div style={{ padding: isDesktop ? '0' : '0 16px', boxSizing: 'border-box' as const }}>
+        <div style={{ padding: '0', boxSizing: 'border-box' as const }}>
         <div style={{
           background: '#FFF5F0', border: '1.5px solid #F97316',
           borderRadius: 12, padding: '12px 14px', marginTop: 16, marginBottom: 12,
@@ -476,13 +476,13 @@ export default function Home() {
         width: '100%',
         boxSizing: 'border-box' as const,
         overflow: 'hidden',
-        padding: isDesktop ? '0' : '0 16px',
+        padding: '0',
       }}>
         <FeaturedChains chains={chains} />
       </div>
 
       {/* FEED — 2 columnas */}
-      <div style={{ padding: isDesktop ? '0' : '0 16px', boxSizing: 'border-box' as const }}>
+      <div style={{ padding: '0', boxSizing: 'border-box' as const }}>
       {items.length === 0 ? (
         <div style={styles.emptyFeed}>
           <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
