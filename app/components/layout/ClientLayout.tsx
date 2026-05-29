@@ -12,6 +12,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const isDesktop = useIsDesktop()
 
+  const isAuthPage =
+    ['/login', '/onboarding'].some(path => pathname.startsWith(path)) ||
+    pathname.startsWith('/auth/')
+
   const isItemPage =
     pathname.startsWith('/item') ||
     pathname.startsWith('/offer') ||
@@ -54,6 +58,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     return () => subscription.unsubscribe()
   }, [])
 
+  if (isAuthPage) {
+    return <>{children}</>
+  }
+
   return (
     <div style={{
       display: 'flex',
@@ -61,11 +69,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       overflow: 'hidden',
       position: 'relative',
     }}>
-      {isDesktop && isLoggedIn && <DesktopSidebar />}
+      {isDesktop && isLoggedIn && !isAuthPage && <DesktopSidebar />}
       <main style={{
         flex: 1,
         width: 0,
-        marginLeft: isDesktop && isLoggedIn ? 240 : 0,
+        marginLeft: isDesktop && isLoggedIn && !isAuthPage ? 240 : 0,
         minHeight: '100vh',
       }}>
         {isDesktop ? (
