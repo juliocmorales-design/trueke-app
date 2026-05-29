@@ -128,7 +128,7 @@ export default function CadenasPage() {
   }
 
   return (
-    <div style={{ background: '#FDF8F3', minHeight: '100vh', paddingBottom: 40, maxWidth: isDesktop ? 860 : '100%', margin: '0 auto', padding: isDesktop ? '32px 24px' : '16px' }}>
+    <div style={{ background: '#FDF8F3', minHeight: '100vh', paddingBottom: 40, ...(isDesktop && { maxWidth: 860, margin: '0 auto', padding: '32px 24px' }) }}>
 
       {/* HEADER */}
       <div style={{
