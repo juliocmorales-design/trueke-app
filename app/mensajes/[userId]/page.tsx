@@ -4,6 +4,17 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isDesktop
+}
+
 type AuthUser = { id: string; email?: string }
 type Item     = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string }
 type Profile  = { id: string; name: string; username: string | null; avatar_url: string | null }
@@ -19,6 +30,7 @@ const STEPS: Record<string, { step: number; label: string }> = {
 export default function OfferChatPage() {
   const { userId: offerId } = useParams()
   const router = useRouter()
+  const isDesktop = useIsDesktop()
 
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
   const [offer, setOffer]             = useState<Offer | null>(null)
@@ -32,8 +44,10 @@ export default function OfferChatPage() {
   const [showMenu, setShowMenu]       = useState(false)
   const [reported, setReported]       = useState(false)
   const [sendError, setSendError]     = useState('')
+  const [conversations, setConversations] = useState<any[]>([])
 
   const bottomRef = useRef<HTMLDivElement | null>(null)
+  const currentOfferId = offerId ? Number(offerId) : null
 
   useEffect(() => {
     if (!offerId) return
@@ -54,6 +68,51 @@ export default function OfferChatPage() {
   useEffect(() => {
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 80)
   }, [messages])
+
+  const loadConversations = async (myId: string) => {
+    const { data: offersData } = await supabase
+      .from('offers')
+      .select('*')
+      .or(`from_user_id.eq.${myId},to_user_id.eq.${myId}`)
+      .order('created_at', { ascending: false })
+    if (!offersData?.length) return
+
+    const offerIds = offersData.map((o: any) => o.id)
+    const otherUserIds = [...new Set(
+      offersData.map((o: any) => o.from_user_id === myId ? o.to_user_id : o.from_user_id)
+    )] as string[]
+
+    const [{ data: msgs }, { data: profiles }] = await Promise.all([
+      supabase.from('messages').select('*').in('offer_id', offerIds).order('created_at', { ascending: false }),
+      supabase.from('profiles').select('id, name, username, avatar_url').in('id', otherUserIds),
+    ])
+
+    const profilesMap: any = {}
+    profiles?.forEach((p: any) => (profilesMap[p.id] = p))
+    const lastMsgMap: any = {}
+    const unreadMap: any = {}
+    for (const m of msgs || []) {
+      if (!lastMsgMap[m.offer_id]) lastMsgMap[m.offer_id] = m
+      if (m.receiver === myId && !m.is_read) {
+        unreadMap[m.offer_id] = (unreadMap[m.offer_id] || 0) + 1
+      }
+    }
+
+    const final = offersData.map((o: any) => {
+      const iAmFrom = o.from_user_id === myId
+      const otherUserId = iAmFrom ? o.to_user_id : o.from_user_id
+      const lastMsg = lastMsgMap[o.id]
+      return {
+        offerId: o.id,
+        otherUser: profilesMap[otherUserId] || { name: null, username: 'Usuario' },
+        lastMessage: lastMsg?.text || 'Oferta enviada',
+        created_at: lastMsg?.created_at || o.created_at,
+        unread: unreadMap[o.id] || 0,
+      }
+    })
+    final.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    setConversations(final)
+  }
 
   const init = async () => {
     const { data } = await supabase.auth.getSession()
@@ -105,6 +164,8 @@ export default function OfferChatPage() {
       .eq('offer_id', offerId)
       .eq('receiver', user.id)
       .eq('is_read', false)
+
+    await loadConversations(user.id)
   }
 
   useEffect(() => { init() }, [])
@@ -163,12 +224,11 @@ export default function OfferChatPage() {
   if (notFound) return <div style={{ padding: 20, background: '#FDF8F3', minHeight: '100vh', color: '#1A2744' }}>Conversación no encontrada</div>
   if (!currentUser || !offer) return null
 
-  return (
-    <div style={s.container} onClick={() => showMenu && setShowMenu(false)}>
-
+  const chatPanel = (inColumn: boolean) => (
+    <>
       {/* HEADER */}
       <div style={s.header}>
-        <button style={s.back} onClick={() => router.back()}>
+        <button style={s.back} onClick={() => inColumn ? router.push('/mensajes') : router.back()}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A2744" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6"/>
           </svg>
@@ -198,19 +258,14 @@ export default function OfferChatPage() {
           </button>
           {showMenu && (
             <div style={s.menu}>
-              <div
-                style={s.menuItem}
-                onClick={handleReport}
-              >
-                Reportar
-              </div>
+              <div style={s.menuItem} onClick={handleReport}>Reportar</div>
             </div>
           )}
         </div>
       </div>
 
       {/* ÁREA SCROLLABLE */}
-      <div style={s.scrollArea}>
+      <div style={{ ...s.scrollArea, paddingBottom: inColumn ? 16 : undefined }}>
 
         {/* TARJETA INTERCAMBIO */}
         {myItem && theirItem && (
@@ -273,9 +328,7 @@ export default function OfferChatPage() {
 
         {/* AVISO REPORTE */}
         {reported && (
-          <div style={s.reportedBanner}>
-            Reportado
-          </div>
+          <div style={s.reportedBanner}>Reportado</div>
         )}
 
         {/* MENSAJES */}
@@ -300,13 +353,8 @@ export default function OfferChatPage() {
             >
               <div>{m.text}</div>
               <div style={s.msgMeta}>
-                {new Date(m.created_at).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-                {mine && (
-                  <span style={s.check}>{m.is_read ? '✓✓' : '✓'}</span>
-                )}
+                {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {mine && <span style={s.check}>{m.is_read ? '✓✓' : '✓'}</span>}
               </div>
             </div>
           )
@@ -317,11 +365,14 @@ export default function OfferChatPage() {
 
       {/* INPUT */}
       {sendError && (
-        <div style={{ position: 'fixed', bottom: 72, left: '50%', transform: 'translateX(-50%)', background: '#FEE2E2', color: '#991B1B', borderRadius: 10, padding: '8px 16px', fontSize: 13, zIndex: 30, whiteSpace: 'nowrap' }}>
+        <div style={inColumn
+          ? { background: '#FEE2E2', color: '#991B1B', borderRadius: 10, padding: '8px 16px', fontSize: 13, textAlign: 'center' as const }
+          : { position: 'fixed' as const, bottom: 72, left: '50%', transform: 'translateX(-50%)', background: '#FEE2E2', color: '#991B1B', borderRadius: 10, padding: '8px 16px', fontSize: 13, zIndex: 30, whiteSpace: 'nowrap' as const }
+        }>
           {sendError}
         </div>
       )}
-      <div style={s.inputBar}>
+      <div style={inColumn ? s.inputBarDesktop : s.inputBar}>
         <textarea
           value={text}
           onChange={e => {
@@ -345,7 +396,56 @@ export default function OfferChatPage() {
           </svg>
         </button>
       </div>
+    </>
+  )
 
+  if (isDesktop) {
+    return (
+      <div style={{ display: 'flex', height: '100vh' }} onClick={() => showMenu && setShowMenu(false)}>
+        {/* LEFT COLUMN */}
+        <div style={{ width: 380, borderRight: '1px solid #F0EAE0', overflowY: 'auto', background: '#FDF8F3', flexShrink: 0 }}>
+          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: '#1A2744', margin: '0 0 8px 0' }}>Mensajes</h2>
+            {conversations.map(c => (
+              <div
+                key={c.offerId}
+                onClick={() => router.push(`/mensajes/${c.offerId}`)}
+                style={{
+                  padding: 14, borderRadius: 16,
+                  background: c.offerId === currentOfferId ? '#F0EAE0' : '#fff',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                  border: `1px solid ${c.offerId === currentOfferId ? '#E0D4C8' : '#F0EAE4'}`,
+                  display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer',
+                  width: '100%', boxSizing: 'border-box' as const,
+                }}
+              >
+                <div style={{ width: 46, height: 46, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: '#1A2744', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 16 }}>
+                  {c.otherUser?.avatar_url
+                    ? <img src={c.otherUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : (c.otherUser?.name || c.otherUser?.username || 'U').charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  <strong style={{ fontSize: 15, display: 'block' }}>{c.otherUser?.name || c.otherUser?.username || 'Usuario'}</strong>
+                  <div style={{ fontSize: 13, color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.lastMessage}</div>
+                </div>
+                {c.unread > 0 && (
+                  <div style={{ background: '#F97316', color: '#fff', borderRadius: 999, padding: '4px 8px', fontSize: 12, flexShrink: 0 }}>{c.unread}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* RIGHT COLUMN - CHAT */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#FDF8F3' }}>
+          {chatPanel(true)}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={s.container} onClick={() => showMenu && setShowMenu(false)}>
+      {chatPanel(false)}
     </div>
   )
 }
@@ -371,6 +471,7 @@ const s: any = {
     position: 'sticky',
     top: 0,
     zIndex: 20,
+    flexShrink: 0,
   },
 
   back: {
@@ -657,7 +758,7 @@ const s: any = {
     fontSize: 11,
   },
 
-  /* INPUT */
+  /* INPUT - mobile (fixed) */
   inputBar: {
     position: 'fixed',
     bottom: 0,
@@ -671,6 +772,17 @@ const s: any = {
     background: '#fff',
     borderTop: '1px solid #EDEDED',
     alignItems: 'flex-end',
+  },
+
+  /* INPUT - desktop (inline en columna) */
+  inputBarDesktop: {
+    display: 'flex',
+    gap: 10,
+    padding: '10px 16px',
+    background: '#fff',
+    borderTop: '1px solid #EDEDED',
+    alignItems: 'flex-end',
+    flexShrink: 0,
   },
 
   inputBox: {
