@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 21 Mayo 2026 (sesión 13)
+> Última actualización: 29 Mayo 2026 (sesión 14)
 
 ---
 
@@ -431,6 +431,34 @@ rating/[offerId] → calificación 1-5 + comentario
 - **Badge "Tuyo" no tapa navbar** — `ClientLayout.tsx`: `navWrapper` con `zIndex: 10`; el badge absoluto ya no se superpone al nav sticky
 - **0 errores lint** — de 175 errores a 0: hoisting fixes en 19 archivos, `prefer-const`, `useMemo` para `Date.now()`, `ChainLink` movido fuera del componente padre, quotes escapadas en JSX. `eslint.config.mjs`: `react-hooks/set-state-in-effect`, `react-hooks/purity` y `@typescript-eslint/no-explicit-any` bajados a `"warn"` (237 warnings — todos informativos)
 - **SEO** — `app/layout.tsx`: título `'De lo que tienes a lo que quieres — Trueke'`, descripción ≤155 chars orientada a beneficio, `alternates.canonical: 'https://www.trueke.app'`; `lang="es"` ya estaba correcto
+
+---
+
+## ✅ Completado sesión 14
+
+### Layout desktop completo (breakpoint 768px)
+
+- **DesktopSidebar.tsx** — sidebar fijo 240px navy #1A2744; logo reemplazado de texto a `<img src="/svg/Logo_Trueke_bco.svg" width=140>`; iconos SVG consistentes con BottomNav (NavIcon component); activo resaltado naranja; botón "+ Publicar objeto"; avatar + username + ciudad al fondo
+- **ClientLayout.tsx** — flex wrapper, `marginLeft: 240` en desktop, BottomNav solo en mobile
+- **`/public/svg/Logo_Trueke_bco.svg`** — trackeado en repo ✅
+- **Home** — maxWidth 960, grid 3 columnas en desktop
+- **`/crear`** — maxWidth 600, centrado, padding 32px en desktop
+- **`/intercambios`** — maxWidth 860, centrado en desktop
+- **`/notificaciones`** — maxWidth 860, centrado en desktop
+- **`/cadenas`** — maxWidth 860, centrado en desktop; patrón `...(isDesktop && {...})` para no afectar mobile
+- **`/mensajes`** — layout dos columnas estilo WhatsApp Web: columna izquierda 380px `flexShrink:0`, panel derecho `flex:1 minWidth:0 overflow:hidden` (el `minWidth:0` es crítico — sin él flexbox no respeta el ancho fijo)
+- **`/mensajes/[userId]`** — dos columnas: lista izquierda con conversación activa resaltada, chat derecha con `inputBarDesktop` inline (no `position:fixed`)
+
+### Patrón correcto para estilos desktop
+
+```js
+// ✅ Correcto — no afecta mobile
+...(isDesktop && { maxWidth: 860, margin: '0 auto', padding: '32px 24px' })
+
+// ❌ Incorrecto — sobreescribe propiedades mobile con ternario
+maxWidth: isDesktop ? 860 : '100%',
+padding: isDesktop ? '32px 24px' : '16px'   // riesgo: overrides paddingBottom mobile
+```
 
 ---
 
