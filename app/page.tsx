@@ -317,10 +317,13 @@ export default function Home() {
   return (
     <div style={{
       ...styles.container,
-      ...(isDesktop ? { maxWidth: 960, margin: '0 auto', padding: '24px 32px' } : {}),
+      maxWidth: isDesktop ? 960 : '100%',
+      margin: isDesktop ? '0 auto' : '0',
+      padding: isDesktop ? '24px 32px' : '0',
     }}>
 
       {/* HEADER */}
+      <div style={{ padding: isDesktop ? '0 32px' : '0 16px', boxSizing: 'border-box' as const }}>
       <div style={styles.header}>
         {isAnon ? (
           <>
@@ -356,6 +359,7 @@ export default function Home() {
           </>
         )}
       </div>
+      </div>
 
       {/* MODAL CIUDAD */}
       {showCityModal && (
@@ -384,16 +388,19 @@ export default function Home() {
       )}
 
       {/* SEARCH */}
-      <div style={{ ...styles.search, cursor: 'pointer' }} onClick={() => router.push('/buscar')}>
-        <svg viewBox="0 0 24 24" width={16} height={16} style={{ flexShrink: 0 }}>
-          <circle cx="11" cy="11" r="7" stroke="#9AA3AB" strokeWidth="2" fill="none"/>
-          <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#9AA3AB" strokeWidth="2" strokeLinecap="round"/>
-        </svg>
-        <span>Buscar objetos o personas...</span>
+      <div style={{ padding: isDesktop ? '0 32px' : '0 16px', boxSizing: 'border-box' as const }}>
+        <div style={{ ...styles.search, cursor: 'pointer' }} onClick={() => router.push('/buscar')}>
+          <svg viewBox="0 0 24 24" width={16} height={16} style={{ flexShrink: 0 }}>
+            <circle cx="11" cy="11" r="7" stroke="#9AA3AB" strokeWidth="2" fill="none"/>
+            <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#9AA3AB" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          <span>Buscar objetos o personas...</span>
+        </div>
       </div>
 
       {/* VALUE PROP — solo anónimos */}
       {isAnon && (
+        <div style={{ padding: isDesktop ? '0 32px' : '0 16px', boxSizing: 'border-box' as const }}>
         <div style={{
           background: 'linear-gradient(135deg, #1A2744 0%, #2D3F6B 100%)',
           borderRadius: 20,
@@ -429,10 +436,12 @@ export default function Home() {
             </span>
           </p>
         </div>
+        </div>
       )}
 
       {/* EXPLAINER CADENAS */}
       {!hasSeenChainsExplainer && chains.length > 0 && (
+        <div style={{ padding: isDesktop ? '0 32px' : '0 16px', boxSizing: 'border-box' as const }}>
         <div style={{
           background: '#FFF5F0', border: '1.5px solid #F97316',
           borderRadius: 12, padding: '12px 14px', marginTop: 16, marginBottom: 12,
@@ -457,12 +466,21 @@ export default function Home() {
             ×
           </button>
         </div>
+        </div>
       )}
 
       {/* CADENAS DESTACADAS */}
-      <FeaturedChains chains={chains} />
+      <div style={{
+        width: '100%',
+        boxSizing: 'border-box' as const,
+        overflow: 'hidden',
+        padding: isDesktop ? '0 32px' : '0 16px',
+      }}>
+        <FeaturedChains chains={chains} />
+      </div>
 
       {/* FEED — 2 columnas */}
+      <div style={{ padding: isDesktop ? '0 32px' : '0 16px', boxSizing: 'border-box' as const }}>
       {items.length === 0 ? (
         <div style={styles.emptyFeed}>
           <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#C4BAB1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -513,6 +531,7 @@ export default function Home() {
           )}
         </>
       )}
+      </div>
 
     </div>
   )
