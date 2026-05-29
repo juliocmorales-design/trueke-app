@@ -59,7 +59,23 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   }, [])
 
   if (isAuthPage) {
-    return <>{children}</>
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#FDF8F3',
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+      }}>
+        <div style={{
+          width: '100%',
+          maxWidth: isDesktop ? 480 : '100%',
+          padding: isDesktop ? '60px 24px' : '0',
+        }}>
+          {children}
+        </div>
+      </div>
+    )
   }
 
   return (
