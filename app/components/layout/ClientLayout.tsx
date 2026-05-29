@@ -9,7 +9,7 @@ import supabase from '@/app/lib/supabase'
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isDesktop, setIsDesktop] = useState(false)
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null)
 
   const isItemPage =
     pathname.startsWith('/item') ||
@@ -62,20 +62,20 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <div style={{ display: 'flex' }}>
-      {isDesktop && isLoggedIn && <DesktopSidebar />}
+      {isDesktop === true && isLoggedIn && <DesktopSidebar />}
       <main style={{
         flex: 1,
-        marginLeft: isDesktop && isLoggedIn ? 240 : 0,
+        marginLeft: isDesktop === true && isLoggedIn ? 240 : 0,
         minHeight: '100vh',
       }}>
-        {isDesktop ? (
+        {isDesktop === true ? (
           children
         ) : (
           <div style={isItemPage ? styles.full : styles.centered}>
             {children}
           </div>
         )}
-        {!isDesktop && showNav && (
+        {isDesktop === false && showNav && (
           <div style={styles.navWrapper}>
             <BottomNav />
           </div>

@@ -320,6 +320,8 @@ export default function Home() {
       maxWidth: isDesktop ? 960 : '100%',
       margin: isDesktop ? '0 auto' : '0',
       padding: isDesktop ? '24px 32px' : '0',
+      overflow: 'hidden',
+      width: '100%',
     }}>
 
       {/* HEADER */}
