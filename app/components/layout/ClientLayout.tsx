@@ -55,10 +55,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   }, [])
 
   return (
-    <div style={{ display: 'flex' }}>
+    <div style={{
+      display: 'flex',
+      width: '100%',
+      overflow: 'hidden',
+      position: 'relative',
+    }}>
       {isDesktop === true && isLoggedIn && <DesktopSidebar />}
       <main style={{
         flex: 1,
+        width: 0,
         marginLeft: isDesktop === true && isLoggedIn ? 240 : 0,
         minHeight: '100vh',
       }}>
