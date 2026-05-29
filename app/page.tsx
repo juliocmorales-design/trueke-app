@@ -320,12 +320,12 @@ export default function Home() {
       maxWidth: isDesktop ? 960 : '100%',
       margin: isDesktop ? '0 auto' : '0',
       padding: isDesktop ? '24px 32px' : '0',
-      overflow: 'hidden',
+      overflowX: 'clip',
       width: '100%',
     }}>
 
       {/* HEADER */}
-      <div style={{ padding: isDesktop ? '0' : '16px 0 0', boxSizing: 'border-box' as const }}>
+      <div style={{ padding: '0', boxSizing: 'border-box' as const }}>
       <div style={styles.header}>
         {isAnon ? (
           <>
