@@ -66,16 +66,17 @@ export default function DesktopSidebar() {
       left: 0,
       zIndex: 40,
     }}>
-      {/* FIX 1 — logo como texto */}
       <div style={{ padding: '0 20px 24px' }}>
-        <span style={{
-          fontSize: 22,
-          fontWeight: 800,
-          color: '#FFFFFF',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-        }}>
-          Trueke<span style={{ color: '#F97316' }}>.app</span>
-        </span>
+        <img
+          src="/svg/Logo_Trueke_bco.svg"
+          alt="Trueke.app"
+          style={{
+            width: 140,
+            height: 'auto',
+            display: 'block',
+            objectFit: 'contain',
+          }}
+        />
       </div>
 
       <div style={{ padding: '0 12px', marginBottom: 16 }}>

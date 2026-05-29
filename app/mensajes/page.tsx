@@ -252,7 +252,7 @@ export default function MessagesPage() {
   if (isDesktop) {
     return (
       <div style={{ display: 'flex', height: '100vh' }}>
-        <div style={{ width: 380, borderRight: '1px solid #F0EAE0', overflowY: 'auto' }}>
+        <div style={{ width: 380, borderRight: '1px solid #F0EAE0', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
           {conversationList}
         </div>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF3ED' }}>
