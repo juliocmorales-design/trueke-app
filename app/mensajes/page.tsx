@@ -252,7 +252,7 @@ export default function MessagesPage() {
   if (isDesktop) {
     return (
       <div style={{ display: 'flex', height: '100vh' }}>
-        <div style={{ width: 320, borderRight: '1px solid #F0EAE0', overflowY: 'auto' }}>
+        <div style={{ width: 380, borderRight: '1px solid #F0EAE0', overflowY: 'auto' }}>
           {conversationList}
         </div>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF3ED' }}>
@@ -273,6 +273,9 @@ const styles: any = {
     paddingBottom: 100,
     background: '#FDF8F3',
     minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
   },
 
   title: {
@@ -302,6 +305,8 @@ const styles: any = {
     alignItems: 'center',
     gap: 12,
     cursor: 'pointer',
+    width: '100%',
+    boxSizing: 'border-box',
   },
 
   avatarWrapper: {
