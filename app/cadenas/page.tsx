@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import supabase from '@/app/lib/supabase'
+import { useIsDesktop } from '@/app/hooks/useIsDesktop'
 
 type ChainItem = { id: number; title: string; images: string[] | null }
 type Profile   = { id: string; username: string | null; avatar_url: string | null }
@@ -37,14 +38,7 @@ export default function CadenasPage() {
   const [chains,  setChains]  = useState<Chain[]>([])
   const [loading, setLoading] = useState(true)
   const [filter,  setFilter]  = useState<Filter>('populares')
-  const [isDesktop, setIsDesktop] = useState(false)
-
-  useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
+  const isDesktop = useIsDesktop()
 
   const loadChains = async () => {
     const { data: rawChains } = await supabase

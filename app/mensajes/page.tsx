@@ -4,17 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 import type { RealtimeChannel } from '@supabase/supabase-js'
-
-function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = useState(false)
-  useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-  return isDesktop
-}
+import { useIsDesktop } from '@/app/hooks/useIsDesktop'
 
 type AuthUser    = { id: string; email?: string }
 type Item        = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string }

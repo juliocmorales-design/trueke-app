@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import supabase from '../lib/supabase'
+import { useIsDesktop } from '../hooks/useIsDesktop'
 import { compressImage } from '../lib/compressImage'
 import { CATEGORIAS } from '../lib/constants'
 import ImageCropper from '../components/ImageCropper'
@@ -27,13 +28,7 @@ function CrearForm() {
   const chainId  = searchParams.get('chainId')
   const newChain = searchParams.get('newChain')
 
-  const [isDesktop, setIsDesktop] = useState(false)
-  useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
+  const isDesktop = useIsDesktop()
 
   const [title,       setTitle]       = useState('')
   const [description, setDescription] = useState('')

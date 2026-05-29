@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase'
+import { useIsDesktop } from '../hooks/useIsDesktop'
 
 type Item     = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string }
 type Profile  = { id: string; name: string; username: string | null; avatar_url: string | null }
@@ -19,14 +20,7 @@ export default function IntercambiosPage() {
   const [tabIndex, setTabIndex] = useState(0)
   const [anim, setAnim] = useState('')
   const touchStartX = useRef(0)
-  const [isDesktop, setIsDesktop] = useState(false)
-
-  useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
+  const isDesktop = useIsDesktop()
 
   const changeTab = (index: number) => {
     setAnim('out')

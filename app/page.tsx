@@ -311,9 +311,9 @@ export default function Home() {
   return (
     <div style={{
       ...styles.container,
-      maxWidth: isDesktop === true ? 960 : '100%',
-      margin: isDesktop === true ? '0 auto' : '0',
-      padding: isDesktop === true ? '24px 32px' : '0',
+      maxWidth: isDesktop ? 960 : '100%',
+      margin: isDesktop ? '0 auto' : '0',
+      padding: isDesktop ? '24px 32px' : '0',
       overflowX: 'clip',
       width: '100%',
     }}>
@@ -503,7 +503,7 @@ export default function Home() {
             title={isAnon ? 'Publicaciones recientes' : (userCity ? `Cerca de ti en ${userCity}` : 'Publicaciones recientes')}
             href="/buscar"
           />
-          <div style={{ ...styles.grid2, gridTemplateColumns: isDesktop === true ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}>
+          <div style={{ ...styles.grid2, gridTemplateColumns: isDesktop ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}>
             {items.map(item => (
               <Card
                 key={item.id}

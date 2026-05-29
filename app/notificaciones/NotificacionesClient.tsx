@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 import s from './notificaciones.module.css'
+import { useIsDesktop } from '@/app/hooks/useIsDesktop'
 
 type Notif = {
   id: number
@@ -89,14 +90,7 @@ export default function NotificacionesClient() {
   const router = useRouter()
   const [notifs, setNotifs]   = useState<Notif[]>([])
   const [loading, setLoading] = useState(true)
-  const [isDesktop, setIsDesktop] = useState(false)
-
-  useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
+  const isDesktop = useIsDesktop()
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession()
