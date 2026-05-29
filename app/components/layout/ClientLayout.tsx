@@ -5,11 +5,12 @@ import { usePathname } from 'next/navigation'
 import BottomNav from './BottomNav'
 import DesktopSidebar from './DesktopSidebar'
 import supabase from '@/app/lib/supabase'
+import { useIsDesktop } from '@/app/hooks/useIsDesktop'
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isDesktop, setIsDesktop] = useState<boolean | null>(null)
+  const isDesktop = useIsDesktop()
 
   const isItemPage =
     pathname.startsWith('/item') ||
@@ -29,13 +30,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     isItemPage
 
   const showNav = !hideNav
-
-  useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {

@@ -6,6 +6,7 @@ import Image from 'next/image'
 import supabase from './lib/supabase'
 import FeaturedChains from './components/feed/FeaturedChains'
 import NotifBadge from './components/feed/NotifBadge'
+import { useIsDesktop } from './hooks/useIsDesktop'
 
 type Item  = { id: number; title: string; images: string[] | null; wanted: string | null; city: string | null; user_id: string; created_at: string; profile?: { username: string; avatar_url: string | null } }
 type Chain = { id: number; initial_item_id: number; created_at: string; initial_item_title: string | null; initial_item_image: string | null; final_item_title: string | null; final_item_image: string | null; creator_username: string | null; creator_avatar: string | null; steps_count: number }
@@ -31,14 +32,7 @@ export default function Home() {
   const scrollRef   = useRef(0)
   const [initialLoadDone,       setInitialLoadDone]       = useState(false)
   const [hasSeenChainsExplainer, setHasSeenChainsExplainer] = useState(true)
-  const [isDesktop, setIsDesktop] = useState(false)
-
-  useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
+  const isDesktop = useIsDesktop()
 
   useEffect(() => {
     try {
@@ -317,9 +311,9 @@ export default function Home() {
   return (
     <div style={{
       ...styles.container,
-      maxWidth: isDesktop ? 960 : '100%',
-      margin: isDesktop ? '0 auto' : '0',
-      padding: isDesktop ? '24px 32px' : '0',
+      maxWidth: isDesktop === true ? 960 : '100%',
+      margin: isDesktop === true ? '0 auto' : '0',
+      padding: isDesktop === true ? '24px 32px' : '0',
       overflowX: 'clip',
       width: '100%',
     }}>
@@ -509,7 +503,7 @@ export default function Home() {
             title={isAnon ? 'Publicaciones recientes' : (userCity ? `Cerca de ti en ${userCity}` : 'Publicaciones recientes')}
             href="/buscar"
           />
-          <div style={{ ...styles.grid2, gridTemplateColumns: isDesktop ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}>
+          <div style={{ ...styles.grid2, gridTemplateColumns: isDesktop === true ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}>
             {items.map(item => (
               <Card
                 key={item.id}
