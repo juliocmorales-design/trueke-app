@@ -19,6 +19,14 @@ export default function IntercambiosPage() {
   const [tabIndex, setTabIndex] = useState(0)
   const [anim, setAnim] = useState('')
   const touchStartX = useRef(0)
+  const [isDesktop, setIsDesktop] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   const changeTab = (index: number) => {
     setAnim('out')
@@ -128,7 +136,7 @@ export default function IntercambiosPage() {
 
   return (
     <div style={s.screen}>
-      <div style={s.wrapper} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <div style={{ ...s.wrapper, maxWidth: isDesktop ? 680 : 500, padding: isDesktop ? '32px 24px' : '28px 16px 100px' }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
 
         {/* HEADER */}
         <div style={s.header}>

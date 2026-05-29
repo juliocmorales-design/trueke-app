@@ -27,6 +27,14 @@ function CrearForm() {
   const chainId  = searchParams.get('chainId')
   const newChain = searchParams.get('newChain')
 
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   const [title,       setTitle]       = useState('')
   const [description, setDescription] = useState('')
   const [wanted,      setWanted]      = useState('')
@@ -185,10 +193,17 @@ function CrearForm() {
 
   const canSubmit = title.trim().length > 0 && files.length > 0 && city.trim().length > 0 && category !== '' && !loading
 
+  const containerStyle = {
+    ...styles.container,
+    maxWidth: isDesktop ? 600 : '100%',
+    margin: '0 auto',
+    padding: isDesktop ? '32px 24px' : '16px',
+  }
+
   /* ── City step ── */
   if (needsCityStep && !cityStepDone) {
     return (
-      <div style={styles.container}>
+      <div style={containerStyle}>
         <div style={styles.header}>
           <button onClick={() => router.back()} style={styles.backBtn}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -265,7 +280,7 @@ function CrearForm() {
 
   /* ── Main form ── */
   return (
-    <div style={styles.container}>
+    <div style={containerStyle}>
 
       {showCropper && cropSrc && (
         <ImageCropper

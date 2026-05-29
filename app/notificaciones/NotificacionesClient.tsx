@@ -89,6 +89,14 @@ export default function NotificacionesClient() {
   const router = useRouter()
   const [notifs, setNotifs]   = useState<Notif[]>([])
   const [loading, setLoading] = useState(true)
+  const [isDesktop, setIsDesktop] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -127,7 +135,7 @@ export default function NotificacionesClient() {
   }
 
   return (
-    <div className={s.page}>
+    <div className={s.page} style={isDesktop ? { maxWidth: 680, margin: '0 auto', padding: '32px 24px' } : undefined}>
 
       <div className={s.header}>
         <button className={s.backBtn} onClick={() => router.back()} aria-label="Volver">
