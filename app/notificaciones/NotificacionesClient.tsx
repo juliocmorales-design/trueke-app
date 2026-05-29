@@ -135,7 +135,7 @@ export default function NotificacionesClient() {
   }
 
   return (
-    <div className={s.page} style={isDesktop ? { maxWidth: 680, margin: '0 auto', padding: '32px 24px' } : undefined}>
+    <div className={s.page} style={isDesktop ? { maxWidth: 860, margin: '0 auto', padding: '32px 24px' } : undefined}>
 
       <div className={s.header}>
         <button className={s.backBtn} onClick={() => router.back()} aria-label="Volver">

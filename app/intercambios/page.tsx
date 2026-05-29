@@ -136,7 +136,7 @@ export default function IntercambiosPage() {
 
   return (
     <div style={s.screen}>
-      <div style={{ ...s.wrapper, maxWidth: isDesktop ? 680 : 500, padding: isDesktop ? '32px 24px' : '28px 16px 100px' }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <div style={{ ...s.wrapper, maxWidth: isDesktop ? 860 : 500, padding: isDesktop ? '32px 24px' : '28px 16px 100px' }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
 
         {/* HEADER */}
         <div style={s.header}>

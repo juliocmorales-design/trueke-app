@@ -37,6 +37,14 @@ export default function CadenasPage() {
   const [chains,  setChains]  = useState<Chain[]>([])
   const [loading, setLoading] = useState(true)
   const [filter,  setFilter]  = useState<Filter>('populares')
+  const [isDesktop, setIsDesktop] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   const loadChains = async () => {
     const { data: rawChains } = await supabase
@@ -120,7 +128,7 @@ export default function CadenasPage() {
   }
 
   return (
-    <div style={{ background: '#FDF8F3', minHeight: '100vh', paddingBottom: 40 }}>
+    <div style={{ background: '#FDF8F3', minHeight: '100vh', paddingBottom: 40, maxWidth: isDesktop ? 860 : '100%', margin: '0 auto', padding: isDesktop ? '32px 24px' : '16px' }}>
 
       {/* HEADER */}
       <div style={{
