@@ -290,7 +290,7 @@
   background: #F97316;
   color: #fff;
   border: none;
-  border-radius: 999px;
+  border-radius: 12px;
   font-size: 16px;
   font-weight: 700;
   font-family: inherit;
@@ -310,7 +310,7 @@
   background: transparent;
   color: #F97316;
   border: 2px solid #F97316;
-  border-radius: 999px;
+  border-radius: 12px;
   font-size: 15px;
   font-weight: 700;
   font-family: inherit;
