@@ -283,8 +283,8 @@ export default function ExchangeClient({
 
 
   const footerInner = {
-    padding: isDesktop ? '0 24px' : '0 16px',
-    maxWidth: isDesktop ? 860 : '100%',
+    padding: '0',
+    maxWidth: isDesktop ? 812 : '100%',
     margin: '0 auto',
     display: 'flex',
     flexDirection: 'column' as const,
