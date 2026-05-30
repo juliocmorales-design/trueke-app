@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import s from './chain.module.css'
+import { useIsDesktop } from '@/app/hooks/useIsDesktop'
 
 /* ── Types ──────────────────────────────────────────────────────────── */
 type Item = { id: number; title: string; images: string[] | null }
@@ -300,6 +301,7 @@ function ShareCardV1({
 /* ── Main component ─────────────────────────────────────────────────── */
 export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSrc: string }) {
   const router = useRouter()
+  const isDesktop = useIsDesktop()
   const { chain, steps, itemMap } = data
 
   const [showShareModal, setShowShareModal] = useState(false)
@@ -499,7 +501,17 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
       </div>
 
       {/* FOOTER */}
-      <div className={s.footer}>
+      <div className={s.footer} style={{
+        left: isDesktop ? 240 : 0,
+        right: 0,
+        transform: isDesktop ? 'none' : 'translateX(-50%)',
+        maxWidth: isDesktop ? 'none' : 500,
+        background: '#FDF8F3',
+        borderTop: '1px solid #F0EAE0',
+        paddingTop: 12,
+        paddingBottom: 'env(safe-area-inset-bottom, 16px)',
+        zIndex: 50,
+      }}>
         <button className={s.ctaBtn} onClick={() => router.push('/crear')}>
           Intercambiar lo que recibí
         </button>

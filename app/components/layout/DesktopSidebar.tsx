@@ -102,7 +102,7 @@ export default function DesktopSidebar() {
 
       <nav style={{ padding: '0 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
         {navItems.map(item => {
-          const isActive = pathname === item.href
+          const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
           const iconColor = isActive ? '#F97316' : 'rgba(255,255,255,0.7)'
           return (
             <div
