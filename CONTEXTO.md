@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 29 Mayo 2026 (sesión 14)
+> Última actualización: 30 Mayo 2026 (sesión 15)
 
 ---
 
@@ -50,7 +50,7 @@ Las tarjetas compartibles solo muestran:
 - Fondo: beige/crema #FDF8F3 | Texto principal: navy #1A2744
 - El CTA principal SIEMPRE es naranja — nunca navy, nunca gris
 - Pills de estado por color: amber=pendiente, verde=aceptado/completado, rojo=rechazado
-- **`border-radius` de botones CTA: 16px** — no usar 999px ni valores diferentes
+- **`border-radius` de botones CTA: 12px** — unificado en sesión 15. chain.module.css (ctaBtn, shareBtn) era 999px; exchange.module.css (btnPrimary, btnSecondary, btnDanger) era 16px. Ambos → 12px.
 - **BottomNav** se oculta en pantallas de flujo (meeting point) vía `hideNav` en `ClientLayout` — NO usar DOM hack `getElementById`
 - **Flujo post-aceptación completo:** Exchange → Meeting point → Completado → Rating
 - **Notificaciones** usan SVGs consistentes con routing por tipo: offer_received/accepted/completed → /mensajes/, offer_rejected → /intercambios, rating_received → /perfil/resenas
@@ -459,6 +459,58 @@ rating/[offerId] → calificación 1-5 + comentario
 maxWidth: isDesktop ? 860 : '100%',
 padding: isDesktop ? '32px 24px' : '16px'   // riesgo: overrides paddingBottom mobile
 ```
+
+---
+
+## ✅ Completado sesión 15
+
+### useIsDesktop — fuente única de verdad, mobile-first
+
+- **`app/hooks/useIsDesktop.ts`** — `useState<boolean | null>(null)` → `useState(false)`. El hook ahora inicia en `false` (mobile-first), elimina el null state y la triple comparación `=== true / === false`.
+- **6 archivos consolidados** — `mensajes/page.tsx`, `mensajes/[userId]/page.tsx`, `notificaciones/NotificacionesClient.tsx`, `intercambios/page.tsx`, `cadenas/page.tsx`, `crear/page.tsx` tenían su propio `function useIsDesktop()` inline con `useState + useEffect + window.innerWidth`. Todos eliminados y reemplazados por `import { useIsDesktop } from '@/app/hooks/useIsDesktop'`. **−62 líneas duplicadas.**
+- **ClientLayout.tsx** — todas las comparaciones `=== true` / `=== false` simplificadas a `isDesktop &&` / `!isDesktop &&`.
+- **page.tsx** — 4 instancias de `isDesktop === true` simplificadas.
+
+### ClientLayout — fixes de layout mobile/desktop
+
+- **Div externo** — agregado `width: '100%'`, `overflow: 'hidden'`, `position: 'relative'` al wrapper flex.
+- **`<main>`** — agregado `width: 0` (crítico en flexbox: sin width base explícito el elemento puede exceder el viewport).
+- **`isAuthPage`** — rutas `/login`, `/onboarding`, `/auth/*` tienen early return con layout centrado: fondo `#FDF8F3`, `display: flex`, `justifyContent: center`. En desktop: `maxWidth: 480`, `padding: '60px 24px'`. En mobile: sin wrapper. El sidebar y marginLeft también excluyen auth pages.
+
+### DesktopSidebar — isActive con rutas relacionadas
+
+```js
+const navItems = [
+  { href: '/', related: [] },
+  { href: '/intercambios', related: ['/exchange/', '/offer/', '/meeting/'] },
+  { href: '/mensajes',     related: ['/mensajes/'] },
+  { href: '/cadenas',      related: ['/chain/'] },
+  { href: '/notificaciones', related: ['/rating/'] },
+]
+const isActive = item.href === '/'
+  ? pathname === '/'
+  : pathname.startsWith(item.href) || (item.related || []).some(r => pathname.startsWith(r))
+```
+Antes usaba `pathname === item.href` (strict), fallaba en sub-rutas como `/mensajes/[userId]` o `/chain/[id]`.
+
+### ChainClient — footer fixed desktop-aware
+
+- Footer externo: `position: fixed`, `bottom: 0`, `left: isDesktop ? 240 : 0`, `right: 0`, `width: auto`, `transform: none`, `boxSizing: border-box`, `padding: '12px 0'`, `paddingBottom: env(safe-area-inset-bottom, 12px)`.
+- Wrapper interno de botones: `padding: '0 16px'`, `maxWidth: isDesktop ? 760 : '100%'`, `margin: '0 auto'`, `width: '100%'`, `boxSizing: border-box`.
+- Body: `paddingBottom: 120`, `maxWidth: isDesktop ? 760 : '100%'`, `margin: '0 auto'`.
+
+### ExchangeClient — footer fixed + maxWidth alineado
+
+- Agregado `useIsDesktop` hook.
+- Contenedor `.page`: `maxWidth: isDesktop ? 860 : '100%'`, `margin: '0 auto'`, `padding: isDesktop ? '32px 24px' : '0'`.
+- `footerStyle` (aplicado a todas las variantes del footer): `position: fixed`, `bottom: 0`, `left: isDesktop ? 240 : 0`, `right: 0`, `width: auto`, `maxWidth: none`, `transform: none`, `padding: '12px 0'`, `boxSizing: border-box`.
+- `footerInner` (wrapper de botones): `padding: '0'`, `maxWidth: isDesktop ? 812 : '100%'`, `margin: '0 auto'`, `width: '100%'`, `boxSizing: border-box`. **812 = 860 − 24px − 24px (padding horizontal del contenedor)** — alineación pixel-perfect con el borde interior de las cards.
+- `ItemDisplay` — prop `maxHeight` opcional: `maxHeight: isDesktop ? 400 : 280`. Wrappea la imagen en div con `overflow: hidden`.
+
+### border-radius 12px unificado
+
+- `chain.module.css`: `.ctaBtn` y `.shareBtn` — `999px → 12px`
+- `exchange.module.css`: `.btnPrimary`, `.btnSecondary`, `.btnDanger` — `16px → 12px`
 
 ---
 
