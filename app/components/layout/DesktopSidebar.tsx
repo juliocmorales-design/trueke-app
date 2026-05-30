@@ -46,11 +46,11 @@ export default function DesktopSidebar() {
   }, [])
 
   const navItems = [
-    { href: '/', iconName: 'home', label: 'Inicio' },
-    { href: '/intercambios', iconName: 'swap', label: 'Intercambios' },
-    { href: '/mensajes', iconName: 'chat', label: 'Mensajes', badge: unread },
-    { href: '/cadenas', iconName: 'chain', label: 'Cadenas' },
-    { href: '/notificaciones', iconName: 'bell', label: 'Notificaciones' },
+    { href: '/', iconName: 'home', label: 'Inicio', related: [] },
+    { href: '/intercambios', iconName: 'swap', label: 'Intercambios', badge: 0, related: ['/exchange/', '/offer/', '/meeting/'] },
+    { href: '/mensajes', iconName: 'chat', label: 'Mensajes', badge: unread, related: ['/mensajes/'] },
+    { href: '/cadenas', iconName: 'chain', label: 'Cadenas', related: ['/chain/'] },
+    { href: '/notificaciones', iconName: 'bell', label: 'Notificaciones', related: ['/rating/'] },
   ]
 
   return (
@@ -102,7 +102,10 @@ export default function DesktopSidebar() {
 
       <nav style={{ padding: '0 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
         {navItems.map(item => {
-          const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
+          const isActive = item.href === '/'
+            ? pathname === '/'
+            : pathname.startsWith(item.href) ||
+              (item.related || []).some(r => pathname.startsWith(r))
           const iconColor = isActive ? '#F97316' : 'rgba(255,255,255,0.7)'
           return (
             <div

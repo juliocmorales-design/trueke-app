@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabase'
 import s from './exchange.module.css'
+import { useIsDesktop } from '@/app/hooks/useIsDesktop'
 
 /* ── Public types ───────────────────────────────────────────────── */
 export interface ExchangeData {
@@ -158,6 +159,7 @@ export default function ExchangeClient({
   chainId?: number | null
 }) {
   const router = useRouter()
+  const isDesktop = useIsDesktop()
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined)
   const [loadingUser, setLoadingUser]     = useState(true)
   const [status, setStatus]               = useState<string>(data?.offer?.status ?? 'pending')
@@ -273,8 +275,22 @@ export default function ExchangeClient({
     new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
 
 
+  const footerStyle = {
+    left: isDesktop ? 240 : 0,
+    right: 0,
+    transform: isDesktop ? 'none' : 'translateX(-50%)',
+    maxWidth: isDesktop ? 'none' : 500,
+    background: '#FDF8F3',
+    borderTop: '1px solid #F0EAE0',
+    zIndex: 50,
+  }
+
   return (
-    <div className={s.page}>
+    <div className={s.page} style={{
+      maxWidth: isDesktop ? 860 : '100%',
+      margin: '0 auto',
+      padding: isDesktop ? '32px 24px' : '0',
+    }}>
 
       {/* HEADER */}
       <div className={s.header}>
@@ -434,9 +450,9 @@ export default function ExchangeClient({
 
       {/* FOOTER */}
       {loadingUser ? (
-        <div className={s.footer} style={{ visibility: 'hidden' }} />
+        <div className={s.footer} style={{ ...footerStyle, visibility: 'hidden' }} />
       ) : status === 'accepted' ? (
-        <div className={s.footer}>
+        <div className={s.footer} style={footerStyle}>
           <button className={s.btnPrimary} onClick={() => router.push(`/meeting/${offerId}`)}>
             Acordar punto de encuentro
           </button>
@@ -463,7 +479,7 @@ export default function ExchangeClient({
           )}
         </div>
       ) : status === 'pending' && currentUserId === offer.to_user_id ? (
-        <div className={s.footer}>
+        <div className={s.footer} style={footerStyle}>
           <button className={s.btnPrimary} onClick={handleAccept} disabled={acting} style={{ opacity: acting ? 0.6 : 1 }}>
             {acting ? 'Procesando...' : 'Aceptar intercambio'}
           </button>
@@ -472,7 +488,7 @@ export default function ExchangeClient({
           </button>
         </div>
       ) : status === 'pending' && currentUserId === offer.from_user_id ? (
-        <div className={s.footer}>
+        <div className={s.footer} style={footerStyle}>
           <button className={s.btnSecondary} onClick={() => router.push(`/mensajes/${offerId}`)}>
             Ir al chat
           </button>
@@ -481,7 +497,7 @@ export default function ExchangeClient({
           </button>
         </div>
       ) : (
-        <div className={s.footer}>
+        <div className={s.footer} style={footerStyle}>
           <button className={s.btnPrimary} onClick={() => router.push(`/mensajes/${offerId}`)}>
             Ir al chat
           </button>

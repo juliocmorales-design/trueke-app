@@ -424,7 +424,11 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
         </p>
       )}
 
-      <div className={s.body}>
+      <div className={s.body} style={{
+        paddingBottom: 120,
+        maxWidth: isDesktop ? 760 : '100%',
+        margin: '0 auto',
+      }}>
 
         {/* PROGRESS BUBBLES */}
         <div className={s.progressWrap}>
@@ -502,14 +506,15 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
 
       {/* FOOTER */}
       <div className={s.footer} style={{
+        position: 'fixed',
+        bottom: 0,
         left: isDesktop ? 240 : 0,
         right: 0,
-        transform: isDesktop ? 'none' : 'translateX(-50%)',
-        maxWidth: isDesktop ? 'none' : 500,
+        transform: 'none',
+        maxWidth: 'none',
         background: '#FDF8F3',
         borderTop: '1px solid #F0EAE0',
-        paddingTop: 12,
-        paddingBottom: 'env(safe-area-inset-bottom, 16px)',
+        padding: '12px 16px',
         zIndex: 50,
       }}>
         <button className={s.ctaBtn} onClick={() => router.push('/crear')}>
