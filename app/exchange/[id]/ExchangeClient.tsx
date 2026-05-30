@@ -72,9 +72,11 @@ const STATUS_ICON: Record<string, React.ReactElement> = {
 function ItemDisplay({
   item,
   profile,
+  maxHeight,
 }: {
   item: ExchangeData['offeredItem']
   profile: ExchangeData['fromProfile']
+  maxHeight?: number
 }) {
   const imgUrl = item?.images?.[0] ?? null
   const isRemote = !!imgUrl && (imgUrl.startsWith('http://') || imgUrl.startsWith('https://'))
@@ -82,18 +84,23 @@ function ItemDisplay({
     ? item.title.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase()
     : '?'
 
+  const imgContainerStyle = maxHeight ? { maxHeight, overflow: 'hidden' as const, width: '100%' } : undefined
+
   return (
     <div className={s.itemDisplay}>
-      {isRemote ? (
-        <img src={imgUrl!} alt={item!.title} className={s.itemImg} />
-      ) : (
-        <div
-          className={s.itemImgFallback}
-          style={{ background: '#F5EFE8', fontSize: 22, fontWeight: 700, color: '#A0856C' }}
-        >
-          {initials}
-        </div>
-      )}
+      <div style={imgContainerStyle}>
+        {isRemote ? (
+          <img src={imgUrl!} alt={item!.title} className={s.itemImg}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' as const }} />
+        ) : (
+          <div
+            className={s.itemImgFallback}
+            style={{ background: '#F5EFE8', fontSize: 22, fontWeight: 700, color: '#A0856C' }}
+          >
+            {initials}
+          </div>
+        )}
+      </div>
       <span className={s.itemTitle}>{item?.title ?? '—'}</span>
       {profile && <span className={s.itemUser}>@{profile.username || profile.name}</span>}
     </div>
@@ -276,13 +283,18 @@ export default function ExchangeClient({
 
 
   const footerStyle = {
+    position: 'fixed' as const,
+    bottom: 0,
     left: isDesktop ? 240 : 0,
     right: 0,
-    transform: isDesktop ? 'none' : 'translateX(-50%)',
-    maxWidth: isDesktop ? 'none' : 500,
+    width: 'auto',
+    maxWidth: 'none',
+    transform: 'none',
     background: '#FDF8F3',
     borderTop: '1px solid #F0EAE0',
+    padding: '12px 16px',
     zIndex: 50,
+    boxSizing: 'border-box' as const,
   }
 
   return (
@@ -313,7 +325,7 @@ export default function ExchangeClient({
         {/* TARJETA PRINCIPAL */}
         <div className={s.mainCard}>
           <div className={s.itemsRow}>
-            <ItemDisplay item={offeredItem}   profile={fromProfile} />
+            <ItemDisplay item={offeredItem}   profile={fromProfile}  maxHeight={isDesktop ? 400 : 280} />
             <div className={s.swapWrap}>
               <div className={s.swapCircle}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -323,7 +335,7 @@ export default function ExchangeClient({
                 </svg>
               </div>
             </div>
-            <ItemDisplay item={requestedItem} profile={toProfile} />
+            <ItemDisplay item={requestedItem} profile={toProfile}   maxHeight={isDesktop ? 400 : 280} />
           </div>
 
           <div className={`${s.pill} ${STATUS_PILL[status] ?? s.pillPending}`}>

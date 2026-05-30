@@ -506,16 +506,19 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
 
       {/* FOOTER */}
       <div className={s.footer} style={{
-        position: 'fixed',
+        position: 'fixed' as const,
         bottom: 0,
         left: isDesktop ? 240 : 0,
         right: 0,
-        transform: 'none',
+        width: 'auto',
         maxWidth: 'none',
+        transform: 'none',
         background: '#FDF8F3',
         borderTop: '1px solid #F0EAE0',
         padding: '12px 16px',
+        paddingBottom: 'env(safe-area-inset-bottom, 16px)',
         zIndex: 50,
+        boxSizing: 'border-box' as const,
       }}>
         <button className={s.ctaBtn} onClick={() => router.push('/crear')}>
           Intercambiar lo que recibí
