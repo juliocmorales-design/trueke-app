@@ -282,6 +282,14 @@ export default function ExchangeClient({
     new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
 
 
+  const footerInner = {
+    maxWidth: isDesktop ? 860 : '100%',
+    margin: '0 auto',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 8,
+  }
+
   const footerStyle = {
     position: 'fixed' as const,
     bottom: 0,
@@ -465,54 +473,62 @@ export default function ExchangeClient({
         <div className={s.footer} style={{ ...footerStyle, visibility: 'hidden' }} />
       ) : status === 'accepted' ? (
         <div className={s.footer} style={footerStyle}>
-          <button className={s.btnPrimary} onClick={() => router.push(`/meeting/${offerId}`)}>
-            Acordar punto de encuentro
-          </button>
-          <button className={s.btnSecondary} onClick={() => router.push(`/mensajes/${offerId}`)}>
-            Ir al chat
-          </button>
-          {offer.meeting_point && (
-            <button
-              className={s.btnSecondary}
-              style={{ color: '#166534', background: '#DCFCE7' }}
-              onClick={handleComplete}
-              disabled={completing}
-            >
-              {completing ? 'Guardando...' : (
-                <>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  {' '}Ya hicimos el intercambio
-                </>
-              )}
+          <div style={footerInner}>
+            <button className={s.btnPrimary} onClick={() => router.push(`/meeting/${offerId}`)}>
+              Acordar punto de encuentro
             </button>
-          )}
+            <button className={s.btnSecondary} onClick={() => router.push(`/mensajes/${offerId}`)}>
+              Ir al chat
+            </button>
+            {offer.meeting_point && (
+              <button
+                className={s.btnSecondary}
+                style={{ color: '#166534', background: '#DCFCE7' }}
+                onClick={handleComplete}
+                disabled={completing}
+              >
+                {completing ? 'Guardando...' : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    {' '}Ya hicimos el intercambio
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       ) : status === 'pending' && currentUserId === offer.to_user_id ? (
         <div className={s.footer} style={footerStyle}>
-          <button className={s.btnPrimary} onClick={handleAccept} disabled={acting} style={{ opacity: acting ? 0.6 : 1 }}>
-            {acting ? 'Procesando...' : 'Aceptar intercambio'}
-          </button>
-          <button className={s.btnSecondary} onClick={() => setShowRejectModal(true)} disabled={acting} style={{ opacity: acting ? 0.6 : 1 }}>
-            Rechazar
-          </button>
+          <div style={footerInner}>
+            <button className={s.btnPrimary} onClick={handleAccept} disabled={acting} style={{ opacity: acting ? 0.6 : 1 }}>
+              {acting ? 'Procesando...' : 'Aceptar intercambio'}
+            </button>
+            <button className={s.btnSecondary} onClick={() => setShowRejectModal(true)} disabled={acting} style={{ opacity: acting ? 0.6 : 1 }}>
+              Rechazar
+            </button>
+          </div>
         </div>
       ) : status === 'pending' && currentUserId === offer.from_user_id ? (
         <div className={s.footer} style={footerStyle}>
-          <button className={s.btnSecondary} onClick={() => router.push(`/mensajes/${offerId}`)}>
-            Ir al chat
-          </button>
-          <button className={s.btnDanger} onClick={() => setShowCancelModal(true)}>
-            Cancelar oferta
-          </button>
+          <div style={footerInner}>
+            <button className={s.btnSecondary} onClick={() => router.push(`/mensajes/${offerId}`)}>
+              Ir al chat
+            </button>
+            <button className={s.btnDanger} onClick={() => setShowCancelModal(true)}>
+              Cancelar oferta
+            </button>
+          </div>
         </div>
       ) : (
         <div className={s.footer} style={footerStyle}>
-          <button className={s.btnPrimary} onClick={() => router.push(`/mensajes/${offerId}`)}>
-            Ir al chat
-          </button>
+          <div style={footerInner}>
+            <button className={s.btnPrimary} onClick={() => router.push(`/mensajes/${offerId}`)}>
+              Ir al chat
+            </button>
+          </div>
         </div>
       )}
 

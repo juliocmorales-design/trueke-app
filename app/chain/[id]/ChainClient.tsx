@@ -520,14 +520,22 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
         zIndex: 50,
         boxSizing: 'border-box' as const,
       }}>
-        <button className={s.ctaBtn} onClick={() => router.push('/crear')}>
-          Intercambiar lo que recibí
-        </button>
-        {chain.steps_count >= 2 && (
-          <button className={s.shareBtn} onClick={() => setShowShareModal(true)}>
-            Compartir
+        <div style={{
+          maxWidth: isDesktop ? 760 : '100%',
+          margin: '0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+        }}>
+          <button className={s.ctaBtn} onClick={() => router.push('/crear')}>
+            Intercambiar lo que recibí
           </button>
-        )}
+          {chain.steps_count >= 2 && (
+            <button className={s.shareBtn} onClick={() => setShowShareModal(true)}>
+              Compartir
+            </button>
+          )}
+        </div>
       </div>
 
       {/* SHARE MODAL */}
