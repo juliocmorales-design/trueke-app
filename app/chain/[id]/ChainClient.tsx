@@ -515,17 +515,20 @@ export default function ChainClient({ data, logoSrc }: { data: ChainData; logoSr
         transform: 'none',
         background: '#FDF8F3',
         borderTop: '1px solid #F0EAE0',
-        padding: '12px 16px',
-        paddingBottom: 'env(safe-area-inset-bottom, 16px)',
+        padding: '12px 0',
+        paddingBottom: 'env(safe-area-inset-bottom, 12px)',
         zIndex: 50,
         boxSizing: 'border-box' as const,
       }}>
         <div style={{
+          padding: '0 16px',
           maxWidth: isDesktop ? 760 : '100%',
           margin: '0 auto',
           display: 'flex',
           flexDirection: 'column',
           gap: 8,
+          width: '100%',
+          boxSizing: 'border-box' as const,
         }}>
           <button className={s.ctaBtn} onClick={() => router.push('/crear')}>
             Intercambiar lo que recibí

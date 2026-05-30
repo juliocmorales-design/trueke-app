@@ -283,11 +283,14 @@ export default function ExchangeClient({
 
 
   const footerInner = {
+    padding: '0 16px',
     maxWidth: isDesktop ? 860 : '100%',
     margin: '0 auto',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: 8,
+    width: '100%',
+    boxSizing: 'border-box' as const,
   }
 
   const footerStyle = {
@@ -300,7 +303,7 @@ export default function ExchangeClient({
     transform: 'none',
     background: '#FDF8F3',
     borderTop: '1px solid #F0EAE0',
-    padding: '12px 16px',
+    padding: '12px 0',
     zIndex: 50,
     boxSizing: 'border-box' as const,
   }
