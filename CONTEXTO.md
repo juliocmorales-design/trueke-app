@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 30 Mayo 2026 (sesión 15)
+> Última actualización: 8 Julio 2026 (sesión 16)
 
 ---
 
@@ -77,7 +77,7 @@ Las tarjetas compartibles solo muestran:
 - **Remote URL corregida:** `git@github.com:juliocmorales-design/trueke-app.git` (era `juliomorales-design` sin la c)
 - **Claude Code v2.1.123** instalado y autenticado en Codespaces
 - **Vercel** — dominio `trueke.app` conectado ✅ | deploy automático desde `main`
-- **Resend** — SMTP verificado ✅ | emails desde `noreply@trueke.app`
+- **Resend** — SMTP de Supabase Auth verificado ✅ (correos de confirmación/magic link/reset). Desde sesión 16, además, **correo transaccional propio** (notificaciones) vía SDK de Resend + React Email — ver sección "Sistema de notificaciones". ⚠️ `RESEND_FROM` en Vercel = `hola@trueke.app`, pero el SMTP de Supabase Auth manda desde `noreply@trueke.app` — no confirmado si ambos remitentes están verificados en Resend, revisar en su dashboard.
 - **Logo:** `public/images/logo.png` (500×301 px, 65 KB) — trackeado en repo ✅
 
 ---
@@ -143,9 +143,11 @@ trueke-app/app/
 ├── notificaciones/NotificacionesClient.tsx ✅
 ├── chain/[id]/page.tsx              ✅ Detalle de cadena
 ├── chain/[id]/ChainClient.tsx       ✅
-├── api/notifications/create/        ✅ POST — inserta notificación con admin client
+├── api/notifications/create/        ✅ POST — inserta notificación + envía correo (verifica que el caller sea parte de la oferta)
 ├── api/notifications/list/          ✅ GET — lista notificaciones del usuario
 ├── api/notifications/unread-count/  ✅ GET — conteo no leídas
+├── api/email/test/                  ✅ POST ?type=<tipo> — envía correo de prueba a la propia cuenta (sesión 16)
+├── emails/                          ✅ Plantillas React Email (sesión 16) — EmailLayout/Header/Footer/Button + textStyles.ts + registry.ts (mapa tipo→plantilla) + notifications/{OfferReceived,OfferAccepted,OfferRejected,OfferCompleted,RatingReceived,TestEmail}.tsx
 ├── buscar/page.tsx                  ✅ Pantalla de búsqueda con filtro ciudad + categoría + debounce
 ├── perfil/[userId]/page.tsx         ✅ Perfil público
 ├── api/chains/create/               ✅ POST — crea cadena (offerId opcional desde sesión 3)
@@ -155,7 +157,11 @@ trueke-app/app/
 ├── item/[id]/editar/page.tsx        ✅ Editar publicación: fotos (agregar/eliminar), campos, desactivar
 └── lib/
     ├── supabase.js                  ✅ Cliente Supabase (anon, con fallback ?? '' para build)
-    └── notifications.ts             ✅ Helper createNotification con admin client
+    ├── notifications.ts             ⚠️ Helper createNotification con admin client — código muerto, sin importadores en el repo (detectado sesión 16, no eliminado)
+    ├── apiAuth.ts                   ✅ requireUser(req) + adminClient() compartidos entre rutas API (sesión 16)
+    ├── email.ts                     ✅ sendEmail() — única puerta de entrada a Resend: idempotencia auto, reintentos con backoff, logging (sesión 16)
+    ├── emailLogger.ts               ✅ Logging estructurado de envíos, emails enmascarados (sesión 16)
+    └── notificationEmail.tsx        ✅ sendNotificationEmail() — conecta registry de plantillas con sendEmail() (sesión 16)
 ├── layout.tsx                       ✅ Server Component — exporta metadata, importa ClientLayout
 └── components/layout/
     ├── ClientLayout.tsx             ✅ 'use client' — usePathname, auth init, hideNav, BottomNav
@@ -213,13 +219,15 @@ rating/[offerId] → calificación 1-5 + comentario
 
 ---
 
-## 🔔 Sistema de notificaciones
+## 🔔 Sistema de notificaciones (+ correo desde sesión 16)
 
 - **Tabla:** `notifications` con admin client (SERVICE_ROLE_KEY) para bypassear RLS
 - **API routes:** `/api/notifications/create`, `/list`, `/unread-count`
-- **Autenticación:** Bearer token verificado con `adminClient().auth.getUser(token)` en todos los endpoints (corregido sesión 6)
+- **Autenticación:** Bearer token verificado con `requireUser(req)` (`app/lib/apiAuth.ts`) en todos los endpoints
 - **Triggers actuales:** offer_received (offer/new), offer_accepted, offer_rejected, offer_completed (ExchangeClient), rating_received (RatingClient)
-- **Helper:** `app/lib/notifications.ts` → `createNotification({ user_id, type, title, body, offer_id })`
+- **Autorización por oferta (sesión 16):** `/api/notifications/create` verifica que el caller y el `userId` destino sean ambas partes de la oferta (`from_user_id`/`to_user_id`) antes de insertar — evita que un usuario notifique/emailee a un tercero
+- **Correo transaccional (sesión 16):** cada notificación insertada dispara además un correo real vía `sendNotificationEmail()` (`app/lib/notificationEmail.tsx`) → `sendEmail()` (`app/lib/email.ts`) → Resend, con plantilla propia por tipo en `app/emails/notifications/`. Best-effort: si el correo falla, la notificación in-app ya se guardó igual
+- **Documentación completa de la arquitectura de correo:** `docs/sesiones/SESION_16_EMAIL_RESEND.md`
 
 ---
 
@@ -514,8 +522,30 @@ Antes usaba `pathname === item.href` (strict), fallaba en sub-rutas como `/mensa
 
 ---
 
+## ✅ Completado sesión 16
+
+### Sistema de correo transaccional con Resend + React Email
+
+Documentación completa (arquitectura, decisiones, cómo probar, pendientes): **`docs/sesiones/SESION_16_EMAIL_RESEND.md`**
+
+- **Arquitectura de 3 capas** — plantillas (`app/emails/`) → orquestación (`app/lib/notificationEmail.tsx`) → transporte (`app/lib/email.ts`, única puerta de entrada al SDK de Resend)
+- **5 plantillas React Email** — una por tipo de notificación (`offer_received/accepted/rejected/completed`, `rating_received`), mismo layout compartido y mismos colores de acento que ya usaba `NotificacionesClient.tsx` (naranja/verde/rojo/azul/ámbar)
+- **`sendEmail()`** — idempotencyKey siempre presente (derivada automáticamente por SHA-256 de `to+subject+props` si no se pasa una explícita), reintentos con backoff exponencial solo para errores transitorios (429/500/502/503/504, máx. 3 intentos), logging estructurado con emails enmascarados, valida `RESEND_API_KEY`/`RESEND_FROM` y lanza error claro si faltan
+- **Autorización por oferta** — `/api/notifications/create` ahora exige que caller y destino sean parte de la misma oferta (ver sección Notificaciones)
+- **`/api/email/test?type=<tipo>`** — prueba cualquiera de las 5 plantillas reales enviando solo a la propia cuenta del usuario autenticado
+- **`npm run email:dev`** — previsualiza las plantillas localmente (`react-email` como devDependency, cada componente expone `PreviewProps`)
+- **Dependencias agregadas:** `resend`, `@react-email/components`, `@react-email/render` (dependencies); `react-email` (devDependency)
+- **No se tocaron** los correos nativos de Supabase Auth (confirmación, magic link, reset password) — la arquitectura queda lista para migrarlos a futuro sin tocar `email.ts`
+- **Pendiente crítico:** nunca se ejecutó un envío real durante la sesión (sin credenciales de Resend/Supabase en el Codespace) — falta verificar en producción y resolver la inconsistencia de remitente `hola@trueke.app` vs `noreply@trueke.app`
+- Commits: `346fbbf` (sistema de correo) y `005ac97` (documentación) — pusheados a `main`, deploy en Vercel verificado exitoso
+
+---
+
 ## ⏳ Pendiente post-lanzamiento
 
+- **Verificar envío real de correo en producción** (sesión 16 no pudo probar un envío real — sin credenciales en el Codespace) y resolver inconsistencia de remitente `hola@trueke.app` vs `noreply@trueke.app` en Resend
+- Migrar correos de Supabase Auth (confirmación/magic link/reset) a plantillas propias con Resend — arquitectura ya lista, ver `docs/sesiones/SESION_16_EMAIL_RESEND.md`
+- Eliminar `app/lib/notifications.ts` (código muerto, sin importadores) o darle uso
 - PWA / Push notifications
 - Typing indicator en chat ("Escribiendo...")
 - Toast "¡Copiado!" al compartir link en tarjetas
