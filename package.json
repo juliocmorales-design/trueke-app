@@ -6,15 +6,19 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "email:dev": "email dev --dir app/emails"
   },
   "dependencies": {
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.0.10",
     "@supabase/supabase-js": "^2.104.0",
     "html2canvas": "^1.4.1",
     "next": "^16.2.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-easy-crop": "^5.5.7"
+    "react-easy-crop": "^5.5.7",
+    "resend": "^6.17.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.39",
@@ -22,6 +26,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "react-email": "^6.6.8",
     "typescript": "^5.9.3"
   }
 }
