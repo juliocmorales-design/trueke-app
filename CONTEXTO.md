@@ -77,7 +77,7 @@ Las tarjetas compartibles solo muestran:
 - **Remote URL corregida:** `git@github.com:juliocmorales-design/trueke-app.git` (era `juliomorales-design` sin la c)
 - **Claude Code v2.1.123** instalado y autenticado en Codespaces
 - **Vercel** — dominio `trueke.app` conectado ✅ | deploy automático desde `main`
-- **Resend** — SMTP de Supabase Auth verificado ✅ (correos de confirmación/magic link/reset). Desde sesión 16, además, **correo transaccional propio** (notificaciones) vía SDK de Resend + React Email — ver sección "Sistema de notificaciones". ⚠️ `RESEND_FROM` en Vercel = `hola@trueke.app`, pero el SMTP de Supabase Auth manda desde `noreply@trueke.app` — no confirmado si ambos remitentes están verificados en Resend, revisar en su dashboard.
+- **Resend** — SMTP de Supabase Auth verificado ✅ (correos de confirmación/magic link/reset). Desde sesión 16, además, **correo transaccional propio** (notificaciones) vía SDK de Resend + React Email — ver sección "Sistema de notificaciones". `RESEND_FROM` en Vercel = `hola@trueke.app`, **confirmado funcionando** (correo de prueba recibido en Gmail, sesión 16). ⚠️ El SMTP de Supabase Auth manda desde `noreply@trueke.app` — no confirmado si ese segundo remitente también está verificado en Resend, revisar en su dashboard.
 - **Logo:** `public/images/logo.png` (500×301 px, 65 KB) — trackeado en repo ✅
 
 ---
@@ -536,15 +536,15 @@ Documentación completa (arquitectura, decisiones, cómo probar, pendientes): **
 - **`npm run email:dev`** — previsualiza las plantillas localmente (`react-email` como devDependency, cada componente expone `PreviewProps`)
 - **Dependencias agregadas:** `resend`, `@react-email/components`, `@react-email/render` (dependencies); `react-email` (devDependency)
 - **No se tocaron** los correos nativos de Supabase Auth (confirmación, magic link, reset password) — la arquitectura queda lista para migrarlos a futuro sin tocar `email.ts`
-- **Verificado en producción (8 julio 2026):** tras el deploy, se probó `POST https://www.trueke.app/api/email/test` (genérico y `?type=offer_accepted`) autenticando contra Supabase con el usuario de prueba — ambas llamadas devolvieron `200 OK` con `messageId` de Resend (`cfe76481-...`, `351730eb-...`). Confirma que la cadena Vercel → `sendEmail()` → Resend funciona end-to-end. Pendiente: confirmación visual humana de que el correo llegó a la bandeja (no spam) y se ve bien — ver `docs/sesiones/SESION_16_EMAIL_RESEND.md` sección 11.1
-- Aún pendiente: resolver la inconsistencia de remitente `hola@trueke.app` vs `noreply@trueke.app` (la prueba usó `hola@trueke.app` y Resend lo aceptó, pero no se confirmó explícitamente en el dashboard)
-- Commits: `346fbbf` (sistema de correo), `005ac97` (documentación) y `2b86daf` (contexto) — pusheados a `main`, deploys en Vercel verificados exitosos
+- **✅ Verificado en producción y confirmado en el inbox (8 julio 2026):** se probó `POST https://www.trueke.app/api/email/test` (genérico y `?type=offer_accepted`) autenticando contra Supabase con el usuario de prueba — ambas llamadas devolvieron `200 OK` con `messageId` de Resend. El usuario confirmó que **ambos correos llegaron a la bandeja de entrada de `juliocmorales@gmail.com`** (no a spam). Sistema de correo funcionando end-to-end en producción. Ver `docs/sesiones/SESION_16_EMAIL_RESEND.md` sección 11.1
+- Aún pendiente: probar en Outlook y clientes móviles; resolver la inconsistencia de remitente `hola@trueke.app` vs `noreply@trueke.app` (la prueba usó `hola@trueke.app` y Resend lo aceptó, pero no se confirmó explícitamente en el dashboard)
+- Commits: `346fbbf` (sistema de correo), `005ac97` (documentación), `2b86daf` (contexto) y `657ccf4` (verificación) — pusheados a `main`, deploys en Vercel verificados exitosos
 
 ---
 
 ## ⏳ Pendiente post-lanzamiento
 
-- **Confirmar visualmente el correo en el inbox** (envío ya verificado por API con `messageId` de Resend, sesión 16 — falta que un humano confirme que llegó a la bandeja de `juliocmorales@gmail.com`, no a spam, y que se ve bien en Gmail/Outlook) y resolver inconsistencia de remitente `hola@trueke.app` vs `noreply@trueke.app` en Resend
+- **Probar el correo en Outlook y clientes móviles** (Gmail web ya confirmado end-to-end en sesión 16 — llegó a bandeja de entrada) y resolver inconsistencia de remitente `hola@trueke.app` vs `noreply@trueke.app` en Resend
 - Migrar correos de Supabase Auth (confirmación/magic link/reset) a plantillas propias con Resend — arquitectura ya lista, ver `docs/sesiones/SESION_16_EMAIL_RESEND.md`
 - Eliminar `app/lib/notifications.ts` (código muerto, sin importadores) o darle uso
 - PWA / Push notifications

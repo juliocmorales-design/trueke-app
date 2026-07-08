@@ -274,13 +274,15 @@ curl -X POST "https://www.trueke.app/api/email/test?type=offer_accepted" \
 
 **Resultado:** ambas llamadas devolvieron `200 OK` con `messageId` de Resend — confirma que la cadena completa funciona en producción: env vars correctas en Vercel, `sendEmail()` autenticándose contra Resend, idempotencyKey generándose sin errores, y el correo siendo aceptado por Resend para entrega a `juliocmorales@gmail.com`.
 
-**Lo que esto NO confirma:** que el correo efectivamente llegó a la bandeja de entrada (vs. spam) ni cómo se ve visualmente en Gmail/Outlook — eso requiere que un humano abra el inbox y lo confirme. La aceptación por parte de Resend (`messageId` devuelto) es una señal fuerte de que el envío es correcto, pero no reemplaza la inspección visual.
+**Confirmación humana (8 julio 2026):** el usuario revisó `juliocmorales@gmail.com` y confirmó que **ambos correos llegaron a la bandeja de entrada** (el genérico y `offer_accepted`). Con esto, el sistema de correo queda verificado end-to-end en producción: Resend los aceptó, Gmail los entregó y no cayeron en spam.
+
+Sin confirmar todavía: verse en Outlook (web/desktop) y en apps de correo móviles (iOS Mail, Gmail app) — el diseño usa `@react-email/components`, pensado para eso, pero no se probó explícitamente fuera de Gmail.
 
 ---
 
 ## 12. Pendientes futuros / riesgos abiertos
 
-- **Confirmar visualmente en el inbox.** El envío end-to-end ya está verificado (sección 11.1) — Resend aceptó ambos correos con `messageId`. Falta que un humano confirme en `juliocmorales@gmail.com` que llegaron (no a spam) y que el layout se ve bien en Gmail web/móvil, y probar también en Outlook.
+- **Probar en Outlook y clientes móviles.** Gmail ya está confirmado (recepción verificada por el usuario, sección 11.1). Falta ver cómo renderiza en Outlook (que tiene su propio motor de renderizado, distinto al de Gmail) y en apps de correo de iOS/Android.
 - **Resolver la inconsistencia `hola@trueke.app` vs `noreply@trueke.app`** (sección 2) — confirmar en el dashboard de Resend qué remitente(s) están realmente verificados. Esta prueba usó `RESEND_FROM` tal como está configurado en Vercel (`hola@trueke.app`) y Resend lo aceptó, lo cual sugiere que ese remitente sí está verificado — pero no se confirmó explícitamente en el dashboard.
 - **Correos de Supabase Auth sin migrar.** Confirmación de registro, magic link y reset de password siguen usando las plantillas nativas de Supabase (configuradas en su dashboard, fuera de este repo). La arquitectura ya está lista para migrarlos (ver decisión 10) pero no se hizo en esta sesión.
 - **Plantillas con datos limitados.** Hoy los correos de notificación solo reciben `title`/`body` (los mismos strings que se muestran en la notificación in-app) — no reciben el nombre del ítem, el nombre de la otra persona, etc. Para correos más ricos, habría que modificar los 3 call sites (`app/offer/new/page.tsx`, `app/exchange/[id]/ExchangeClient.tsx`, `app/rating/[offerId]/RatingClient.tsx`) para pasar datos estructurados en vez de texto ya formateado.
