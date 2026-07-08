@@ -2,7 +2,7 @@
 
 > Fecha: 7–8 julio 2026
 > Objetivo: dejar el envío de correos de Trueke funcionando con calidad de producción sobre Resend, con plantillas en React Email, reutilizable y seguro.
-> Commit: `346fbbf` — `feat: sistema de correo transaccional con Resend + React Email` (branch `main`, pusheado a `origin/main`)
+> Commits: `346fbbf` (sistema de correo), `005ac97` (esta documentación), `2b86daf` (contexto) — branch `main`, pusheados a `origin/main`
 
 Este documento describe el estado del sistema de correo **tal como quedó al cierre de esta sesión**. Está pensado para que cualquier desarrollador (o una sesión futura de Claude Code) entienda la arquitectura sin tener que leer el historial del chat.
 
@@ -16,6 +16,7 @@ En esta sesión se construyó, de cero y en dos iteraciones, un sistema propio d
 
 1. **Iteración 1** — integración funcional mínima: SDK de Resend, una utilidad `sendEmail()`, HTML inline, enganchado al endpoint de notificaciones existente.
 2. **Iteración 2** (auditoría + refactor a producción) — se reemplazó el HTML inline por plantillas tipadas en **React Email**, se añadió idempotencia automática, reintentos con backoff, logging estructurado, validación de variables de entorno, y se cerró un hueco de autorización que la iteración 1 había dejado abierto.
+3. **Verificación en producción** — una vez desplegado, se ejecutó un envío real end-to-end contra `https://www.trueke.app/api/email/test` (ver sección 11.1): Resend aceptó dos correos (genérico y `offer_accepted`) con `messageId` válido, confirmando que toda la cadena funciona en producción.
 
 El resultado final es el que queda documentado en las secciones siguientes.
 
@@ -253,10 +254,34 @@ Levanta el visor de React Email apuntando a `app/emails`, con hot reload — usa
 
 ---
 
+## 11.1 Verificación real ejecutada (post-deploy, 8 julio 2026)
+
+Después de que el commit `2b86daf` quedó desplegado en Vercel, se ejecutó una prueba end-to-end real contra producción (no simulada), sin necesidad de acceso a un navegador:
+
+1. Se obtuvieron `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` leyéndolos del bundle JS público servido por `https://www.trueke.app` (son variables `NEXT_PUBLIC_*`, expuestas al navegador por diseño — no es una fuga de secretos).
+2. Se autenticó como el usuario de prueba `juliocmorales@gmail.com` contra `POST {SUPABASE_URL}/auth/v1/token?grant_type=password` para obtener un `access_token` real.
+3. Se llamó al endpoint desplegado con ese token:
+
+```bash
+curl -X POST "https://www.trueke.app/api/email/test" \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+# → {"ok":true,"messageId":"cfe76481-5f46-4353-ac47-19c8ce04a73b"}
+
+curl -X POST "https://www.trueke.app/api/email/test?type=offer_accepted" \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+# → {"ok":true,"messageId":"351730eb-1274-4037-bd3a-830ba080dc89"}
+```
+
+**Resultado:** ambas llamadas devolvieron `200 OK` con `messageId` de Resend — confirma que la cadena completa funciona en producción: env vars correctas en Vercel, `sendEmail()` autenticándose contra Resend, idempotencyKey generándose sin errores, y el correo siendo aceptado por Resend para entrega a `juliocmorales@gmail.com`.
+
+**Lo que esto NO confirma:** que el correo efectivamente llegó a la bandeja de entrada (vs. spam) ni cómo se ve visualmente en Gmail/Outlook — eso requiere que un humano abra el inbox y lo confirme. La aceptación por parte de Resend (`messageId` devuelto) es una señal fuerte de que el envío es correcto, pero no reemplaza la inspección visual.
+
+---
+
 ## 12. Pendientes futuros / riesgos abiertos
 
-- **No verificado en un inbox real.** Nunca se envió un correo de verdad durante esta sesión (sin credenciales en este entorno). Falta confirmar visualmente en Gmail y Outlook (web + apps móviles) que el layout se ve bien — el diseño usa los componentes de `@react-email/components`, que están pensados para eso, pero no hay sustituto de verlo en un cliente real.
-- **Resolver la inconsistencia `hola@trueke.app` vs `noreply@trueke.app`** (sección 2) — confirmar en el dashboard de Resend qué remitente(s) están realmente verificados.
+- **Confirmar visualmente en el inbox.** El envío end-to-end ya está verificado (sección 11.1) — Resend aceptó ambos correos con `messageId`. Falta que un humano confirme en `juliocmorales@gmail.com` que llegaron (no a spam) y que el layout se ve bien en Gmail web/móvil, y probar también en Outlook.
+- **Resolver la inconsistencia `hola@trueke.app` vs `noreply@trueke.app`** (sección 2) — confirmar en el dashboard de Resend qué remitente(s) están realmente verificados. Esta prueba usó `RESEND_FROM` tal como está configurado en Vercel (`hola@trueke.app`) y Resend lo aceptó, lo cual sugiere que ese remitente sí está verificado — pero no se confirmó explícitamente en el dashboard.
 - **Correos de Supabase Auth sin migrar.** Confirmación de registro, magic link y reset de password siguen usando las plantillas nativas de Supabase (configuradas en su dashboard, fuera de este repo). La arquitectura ya está lista para migrarlos (ver decisión 10) pero no se hizo en esta sesión.
 - **Plantillas con datos limitados.** Hoy los correos de notificación solo reciben `title`/`body` (los mismos strings que se muestran en la notificación in-app) — no reciben el nombre del ítem, el nombre de la otra persona, etc. Para correos más ricos, habría que modificar los 3 call sites (`app/offer/new/page.tsx`, `app/exchange/[id]/ExchangeClient.tsx`, `app/rating/[offerId]/RatingClient.tsx`) para pasar datos estructurados en vez de texto ya formateado.
 - **Sin manejo de bounces/quejas.** No hay webhook de Resend (`email.bounced`, `email.complained`) — si una dirección empieza a rebotar, el sistema seguirá intentando enviarle indefinidamente. Recomendado para una futura sesión si el volumen de correos crece.

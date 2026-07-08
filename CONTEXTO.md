@@ -536,14 +536,15 @@ Documentación completa (arquitectura, decisiones, cómo probar, pendientes): **
 - **`npm run email:dev`** — previsualiza las plantillas localmente (`react-email` como devDependency, cada componente expone `PreviewProps`)
 - **Dependencias agregadas:** `resend`, `@react-email/components`, `@react-email/render` (dependencies); `react-email` (devDependency)
 - **No se tocaron** los correos nativos de Supabase Auth (confirmación, magic link, reset password) — la arquitectura queda lista para migrarlos a futuro sin tocar `email.ts`
-- **Pendiente crítico:** nunca se ejecutó un envío real durante la sesión (sin credenciales de Resend/Supabase en el Codespace) — falta verificar en producción y resolver la inconsistencia de remitente `hola@trueke.app` vs `noreply@trueke.app`
-- Commits: `346fbbf` (sistema de correo) y `005ac97` (documentación) — pusheados a `main`, deploy en Vercel verificado exitoso
+- **Verificado en producción (8 julio 2026):** tras el deploy, se probó `POST https://www.trueke.app/api/email/test` (genérico y `?type=offer_accepted`) autenticando contra Supabase con el usuario de prueba — ambas llamadas devolvieron `200 OK` con `messageId` de Resend (`cfe76481-...`, `351730eb-...`). Confirma que la cadena Vercel → `sendEmail()` → Resend funciona end-to-end. Pendiente: confirmación visual humana de que el correo llegó a la bandeja (no spam) y se ve bien — ver `docs/sesiones/SESION_16_EMAIL_RESEND.md` sección 11.1
+- Aún pendiente: resolver la inconsistencia de remitente `hola@trueke.app` vs `noreply@trueke.app` (la prueba usó `hola@trueke.app` y Resend lo aceptó, pero no se confirmó explícitamente en el dashboard)
+- Commits: `346fbbf` (sistema de correo), `005ac97` (documentación) y `2b86daf` (contexto) — pusheados a `main`, deploys en Vercel verificados exitosos
 
 ---
 
 ## ⏳ Pendiente post-lanzamiento
 
-- **Verificar envío real de correo en producción** (sesión 16 no pudo probar un envío real — sin credenciales en el Codespace) y resolver inconsistencia de remitente `hola@trueke.app` vs `noreply@trueke.app` en Resend
+- **Confirmar visualmente el correo en el inbox** (envío ya verificado por API con `messageId` de Resend, sesión 16 — falta que un humano confirme que llegó a la bandeja de `juliocmorales@gmail.com`, no a spam, y que se ve bien en Gmail/Outlook) y resolver inconsistencia de remitente `hola@trueke.app` vs `noreply@trueke.app` en Resend
 - Migrar correos de Supabase Auth (confirmación/magic link/reset) a plantillas propias con Resend — arquitectura ya lista, ver `docs/sesiones/SESION_16_EMAIL_RESEND.md`
 - Eliminar `app/lib/notifications.ts` (código muerto, sin importadores) o darle uso
 - PWA / Push notifications
