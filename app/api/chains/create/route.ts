@@ -1,13 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-
-function adminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } },
-  )
-}
+import { adminClient, requireUser } from '@/app/lib/apiAuth'
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,18 +9,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'receivedItemId es requerido' }, { status: 400 })
     }
 
-    /* Authenticate caller via the anon client cookie/header */
-    const anonClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { auth: { persistSession: false } },
-    )
-    const authHeader = req.headers.get('Authorization') ?? ''
-    const token = authHeader.replace('Bearer ', '')
-
-    const { data: { user }, error: authError } = await anonClient.auth.getUser(token)
-
-    if (authError || !user) {
+    const user = await requireUser(req)
+    if (!user) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
     }
 
@@ -50,6 +32,12 @@ export async function POST(req: NextRequest) {
       }
 
       const iAmFrom = user.id === offer.from_user_id
+      const iAmTo   = user.id === offer.to_user_id
+
+      if (!iAmFrom && !iAmTo) {
+        return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+      }
+
       fromUser = iAmFrom ? offer.from_user_id : offer.to_user_id
       toUser   = iAmFrom ? offer.to_user_id   : offer.from_user_id
     }
