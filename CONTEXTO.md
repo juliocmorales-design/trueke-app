@@ -1,6 +1,6 @@
 # 🧠 CONTEXTO DEL PROYECTO: TRUEKE
 > Pega este archivo al inicio de cada sesión con Claude o Claude Code para mantener el contexto completo.
-> Última actualización: 8 Julio 2026 (sesión 16)
+> Última actualización: 25 Julio 2026 (sesión 18 — documentos faltantes creados, 2 huecos de seguridad corregidos, revisión de consistencia documental)
 
 ---
 
@@ -27,42 +27,14 @@ Trueke es una app web de intercambio de objetos entre usuarios donde las persona
 
 ## 🚨 Decisiones de diseño inamovibles
 
-### 1. Sin valores monetarios — en ningún lado
-- Nunca mostrar precios ni valores estimados
-- Ni en tarjetas, ni en perfiles, ni en cadenas
-- Convierte el trueque en transacción → destruye la magia
+> **Fuente única de verdad: `docs/branding/PRODUCT_BOOK.md`.** Esta sección quedaba duplicada palabra por palabra en `PRODUCT_BOOK.md` §3 — desde sesión 18 se resume aquí y el detalle completo (incluido el estado real de verificación de cada punto contra el código) vive solo allá, para no mantener dos copias que puedan desincronizarse.
 
-### 2. Privacidad en cadenas de intercambio
-Las tarjetas compartibles solo muestran:
-- ✅ Objeto inicial, objeto final, número de intercambios, días
-- ✅ Nombre del usuario (solo si activó el toggle)
-- ❌ Nunca items intermedios, otros usuarios, ubicaciones, fotos reales, valores monetarios
-
-### 3. Confianza como sistema central (desde MVP)
-- Verificación por teléfono obligatoria al registrarse
-- Foto de perfil obligatoria
-- Calificación obligatoria después de cada intercambio
-- Botón de reportar usuario en menú "..." del chat
-- Score de confianza visible en perfil y en chat
-
-### 4. Consistencia visual — nunca romper esto
-- **Color primario: naranja #F97316** → todas las acciones principales (estandarizado — no usar #E8642C ni otros legacy)
-- Fondo: beige/crema #FDF8F3 | Texto principal: navy #1A2744
-- El CTA principal SIEMPRE es naranja — nunca navy, nunca gris
-- Pills de estado por color: amber=pendiente, verde=aceptado/completado, rojo=rechazado
-- **`border-radius` de botones CTA: 12px** — unificado en sesión 15. chain.module.css (ctaBtn, shareBtn) era 999px; exchange.module.css (btnPrimary, btnSecondary, btnDanger) era 16px. Ambos → 12px.
-- **BottomNav** se oculta en pantallas de flujo (meeting point) vía `hideNav` en `ClientLayout` — NO usar DOM hack `getElementById`
-- **Flujo post-aceptación completo:** Exchange → Meeting point → Completado → Rating
-- **Notificaciones** usan SVGs consistentes con routing por tipo: offer_received/accepted/completed → /mensajes/, offer_rejected → /intercambios, rating_received → /perfil/resenas
-- **Mensaje de meeting point** es propuesta con confirmación por chat, no confirmación unilateral
-- **Perfil:** logros removidos, reemplazados por "Mis cadenas". Stats usan datos reales (ratings query, items count)
-
-### 5. Flujo de oferta — reglas importantes
-- El chat SIEMPRE está vinculado a una oferta específica (offer_id)
-- Para iniciar un chat el usuario DEBE seleccionar qué item ofrece a cambio
-- No se puede chatear sin hacer una oferta formal
-- Cada chat muestra: item A por item B + barra de progreso + score de confianza
-- El menú "..." del chat incluye "Reportar usuario"
+Resumen rápido (ver `PRODUCT_BOOK.md` §3–4 para el detalle y las verificaciones):
+1. **Sin valores monetarios en ningún lado** — ✅ cumplido.
+2. **Privacidad en cadenas** — tarjetas compartibles ✅ cumplen. El nombre del creador en el listado público **siempre se muestra** — decisión de producto para el MVP (Julio, 25 julio 2026), sin toggle de privacidad. Ver `PRODUCT_BOOK.md` §3.2.
+3. **Confianza como sistema central** (teléfono/foto obligatorios, calificación, reportar, score) — ⚠️ parcialmente incumplido: verificación por teléfono no existe, foto de perfil es opcional, no obligatoria. Decisión pendiente de Julio — ver `docs/business/LAUNCH_CHECKLIST.md` "Riesgos".
+4. **Consistencia visual** (naranja `#F97316`, beige `#FDF8F3`, navy `#1A2744`, radius 12px, BottomNav, flujo post-aceptación, notificaciones, meeting point, perfil) — ✅ cumplido, ver `PRODUCT_BOOK.md` §4 para la verificación completa.
+5. **Flujo de oferta** (chat vinculado a `offer_id`, oferta formal obligatoria, reportar usuario) — ✅ cumplido.
 
 ---
 
@@ -150,14 +122,21 @@ trueke-app/app/
 ├── emails/                          ✅ Plantillas React Email (sesión 16) — EmailLayout/Header/Footer/Button + textStyles.ts + registry.ts (mapa tipo→plantilla) + notifications/{OfferReceived,OfferAccepted,OfferRejected,OfferCompleted,RatingReceived,TestEmail}.tsx
 ├── buscar/page.tsx                  ✅ Pantalla de búsqueda con filtro ciudad + categoría + debounce
 ├── perfil/[userId]/page.tsx         ✅ Perfil público
-├── api/chains/create/               ✅ POST — crea cadena (offerId opcional desde sesión 3)
-├── api/chains/add-step/             ✅ POST — agrega paso a cadena existente
+├── api/chains/create/               ✅ POST — crea cadena (offerId opcional, sin usar por ninguna UI actual). Autorización corregida 25 julio 2026 (sesión 18) — ver `docs/arquitectura/CADENAS_ARQUITECTURA.md`
+├── api/chains/add-step/             ⚠️ POST — agrega paso a cadena existente. No verifica que el caller tenga relación previa con la cadena — ver `docs/arquitectura/CADENAS_ARQUITECTURA.md` §4/§6
 ├── mis-cadenas/page.tsx             ✅ Mis cadenas — como creador y como participante
 ├── cadenas/page.tsx                 ✅ Listado público de cadenas con filtros (Populares/Recientes/Épicas)
 ├── item/[id]/editar/page.tsx        ✅ Editar publicación: fotos (agregar/eliminar), campos, desactivar
+├── perfil/setup/page.tsx            ⚠️ Setup de perfil (nombre/username/avatar) — sin ningún link ni router.push hacia ella en todo el repo, solo referenciada en ClientLayout.tsx para hideNav. Ruta huérfana (detectado sesión 17, no eliminada)
+├── api/profiles/create/              ✅ POST — crea/actualiza perfil vía admin client (upsert), valida username único. Usado por onboarding. Autorización corregida 25 julio 2026 (sesión 18) — antes no verificaba autenticación, ver `docs/business/LAUNCH_CHECKLIST.md` §2
+├── api/auth/check-email/             ✅ POST — verifica si un email ya existe (RPC check_email_exists, fallback listUsers)
+├── api/auth/check-username/          ✅ POST — verifica disponibilidad de username, usado en onboarding step 2 (onBlur)
+├── components/ImageCropper.tsx      ✅ Recortar y rotar fotos (perfil y publicaciones) — react-easy-crop. Integrado en crear/, perfil/edit/, item/[id]/editar/ desde el 27 mayo 2026
+├── store/useItems.js                ⚠️ Datos mock hardcodeados ("Gato electrico", etc.) — sin ningún importador en el repo. Código muerto (detectado sesión 17, no eliminado)
 └── lib/
     ├── supabase.js                  ✅ Cliente Supabase (anon, con fallback ?? '' para build)
     ├── notifications.ts             ⚠️ Helper createNotification con admin client — código muerto, sin importadores en el repo (detectado sesión 16, no eliminado)
+    ├── cropImage.ts                 ✅ Helper canvas para recortar/rotar imágenes, usado por ImageCropper.tsx
     ├── apiAuth.ts                   ✅ requireUser(req) + adminClient() compartidos entre rutas API (sesión 16)
     ├── email.ts                     ✅ sendEmail() — única puerta de entrada a Resend: idempotencia auto, reintentos con backoff, logging (sesión 16)
     ├── emailLogger.ts               ✅ Logging estructurado de envíos, emails enmascarados (sesión 16)
@@ -223,7 +202,7 @@ rating/[offerId] → calificación 1-5 + comentario
 
 - **Tabla:** `notifications` con admin client (SERVICE_ROLE_KEY) para bypassear RLS
 - **API routes:** `/api/notifications/create`, `/list`, `/unread-count`
-- **Autenticación:** Bearer token verificado con `requireUser(req)` (`app/lib/apiAuth.ts`) en todos los endpoints
+- **Autenticación:** Bearer token verificado en todos los endpoints — `/create` usa el helper compartido `requireUser(req)` (`app/lib/apiAuth.ts`); `/list` y `/unread-count` reimplementan la misma verificación en línea (duplicación de código, no un hueco de seguridad — pendiente de consolidar, ver `docs/business/ROADMAP.md`)
 - **Triggers actuales:** offer_received (offer/new), offer_accepted, offer_rejected, offer_completed (ExchangeClient), rating_received (RatingClient)
 - **Autorización por oferta (sesión 16):** `/api/notifications/create` verifica que el caller y el `userId` destino sean ambas partes de la oferta (`from_user_id`/`to_user_id`) antes de insertar — evita que un usuario notifique/emailee a un tercero
 - **Correo transaccional (sesión 16):** cada notificación insertada dispara además un correo real vía `sendNotificationEmail()` (`app/lib/notificationEmail.tsx`) → `sendEmail()` (`app/lib/email.ts`) → Resend, con plantilla propia por tipo en `app/emails/notifications/`. Best-effort: si el correo falla, la notificación in-app ya se guardó igual
@@ -542,11 +521,40 @@ Documentación completa (arquitectura, decisiones, cómo probar, pendientes): **
 
 ---
 
+## ✅ Completado sesión 17
+
+### Auditoría de contexto (24 julio 2026)
+
+Sesión sin cambios de código — se pidió leer README.md, CONTEXTO.md y los docs de negocio/arquitectura (`docs/branding/PRODUCT_BOOK.md`, `docs/business/LAUNCH_CHECKLIST.md`, `docs/business/GROWTH_PLAYBOOK.md`, `docs/business/METRICS.md`, `docs/business/ROADMAP.md`, `docs/arquitectura/CADENAS_ARQUITECTURA.md`) para entender el estado del proyecto antes de seguir trabajando.
+
+- **Los 6 documentos de negocio/arquitectura solicitados no existen en el repo.** Solo existen `README.md` (boilerplate de create-next-app, sin info del proyecto), `CONTEXTO.md` y `docs/sesiones/SESION_16_EMAIL_RESEND.md`. No hay `docs/branding/`, `docs/business/` ni `docs/arquitectura/`. Pendiente aclarar si existieron en algún momento y se perdieron, o si nunca se crearon.
+- **Desactualización encontrada y corregida:** "Crop circular al subir foto de perfil" estaba listado como pendiente, pero `ImageCropper.tsx` + `cropImage.ts` (recorte y rotación con `react-easy-crop`) están implementados e integrados en `crear/`, `perfil/edit/` e `item/[id]/editar/` desde el **27 de mayo de 2026** (commits `d2cde31`, `edc1855`, `6c86df6`) — dos sesiones documentadas (14, 15, 16) pasaron sin que se actualizara este punto.
+- **2 nuevos candidatos a código muerto detectados** (ver árbol de archivos arriba): `app/store/useItems.js` (datos mock sin importadores) y `app/perfil/setup/page.tsx` (página sin ningún link ni `router.push` hacia ella en todo el repo, probablemente huérfana de una iteración anterior del onboarding). Se suman a `app/lib/notifications.ts` (detectado en sesión 16) como candidatos a limpieza.
+- **Sin tests ni CI** — no hay carpeta de tests ni workflow de GitHub Actions; todo el control de calidad es manual (`tsc --noEmit`, `eslint`, verificación visual).
+- **Gap de actividad** — el commit anterior a esta sesión es del 10 de julio (`2efb9b9`); 2 semanas sin commits hasta esta sesión.
+
+---
+
+## ✅ Completado sesión 18
+
+### Creación de los 6 documentos faltantes + corrección de seguridad + revisión de consistencia (25 julio 2026)
+
+- **Los 6 documentos identificados como faltantes en sesión 17 fueron creados:** `docs/business/LAUNCH_CHECKLIST.md`, `docs/arquitectura/CADENAS_ARQUITECTURA.md`, `docs/branding/PRODUCT_BOOK.md`, `docs/business/ROADMAP.md`, `docs/business/GROWTH_PLAYBOOK.md`, `docs/business/METRICS.md` — los dos últimos marcados explícitamente como documentos estratégicos (propuesta/hipótesis/pendiente de aprobación), no como hechos.
+- **2 huecos de autorización reales encontrados y corregidos** — `app/api/profiles/create/route.ts` no verificaba autenticación en absoluto (cualquiera podía sobrescribir el perfil de otro usuario conociendo su UUID); `app/api/chains/create/route.ts` no verificaba que el caller fuera parte de la oferta antes de derivar identidades. Detalle completo en `docs/business/LAUNCH_CHECKLIST.md` §2.
+- **1 hueco de integridad menor encontrado, no corregido (no es una vulnerabilidad de identidad):** `app/api/chains/add-step/route.ts` no verifica que el caller tenga relación previa con la cadena antes de sumarlo como paso — ver `docs/arquitectura/CADENAS_ARQUITECTURA.md` §4/§6.
+- **1 inconsistencia de privacidad detectada y resuelta el mismo día:** el listado público `/cadenas` muestra siempre el username del creador; la política original declaraba que solo debía mostrarse si el usuario activaba un toggle (`show_name`, que no existe en ninguna UI). **Decisión de Julio (25 julio 2026):** para el MVP el nombre del creador siempre se muestra en el listado público — no se implementará el toggle. Política actualizada en `PRODUCT_BOOK.md` §3.2; sin cambios de código.
+- **Revisión de consistencia de toda la documentación** — se verificaron las 9 fuentes (`README.md`, `CONTEXTO.md`, `CLAUDE.md` + los 6 documentos nuevos) entre sí y contra el código. Se corrigieron notas desactualizadas que decían que los 6 documentos "no existen" (en `CLAUDE.md` y `docs/business/LAUNCH_CHECKLIST.md`), se resolvió la duplicación de las "decisiones de diseño inamovibles" entre este archivo y `PRODUCT_BOOK.md` (este archivo ahora resume y apunta a `PRODUCT_BOOK.md` como fuente única), y se reescribió `README.md`, que hasta este momento seguía siendo el boilerplate genérico de `create-next-app` sin ninguna mención a Trueke.
+- **Todas las rutas de archivo referenciadas en los 9 documentos fueron verificadas** — ninguna referencia rota encontrada.
+
+---
+
 ## ⏳ Pendiente post-lanzamiento
 
+> Esta lista quedaba parcialmente duplicada con `docs/business/ROADMAP.md`. Desde sesión 18, `ROADMAP.md` es la fuente única de verdad para la secuenciación de pendientes (organizados por horizontes de tiempo); esta lista se mantiene como resumen rápido de sesión.
+
+- **Decidir sobre código muerto:** `app/lib/notifications.ts`, `app/store/useItems.js`, `app/perfil/setup/page.tsx` — eliminar o dar uso
 - **Probar el correo en Outlook y clientes móviles** (Gmail web ya confirmado end-to-end en sesión 16 — llegó a bandeja de entrada) y resolver inconsistencia de remitente `hola@trueke.app` vs `noreply@trueke.app` en Resend
 - Migrar correos de Supabase Auth (confirmación/magic link/reset) a plantillas propias con Resend — arquitectura ya lista, ver `docs/sesiones/SESION_16_EMAIL_RESEND.md`
-- Eliminar `app/lib/notifications.ts` (código muerto, sin importadores) o darle uso
 - PWA / Push notifications
 - Typing indicator en chat ("Escribiendo...")
 - Toast "¡Copiado!" al compartir link en tarjetas
@@ -555,7 +563,6 @@ Documentación completa (arquitectura, decisiones, cómo probar, pendientes): **
 - Scroll restoration al volver de item
 - **V9** — Score de confianza con explicación (tooltip o subtítulo "¿Cómo se calcula?")
 - **V12** — Log de errores centralizado (Sentry o Vercel Analytics)
-- Crop circular al subir foto de perfil
 - Tarjetas compartibles V2 y V3
 - Niveles de usuario / logros
 - Ranking social
